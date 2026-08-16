@@ -7,12 +7,9 @@ RUN npm ci --omit=dev
 
 COPY . .
 
-# SQLite database lives here; mount a persistent volume at this path so
-# users and permissions survive redeploys/restarts.
-ENV DATA_DIR=/app/data
-RUN mkdir -p /app/data
-
 ENV NODE_ENV=production
 EXPOSE 3000
 
+# Requires DATABASE_URL (a free managed Postgres, e.g. Neon/Supabase) and
+# JWT_SECRET to be provided as environment variables at runtime.
 CMD ["node", "server/index.js"]

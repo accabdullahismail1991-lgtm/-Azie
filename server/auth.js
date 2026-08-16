@@ -28,13 +28,15 @@ function clearSessionCookie(res) {
   res.clearCookie(COOKIE_NAME, { path: '/' });
 }
 
-function getUserById(id) {
-  return db
-    .prepare('SELECT id, username, full_name, is_super_admin, is_active FROM users WHERE id = ?')
-    .get(id);
+async function getUserById(id) {
+  const { rows } = await db.query(
+    'SELECT id, username, full_name, is_super_admin, is_active FROM users WHERE id = $1',
+    [id]
+  );
+  return rows[0] || null;
 }
 
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
   const token = req.cookies && req.cookies[COOKIE_NAME];
   if (!token) return res.status(401).json({ error: 'يجب تسجيل الدخول' });
   let payload;
@@ -44,13 +46,17 @@ function requireAuth(req, res, next) {
     clearSessionCookie(res);
     return res.status(401).json({ error: 'انتهت صلاحية الجلسة، الرجاء تسجيل الدخول من جديد' });
   }
-  const user = getUserById(payload.sub);
-  if (!user || !user.is_active) {
-    clearSessionCookie(res);
-    return res.status(401).json({ error: 'الحساب غير موجود أو معطّل' });
+  try {
+    const user = await getUserById(payload.sub);
+    if (!user || !user.is_active) {
+      clearSessionCookie(res);
+      return res.status(401).json({ error: 'الحساب غير موجود أو معطّل' });
+    }
+    req.user = user;
+    next();
+  } catch (err) {
+    next(err);
   }
-  req.user = user;
-  next();
 }
 
 function requireSuperAdmin(req, res, next) {
@@ -60,22 +66,28 @@ function requireSuperAdmin(req, res, next) {
   next();
 }
 
-function userHasAppAccess(user, appId) {
+async function userHasAppAccess(user, appId) {
   if (!user) return false;
   if (user.is_super_admin) return true;
-  const row = db
-    .prepare('SELECT 1 FROM permissions WHERE user_id = ? AND app_id = ?')
-    .get(user.id, appId);
-  return !!row;
+  const { rows } = await db.query(
+    'SELECT 1 FROM permissions WHERE user_id = $1 AND app_id = $2',
+    [user.id, appId]
+  );
+  return rows.length > 0;
 }
 
 function requireAppAccess(getAppId) {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     const appId = typeof getAppId === 'function' ? getAppId(req) : getAppId;
-    if (!userHasAppAccess(req.user, appId)) {
-      return res.status(403).json({ error: 'ليست لديك صلاحية للوصول إلى هذا التطبيق' });
+    try {
+      const allowed = await userHasAppAccess(req.user, appId);
+      if (!allowed) {
+        return res.status(403).json({ error: 'ليست لديك صلاحية للوصول إلى هذا التطبيق' });
+      }
+      next();
+    } catch (err) {
+      next(err);
     }
-    next();
   };
 }
 

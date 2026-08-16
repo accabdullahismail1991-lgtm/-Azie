@@ -7,7 +7,7 @@ const path = require('path');
 // Applying the (idempotent) seed on every boot means a fresh deployment
 // gets its schema, apps, and first super-admin without a separate manual
 // step — safe to run repeatedly since it only inserts what's missing.
-require('./db/seed');
+const seedReady = require('./db/seed');
 
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
@@ -47,6 +47,19 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-app.listen(PORT, () => {
-  console.log(`المنصة الموحدة تعمل على http://localhost:${PORT}`);
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: 'حدث خطأ غير متوقع في السيرفر' });
 });
+
+seedReady
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`المنصة الموحدة تعمل على http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('فشل الاتصال بقاعدة البيانات أو تجهيزها:', err);
+    process.exit(1);
+  });

@@ -11,15 +11,19 @@ router.get(
   '/:id',
   requireAuth,
   (req, res, next) => requireAppAccess(req.params.id)(req, res, next),
-  (req, res) => {
-    const app = db.prepare('SELECT id FROM apps WHERE id = ?').get(req.params.id);
-    if (!app) return res.status(404).send('App not found');
+  async (req, res, next) => {
+    try {
+      const { rows } = await db.query('SELECT id FROM apps WHERE id = $1', [req.params.id]);
+      if (rows.length === 0) return res.status(404).send('App not found');
 
-    const filePath = path.join(TOOLS_DIR, `${app.id}.html`);
-    if (!filePath.startsWith(TOOLS_DIR) || !fs.existsSync(filePath)) {
-      return res.status(404).send('App file missing');
+      const filePath = path.join(TOOLS_DIR, `${rows[0].id}.html`);
+      if (!filePath.startsWith(TOOLS_DIR) || !fs.existsSync(filePath)) {
+        return res.status(404).send('App file missing');
+      }
+      res.sendFile(filePath);
+    } catch (err) {
+      next(err);
     }
-    res.sendFile(filePath);
   }
 );
 
