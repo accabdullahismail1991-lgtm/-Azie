@@ -139,6 +139,12 @@ body{
   text-align:center; color:var(--muted); font-size:14px;
 }
 
+.copyright-note{
+  margin-top:14px; text-align:center; font-size:11px; color:var(--muted); opacity:.8;
+}
+.copyright-note a{ color:var(--gold-lt); text-decoration:none; }
+.copyright-note a:hover{ text-decoration:underline; }
+
 @media(max-width:640px){
   .topbar{padding:16px 18px;}
   .wrap{padding:26px 16px 60px;}

@@ -377,14 +377,16 @@ canvas.donut{width:100px!important;height:100px!important}
   </div>
 </div>
 
+<script src="/assets/azie-data.js"></script>
+<script src="/assets/azie-screens.js"></script>
 <script>
 // ======================== DATA ========================
-let DB = JSON.parse(localStorage.getItem('rentDB') || '{"contracts":[]}');
+let DB = {contracts: []};
 let activeId = null;
 let activeSub = null; // index in renewals or -1 for original
 let payFilter='all', monthFilter='all', ledgerFilter='all';
 
-function save(){ localStorage.setItem('rentDB', JSON.stringify(DB)); }
+function save(){ AzieData.debouncedSave('rent-manager', () => DB); }
 
 // ======================== UTILS ========================
 const fmt = n => Number(n).toLocaleString('ar-SA',{minimumFractionDigits:0,maximumFractionDigits:0}) + ' ر.س';
@@ -1054,7 +1056,38 @@ function exportAllExcel(){
 // ======================== INIT ========================
 document.getElementById('f-start').valueAsDate=new Date();
 document.getElementById('l-date').valueAsDate=new Date();
-showPage('dashboard');
+
+(async function init(){
+  let allowed = [];
+  try {
+    allowed = await AzieScreens.fetchAllowed('rent-manager');
+  } catch(err) {
+    console.error(err);
+  }
+
+  showPage = AzieScreens.guardNavigate(showPage, allowed, {
+    onBlocked: (key) => console.warn('لا تملك صلاحية على الشاشة:', key),
+  });
+  AzieScreens.hideDisallowedNav([
+    {key:'dashboard', elements:[document.getElementById('nav-dashboard')]},
+    {key:'new', elements:[document.getElementById('nav-new')]},
+  ], allowed);
+
+  if (allowed.length === 0) {
+    AzieScreens.renderNoAccess(document.querySelector('.main'), 'نظام إدارة عقود الإيجار');
+    return;
+  }
+
+  try {
+    const loaded = await AzieData.load('rent-manager');
+    if (loaded && Array.isArray(loaded.contracts)) DB = loaded;
+  } catch(err) {
+    console.error(err);
+    alert('تعذر تحميل بيانات العقود من الخادم، يتم العرض ببيانات فارغة.');
+  }
+
+  showPage(allowed.includes('dashboard') ? 'dashboard' : allowed[0]);
+})();
 </script>
 </body>
 </html>

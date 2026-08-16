@@ -51,6 +51,35 @@ CREATE TABLE IF NOT EXISTS permissions (
   granted_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
   PRIMARY KEY (user_id, app_id)
 );
+
+-- Whole-app JSON snapshot: each tool's entire in-page dataset (records it
+-- used to keep in localStorage/memory only) is stored as one document per
+-- app, so existing tool code can keep its own in-memory data model and just
+-- load/save that model as a blob instead of being rewritten record-by-record.
+CREATE TABLE IF NOT EXISTS app_state (
+  app_id TEXT PRIMARY KEY REFERENCES apps(id) ON DELETE CASCADE,
+  data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS screens (
+  app_id TEXT NOT NULL REFERENCES apps(id) ON DELETE CASCADE,
+  screen_key TEXT NOT NULL,
+  title TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (app_id, screen_key)
+);
+
+CREATE TABLE IF NOT EXISTS screen_permissions (
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  app_id TEXT NOT NULL,
+  screen_key TEXT NOT NULL,
+  granted_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  granted_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  PRIMARY KEY (user_id, app_id, screen_key),
+  FOREIGN KEY (app_id, screen_key) REFERENCES screens(app_id, screen_key) ON DELETE CASCADE
+);
 `;
 
 let schemaReady;

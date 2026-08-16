@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>لوحة الإدارة — المنصة الموحدة</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/theme.css">
 <style>
 .panel{
@@ -22,10 +23,13 @@ th{color:var(--muted); font-weight:700; font-size:12px;}
 .perm-chip.on{background:rgba(200,147,58,.18); border-color:var(--gold); color:var(--gold-lt); font-weight:700;}
 .form-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:14px;}
 .form-row label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px; font-weight:700;}
-.form-row input{
+.form-row input, .form-row select{
   width:100%; padding:10px 12px; border-radius:8px;
   background:rgba(255,255,255,.04); border:1px solid var(--border); color:var(--text); font-family:inherit; font-size:13.5px;
 }
+.matrix-table th, .matrix-table td{ text-align:center; white-space:nowrap; }
+.matrix-table th:first-child, .matrix-table td:first-child{ text-align:right; white-space:normal; }
+.matrix-table th{ font-size:11px; }
 .form-check{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted);}
 .badge{font-size:11px; padding:2px 8px; border-radius:20px; font-weight:700;}
 .badge.admin{background:rgba(200,147,58,.18); color:var(--gold-lt);}
@@ -100,11 +104,37 @@ th{color:var(--muted); font-weight:700; font-size:12px;}
       </table>
     </div>
   </div>
+
+  <div class="panel">
+    <h3>مصفوفة صلاحيات الشاشات</h3>
+    <p style="color:var(--muted); font-size:12.5px; margin-bottom:14px; line-height:1.8;">
+      كل تطبيق فيه شاشات/أقسام داخلية. صلاحية التطبيق (بالجدول اللي فوق) تتحكم هل يقدر المستخدم يفتح التطبيق أصلاً،
+      وهاي المصفوفة تتحكم بأي شاشات داخل التطبيق يقدر يشوفها. منح شاشة لمستخدم بيمنحه صلاحية فتح التطبيق تلقائياً.
+    </p>
+    <div class="form-row" style="margin-bottom:14px; max-width:360px;">
+      <div>
+        <label>اختر التطبيق</label>
+        <select id="matrixAppSelect"></select>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="matrix-table">
+        <thead>
+          <tr id="matrixHead"></tr>
+        </thead>
+        <tbody id="matrixBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="copyright-note">جميع الحقوق محفوظة © عبدالله إسماعيل — للاستفسار والتواصل: <a href="tel:0509726204">0509726204</a></div>
 </div>
 
 <script>
 let apps = [];
 let users = [];
+let screens = [];
+let currentMatrixApp = null;
 
 function showMsg(text, ok) {
   const box = document.getElementById('msgBox');
@@ -137,9 +167,79 @@ async function boot() {
   }
   document.getElementById('userLabel').textContent = `مرحباً، ${me.user.full_name}`;
 
-  [apps, users] = await Promise.all([api('/api/admin/apps'), api('/api/admin/users')]);
+  [apps, users, screens] = await Promise.all([
+    api('/api/admin/apps'),
+    api('/api/admin/users'),
+    api('/api/admin/screens'),
+  ]);
   renderCreatePerms();
   renderUsers();
+  renderMatrixAppSelect();
+}
+
+function renderMatrixAppSelect() {
+  const select = document.getElementById('matrixAppSelect');
+  select.innerHTML = apps.map((a) => `<option value="${a.id}">${a.icon} ${a.title}</option>`).join('');
+  currentMatrixApp = apps[0] ? apps[0].id : null;
+  if (currentMatrixApp) select.value = currentMatrixApp;
+  select.addEventListener('change', () => {
+    currentMatrixApp = select.value;
+    renderMatrix();
+  });
+  renderMatrix();
+}
+
+function renderMatrix() {
+  const head = document.getElementById('matrixHead');
+  const body = document.getElementById('matrixBody');
+  if (!currentMatrixApp) {
+    head.innerHTML = '';
+    body.innerHTML = '';
+    return;
+  }
+  const appScreens = screens.filter((s) => s.app_id === currentMatrixApp);
+
+  head.innerHTML =
+    '<th>المستخدم</th>' + appScreens.map((s) => `<th>${s.title}</th>`).join('');
+
+  body.innerHTML = users
+    .map((u) => {
+      const grantedScreens = (u.screens && u.screens[currentMatrixApp]) || [];
+      const cells = appScreens
+        .map((s) => {
+          const on = u.is_super_admin || grantedScreens.includes(s.screen_key);
+          const lockedAttr = u.is_super_admin ? 'style="pointer-events:none;opacity:.7;"' : '';
+          return `<td><span class="perm-chip ${on ? 'on' : ''}" data-user="${u.id}" data-screen="${s.screen_key}" ${lockedAttr}>${on ? '✓' : '—'}</span></td>`;
+        })
+        .join('');
+      return `<tr><td><b>${u.full_name}</b><br><span style="color:var(--muted);font-size:11.5px;">@${u.username}</span></td>${cells}</tr>`;
+    })
+    .join('');
+
+  body.querySelectorAll('.perm-chip[data-user]').forEach((chip) => {
+    chip.addEventListener('click', async () => {
+      const userId = Number(chip.dataset.user);
+      const screenKey = chip.dataset.screen;
+      const isOn = chip.classList.contains('on');
+      try {
+        if (isOn) {
+          await api(`/api/admin/screen-permissions/${userId}/${currentMatrixApp}/${screenKey}`, {
+            method: 'DELETE',
+          });
+        } else {
+          await api('/api/admin/screen-permissions', {
+            method: 'POST',
+            body: JSON.stringify({ user_id: userId, app_id: currentMatrixApp, screen_key: screenKey }),
+          });
+        }
+        users = await api('/api/admin/users');
+        renderUsers();
+        renderMatrix();
+      } catch (err) {
+        showMsg(err.message, false);
+      }
+    });
+  });
 }
 
 function renderCreatePerms() {

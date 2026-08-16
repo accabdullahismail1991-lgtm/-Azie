@@ -286,6 +286,8 @@ td.net-col{font-weight:700;color:var(--gold);}
 <div id="app"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="/assets/azie-data.js"></script>
+<script src="/assets/azie-screens.js"></script>
 <script>
 /* ============ CONSTANTS ============ */
 const WEEKDAYS_AR = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
@@ -324,6 +326,50 @@ let state = {
 };
 
 /* ============ STORAGE HELPERS ============ */
+// window.storage shim: persistent keys (persistent=true) are backed by the
+// platform's per-app database blob (server/routes/data.js), loaded once and
+// saved (debounced) on every write. Session keys (persistent=false, only
+// ns_session) stay in sessionStorage — per-browser-tab, deliberately not
+// synced across terminals, since it just remembers which cashier-app user
+// was last logged in on THIS device.
+window.storage = (function(){
+  const APP_ID = 'cashier-nassim';
+  let cache = null;
+  let ready = null;
+
+  function ensureLoaded(){
+    if(!ready){
+      ready = AzieData.load(APP_ID).then(data => { cache = data || {}; }).catch(err => {
+        console.error('cashier-nassim: فشل تحميل البيانات من الخادم', err);
+        cache = {};
+      });
+    }
+    return ready;
+  }
+
+  async function get(key, persistent){
+    if(persistent === false){
+      const raw = sessionStorage.getItem('cashier_session_'+key);
+      return raw !== null ? {value: raw} : null;
+    }
+    await ensureLoaded();
+    if(!(key in cache)) return null;
+    return {value: JSON.stringify(cache[key])};
+  }
+
+  async function set(key, stringValue, persistent){
+    if(persistent === false){
+      sessionStorage.setItem('cashier_session_'+key, stringValue);
+      return;
+    }
+    await ensureLoaded();
+    cache[key] = JSON.parse(stringValue);
+    AzieData.debouncedSave(APP_ID, () => cache);
+  }
+
+  return {get, set};
+})();
+
 async function sget(key, fallback){
   try{ const r = await window.storage.get(key, true); return r ? JSON.parse(r.value) : fallback; }
   catch(e){ return fallback; }
@@ -486,13 +532,6 @@ function renderLogin(){
         </div>
         <button type="submit" class="btn btn-primary">تسجيل الدخول</button>
       </form>
-      <div class="demo-box">
-        <div><b>حسابات تجريبية:</b></div>
-        <div>admin / admin123 — مدير النظام</div>
-        <div>manager / manager123 — مدير فرع</div>
-        <div>salah / 1234 — كاشير (صباحي)</div>
-        <div>anjor / 1234 — كاشير (مسائي)</div>
-      </div>
     </div>
   </div>`;
 }
@@ -526,6 +565,15 @@ function tabsFor(role){
   if(role==='manager') return [{k:'report',l:'التقرير الشامل'},{k:'dashboard',l:'لوحة المؤشرات'},{k:'daily',l:'التقرير اليومي'},{k:'archive',l:'📦 أرشيف الورديات'},{k:'external',l:'مصادقات الأنظمة الخارجية'},{k:'kpi',l:'مؤشرات المطابقة'},{k:'allrecords',l:'🗂 كل السجلات'},{k:'import',l:'استيراد من إكسل'},{k:'integrations',l:'التكاملات'}];
   return [{k:'report',l:'التقرير الشامل'},{k:'dashboard',l:'لوحة المؤشرات'},{k:'daily',l:'التقرير اليومي'},{k:'archive',l:'📦 أرشيف الورديات'},{k:'external',l:'مصادقات الأنظمة الخارجية'},{k:'kpi',l:'مؤشرات المطابقة'},{k:'allrecords',l:'🗂 كل السجلات'},{k:'import',l:'استيراد من إكسل'},{k:'integrations',l:'التكاملات'},{k:'users',l:'المستخدمون والفروع'}];
 }
+// Layer the platform's per-screen permission grant on top of the app's own
+// role-based tab list: a tab only shows/works if it's both role-appropriate
+// AND explicitly granted to this platform user for this app.
+const _tabsForByRole = tabsFor;
+tabsFor = function(role){
+  const all = _tabsForByRole(role);
+  if(!window.__allowedScreens) return all;
+  return all.filter(t => window.__allowedScreens.includes(t.k));
+};
 function roleLabel(r){ return r==='admin'?'مدير النظام':r==='manager'?'مدير فرع':'كاشير'; }
 
 function currentContextBranch(){
@@ -560,6 +608,17 @@ function signatureBlockHtml(){
 function renderShell(){
   const u = state.currentUser;
   const tabs = tabsFor(u.role);
+  if(tabs.length === 0){
+    return `<div class="app-shell"><div style="padding:60px 24px;text-align:center;color:#888;">
+      <div style="font-size:40px;margin-bottom:16px;">🔒</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px;">لا توجد شاشات متاحة لك</div>
+      <div style="font-size:13px;">تواصل مع مدير المنصة لمنحك صلاحية على شاشة داخل هذا التطبيق.</div>
+    </div></div>`;
+  }
+  if(!tabs.find(t=>t.k===state.view)){
+    state.view = tabs[0].k;
+    location.hash = state.view;
+  }
   let body = '';
   if(state.view==='entry') body = renderEntryForm();
   else if(state.view==='my-history') body = renderMyHistory();
@@ -3967,6 +4026,12 @@ function attachUsersEvents(){
 /* ============ INIT ============ */
 (async function init(){
   render();
+  try{
+    window.__allowedScreens = await AzieScreens.fetchAllowed('cashier-nassim');
+  }catch(err){
+    console.error(err);
+    window.__allowedScreens = [];
+  }
   await loadAll();
   const session = await spget('ns_session', null);
   if(session && session.username){

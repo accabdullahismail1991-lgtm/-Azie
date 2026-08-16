@@ -91,6 +91,28 @@ function requireAppAccess(getAppId) {
   };
 }
 
+// Screen-level permissions are a finer grain nested inside app-level access:
+// a user needs both app access (to open the tool at all) and, for a
+// non-admin, an explicit grant per screen/tab inside that tool.
+async function userAllowedScreens(user, appId) {
+  if (!user) return [];
+  if (user.is_super_admin) {
+    const { rows } = await db.query(
+      'SELECT screen_key FROM screens WHERE app_id = $1 ORDER BY sort_order ASC',
+      [appId]
+    );
+    return rows.map((r) => r.screen_key);
+  }
+  const { rows } = await db.query(
+    `SELECT sp.screen_key FROM screen_permissions sp
+     JOIN screens s ON s.app_id = sp.app_id AND s.screen_key = sp.screen_key
+     WHERE sp.user_id = $1 AND sp.app_id = $2
+     ORDER BY s.sort_order ASC`,
+    [user.id, appId]
+  );
+  return rows.map((r) => r.screen_key);
+}
+
 module.exports = {
   COOKIE_NAME,
   setSessionCookie,
@@ -100,4 +122,5 @@ module.exports = {
   requireSuperAdmin,
   requireAppAccess,
   userHasAppAccess,
+  userAllowedScreens,
 };

@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>منظومة إدارة الأسطول الذكية</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/assets/azie-data.js"></script>
+<script src="/assets/azie-screens.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
 :root {
@@ -792,6 +794,13 @@ const DB = {
   accidents: []
 };
 
+// ════ SERVER PERSISTENCE ════
+// DB is `const` (its identity never changes) so loading server data mutates
+// its properties in place instead of reassigning the binding.
+function persist(){
+  AzieData.debouncedSave('fleet-system', () => DB);
+}
+
 // ════ SEED DATA ════
 function seed() {
   DB.drivers = [
@@ -823,11 +832,54 @@ function seed() {
 }
 
 // ════ INIT ════
-window.onload = function() {
-  seed();
+window.onload = async function() {
+  let allowed = [];
+  try{
+    allowed = await AzieScreens.fetchAllowed('fleet-system');
+  }catch(err){
+    console.error(err);
+  }
+
+  showPage = AzieScreens.guardNavigate(showPage, allowed, {
+    onBlocked: (key) => console.warn('لا تملك صلاحية على الشاشة:', key),
+  });
+  AzieScreens.hideDisallowedNav([
+    {key:'dashboard', elements: Array.from(document.querySelectorAll("[onclick^=\"showPage('dashboard'\"]"))},
+    {key:'live', elements: Array.from(document.querySelectorAll("[onclick^=\"showPage('live'\"]"))},
+    {key:'vehicles', elements: Array.from(document.querySelectorAll("[onclick^=\"showPage('vehicles'\"]"))},
+    {key:'drivers', elements: Array.from(document.querySelectorAll("[onclick^=\"showPage('drivers'\"]"))},
+    {key:'trips', elements: Array.from(document.querySelectorAll("[onclick^=\"showPage('trips'\"]"))},
+    {key:'fuel', elements: Array.from(document.querySelectorAll("[onclick^=\"showPage('fuel'\"]"))},
+    {key:'maintenance', elements: Array.from(document.querySelectorAll("[onclick^=\"showPage('maintenance'\"]"))},
+    {key:'accidents', elements: Array.from(document.querySelectorAll("[onclick^=\"showPage('accidents'\"]"))},
+    {key:'reports', elements: Array.from(document.querySelectorAll("[onclick^=\"showPage('reports'\"]"))},
+    {key:'rpt-vehicle', elements: Array.from(document.querySelectorAll("[onclick^=\"showPage('rpt-vehicle'\"]"))},
+    {key:'rpt-driver', elements: Array.from(document.querySelectorAll("[onclick^=\"showPage('rpt-driver'\"]"))},
+  ], allowed);
+
+  if(allowed.length === 0){
+    AzieScreens.renderNoAccess(document.querySelector('.main')||document.body, 'منظومة إدارة الأسطول الذكية');
+    return;
+  }
+
+  try{
+    const loaded = await AzieData.load('fleet-system');
+    const hasData = loaded && Object.keys(loaded).some(k => Array.isArray(loaded[k]) && loaded[k].length > 0);
+    if(hasData){
+      Object.assign(DB, {vehicles:[], drivers:[], trips:[], fuel:[], maintenance:[], accidents:[]}, loaded);
+    } else {
+      seed();
+      persist();
+    }
+  }catch(err){
+    console.error(err);
+    seed();
+  }
+
   populateSelects();
   renderAll();
-  initChart();
+  showPage(allowed.includes('dashboard') ? 'dashboard' : allowed[0]);
+  try{ initChart(); }catch(err){ console.error('تعذر تحميل الرسم البياني (Chart.js):', err); }
   setInterval(() => {
     const now = new Date();
     document.getElementById('clock').textContent =
@@ -1183,6 +1235,7 @@ function saveVehicle() {
   renderVehiclesTable();
   renderKPI();
   toast('✔ تم حفظ المركبة في قاعدة البيانات','ts');
+  persist();
 }
 
 function saveDriver() {
@@ -1204,6 +1257,7 @@ function saveDriver() {
   renderDriversTable();
   renderKPI();
   toast('✔ تم حفظ السائق في قاعدة البيانات','ts');
+  persist();
 }
 
 function saveTrip() {
@@ -1224,6 +1278,7 @@ function saveTrip() {
   document.getElementById('trip-from').value='';
   document.getElementById('trip-to').value='';
   toast('✔ تم حفظ خط السير','ts');
+  persist();
 }
 
 function saveFuel() {
@@ -1248,6 +1303,7 @@ function saveFuel() {
   document.getElementById('fuel-diff').value='— كم';
   if(vObj) document.getElementById('fuel-prev').value=vObj.odom;
   toast('✔ تم ترحيل فاتورة الوقود','ts');
+  persist();
 }
 
 function saveMaintenance() {
@@ -1270,6 +1326,7 @@ function saveMaintenance() {
   document.getElementById('maint-desc').value='';
   document.getElementById('maint-cost').value='';
   toast('✔ تم حفظ سجل الصيانة','ts');
+  persist();
 }
 
 function saveAccident() {
@@ -1286,6 +1343,7 @@ function saveAccident() {
   document.getElementById('acc-desc').value='';
   document.getElementById('acc-cost').value='';
   toast('🚨 تم إرسال البلاغ وأرشفته في السجل','tw');
+  persist();
 }
 
 // ════ DISTANCE CALC ════

@@ -6,6 +6,8 @@
 <title>مرجع F&B — فورمات + نماذج تشغيلية</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Amiri:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="/assets/azie-data.js"></script>
+<script src="/assets/azie-screens.js"></script>
 <style>
 /* ══ ROOT TOKENS ══ */
 :root{
@@ -2986,6 +2988,29 @@ function exportXL() {
 ════════════════════════════════════════ */
 document.getElementById('tbHL').classList.add('tb-active');
 renderForms(FD);
+
+(async function initScreenGuard(){
+  let allowed = [];
+  try{
+    allowed = await AzieScreens.fetchAllowed('fb-reference');
+  }catch(err){
+    console.error(err);
+  }
+  if(allowed.length === 0){
+    AzieScreens.renderNoAccess(document.body, 'مرجع F&B الشامل');
+    return;
+  }
+  switchTab = AzieScreens.guardNavigate(switchTab, allowed, {
+    onBlocked: (key) => console.warn('لا تملك صلاحية على الشاشة:', key),
+  });
+  AzieScreens.hideDisallowedNav([
+    {key:'formulas', elements:[document.getElementById('tbFormulas')]},
+    {key:'forms', elements:[document.getElementById('tbForms')]},
+  ], allowed);
+  if(!allowed.includes('formulas')){
+    switchTab(allowed[0]);
+  }
+})();
 </script>
 </body>
 </html>

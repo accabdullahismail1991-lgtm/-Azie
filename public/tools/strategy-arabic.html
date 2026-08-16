@@ -677,6 +677,7 @@ footer strong{color:var(--gold-lt)}
   <span style="margin-top:6px;display:block">نظام تفاعلي شامل يضم ٧ أقسام • ١٦ مفهوم أساسي • ٥٠+ أداة استراتيجية • نماذج عملية كاملة • مساعد ذكاء اصطناعي مدمج</span>
 </footer>
 
+<script src="/assets/azie-screens.js"></script>
 <script>
 // ── TAB SWITCHING ──
 function switchTab(id,el){
@@ -804,6 +805,31 @@ function sendSugg(text){
   userInput.value=text;
   sendMessage();
 }
+
+(async function initScreenGuard(){
+  let allowed = [];
+  try{
+    allowed = await AzieScreens.fetchAllowed('strategy-arabic');
+  }catch(err){
+    console.error(err);
+  }
+  if(allowed.length === 0){
+    AzieScreens.renderNoAccess(document.body, 'الاستراتيجية بالعربي');
+    return;
+  }
+  const navItems = ['overview','concepts','tools','phases','restaurant','calculator','assistant'].map(key => ({
+    key,
+    elements: [document.querySelector(`.nav-tabs a[onclick^="switchTab('${key}'"]`)],
+  }));
+  switchTab = AzieScreens.guardNavigate(switchTab, allowed, {
+    onBlocked: (key) => console.warn('لا تملك صلاحية على الشاشة:', key),
+  });
+  AzieScreens.hideDisallowedNav(navItems, allowed);
+  if(!allowed.includes('overview')){
+    const fallbackEl = navItems.find(n => n.key === allowed[0]).elements[0];
+    switchTab(allowed[0], fallbackEl);
+  }
+})();
 </script>
 </body>
 </html>

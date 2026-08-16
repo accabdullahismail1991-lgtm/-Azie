@@ -6,6 +6,8 @@
 <title>CFO Assistant · Restaurant Finance</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="/assets/azie-data.js"></script>
+<script src="/assets/azie-screens.js"></script>
 <style>
   :root{
     /* Ink & Brass palette — warm charcoal ledger with brass gold, teal and rust accents */
@@ -821,6 +823,40 @@ const DEFAULTS = JSON.parse(JSON.stringify({
 const uploadStatus = {}; // templateId -> {ok, msg}
 
 /* ============================================================
+   SERVER PERSISTENCE — uploaded/edited data is saved as one JSON
+   blob covering exactly the same fields DEFAULTS tracks (the app's
+   own "resettable" data set), so a reload restores what was
+   uploaded instead of falling back to the demo figures.
+============================================================ */
+function collectState(){
+  return {
+    BRANCH_IDS, DYNAMIC_BRANCH_NAMES, branchKpis, revenueBreakdown, branchMatrix, pnl,
+    cashFlow, cashTrend, monthlyTrend, wasteData, staffData, menuData, employeesData, suppliersData, branchInfoData,
+  };
+}
+function applyState(loaded){
+  if(!loaded) return;
+  if(loaded.BRANCH_IDS) BRANCH_IDS = loaded.BRANCH_IDS;
+  if(loaded.DYNAMIC_BRANCH_NAMES) DYNAMIC_BRANCH_NAMES = loaded.DYNAMIC_BRANCH_NAMES;
+  if(loaded.branchKpis) branchKpis = loaded.branchKpis;
+  if(loaded.revenueBreakdown) revenueBreakdown = loaded.revenueBreakdown;
+  if(loaded.branchMatrix) branchMatrix = loaded.branchMatrix;
+  if(loaded.pnl) pnl = loaded.pnl;
+  if(loaded.cashFlow) cashFlow = loaded.cashFlow;
+  if(loaded.cashTrend) cashTrend = loaded.cashTrend;
+  if(loaded.monthlyTrend) monthlyTrend = loaded.monthlyTrend;
+  if(loaded.wasteData) wasteData = loaded.wasteData;
+  if(loaded.staffData) staffData = loaded.staffData;
+  if(loaded.menuData) menuData = loaded.menuData;
+  if(loaded.employeesData) employeesData = loaded.employeesData;
+  if(loaded.suppliersData) suppliersData = loaded.suppliersData;
+  if(loaded.branchInfoData) branchInfoData = loaded.branchInfoData;
+}
+function persist(){
+  AzieData.debouncedSave("cfo-dashboard", collectState);
+}
+
+/* ============================================================
    HELPERS
 ============================================================ */
 const t = (key) => I18N[LANG][key] ?? key;
@@ -872,10 +908,13 @@ const sumField = (arr, f) => arr.reduce((a,r)=>a+r[f],0);
 /* ============================================================
    RENDER: SIDEBAR / HEADER
 ============================================================ */
+function visibleNav(){
+  return window.__allowedScreens ? NAV.filter(n => window.__allowedScreens.includes(n.id)) : NAV;
+}
 function renderNav(){
   const el = document.getElementById("navList");
   let html = ""; let lastGroup = null;
-  NAV.forEach(n=>{
+  visibleNav().forEach(n=>{
     if(n.group !== lastGroup){ html += `<div class="nav-group-label">${t(n.group)}</div>`; lastGroup = n.group; }
     html += `<button class="nav-btn ${TAB===n.id?'active':''}" data-tab="${n.id}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[n.icon]}</svg>
@@ -1949,6 +1988,7 @@ function resetTemplate(id){
   else if(id==="branchInfo"){ branchInfoData = JSON.parse(JSON.stringify(DEFAULTS.branchInfoData)); }
   delete uploadStatus[id];
   renderAll();
+  persist();
 }
 
 function handleUploadInput(id, input){
@@ -1962,6 +2002,7 @@ function handleUploadInput(id, input){
       APPLIERS[id](rows);
       uploadStatus[id] = {ok:true, msg:rows.length+" "+t("uploadSuccess")};
       renderAll();
+      persist();
     }catch(e){ uploadStatus[id] = {ok:false, msg:t("uploadError")+" "+e.message}; renderUploadTab(); }
     input.value = "";
   });
@@ -2037,8 +2078,8 @@ function renderManualTab(){
       ar:{title:"رفع بياناتك الخاصة", body:"افتح رفع البيانات والنماذج من القائمة الجانبية. لكل مجموعة تقارير: 1) حمّل نموذج CSV أو إكسل — يحتوي بالفعل على صفوف تجريبية بنفس ترتيب الأعمدة الذي يتوقعه النظام. 2) استبدل الصفوف التجريبية بأرقامك الخاصة مع إبقاء عناوين الأعمدة الإنجليزية كما هي. 3) استخدم رفع ملف واختر ملف CSV أو إكسل المكتمل. تُعاد حساب المؤشرات والجداول والرسوم البيانية فورًا. استخدم إعادة البيانات التجريبية في أي وقت للعودة إلى الأرقام التجريبية."} },
     { key:"manualTocColors", en:{title:"Color Legend", body:"", swatches:[["#C9A227","Brand / neutral — brass gold"],["#4FA88A","Good — on or above target"],["#D9A441","Warning — approaching a limit"],["#C1503F","Alert — over target or unfavorable"]] },
       ar:{title:"دليل الألوان", body:"", swatches:[["#C9A227","العلامة / محايد — ذهبي نحاسي"],["#4FA88A","جيد — ضمن الهدف أو أعلى منه"],["#D9A441","تحذير — يقترب من الحد"],["#C1503F","إنذار — تجاوز الهدف أو غير مواتٍ"]] } },
-    { key:"manualTocReset", en:{title:"Resetting Data", body:"Uploaded data lives only in this browser session — refreshing or closing the tab clears it. Each template in the Data Upload tab also has its own Reset to sample data button so you can restore the demo figures for one report without affecting the others."},
-      ar:{title:"إعادة ضبط البيانات", body:"تبقى البيانات المرفوعة داخل هذه الجلسة فقط داخل المتصفح — يؤدي تحديث الصفحة أو إغلاقها إلى مسحها. يحتوي كل نموذج في تبويب رفع البيانات على زر إعادة البيانات التجريبية الخاص به لاستعادة الأرقام التجريبية لتقرير واحد دون التأثير على البقية."} },
+    { key:"manualTocReset", en:{title:"Resetting Data", body:"Uploaded data is saved to the platform's database and is shared across everyone with access to this app — it survives refreshes and reopening the tool. Each template in the Data Upload tab also has its own Reset to sample data button so you can restore the demo figures for one report without affecting the others."},
+      ar:{title:"إعادة ضبط البيانات", body:"يتم حفظ البيانات المرفوعة في قاعدة بيانات المنصة وتكون مشتركة بين جميع من لديهم صلاحية الوصول لهذا التطبيق — تبقى محفوظة حتى بعد تحديث الصفحة أو إغلاق الأداة وإعادة فتحها. يحتوي كل نموذج في تبويب رفع البيانات على زر إعادة البيانات التجريبية الخاص به لاستعادة الأرقام التجريبية لتقرير واحد دون التأثير على البقية."} },
     { key:"manualTocExport", en:{title:"Exporting & Printing", body:"Use the Export button in the header to open your browser's print dialog, then choose Save as PDF to keep a snapshot of the current report and filters."},
       ar:{title:"التصدير والطباعة", body:"استخدم زر تصدير في الشريط العلوي لفتح نافذة الطباعة في المتصفح، ثم اختر الحفظ كملف PDF للاحتفاظ بنسخة من التقرير الحالي والفلاتر المستخدمة."} },
   ];
@@ -2067,6 +2108,15 @@ function renderAll(){
   document.body.dataset.lang = LANG;
   document.documentElement.lang = LANG;
   document.documentElement.dir = LANG === "ar" ? "rtl" : "ltr";
+
+  if(window.__allowedScreens){
+    const vis = visibleNav();
+    if(vis.length === 0){
+      AzieScreens.renderNoAccess(document.body, "CFO Assistant");
+      return;
+    }
+    if(!vis.find(n=>n.id===TAB)) TAB = vis[0].id;
+  }
 
   renderNav();
   renderSelects();
@@ -2230,7 +2280,24 @@ document.getElementById("chatInput").addEventListener("keydown", (e)=>{
   }
 });
 
-renderAll();
+(async function init(){
+  try{
+    window.__allowedScreens = await AzieScreens.fetchAllowed("cfo-dashboard");
+  }catch(err){
+    console.error(err);
+    window.__allowedScreens = [];
+  }
+  if(window.__allowedScreens.length > 0 && !window.__allowedScreens.includes(TAB)){
+    TAB = window.__allowedScreens[0];
+  }
+  try{
+    const loaded = await AzieData.load("cfo-dashboard");
+    if(loaded && Object.keys(loaded).length > 0) applyState(loaded);
+  }catch(err){
+    console.error("cfo-dashboard: تعذر تحميل البيانات من الخادم", err);
+  }
+  renderAll();
+})();
 </script>
 </body>
 </html>

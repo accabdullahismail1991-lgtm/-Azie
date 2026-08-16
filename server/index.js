@@ -12,17 +12,21 @@ const seedReady = require('./db/seed');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const toolsRoutes = require('./routes/tools');
+const dataRoutes = require('./routes/data');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 
 app.disable('x-powered-by');
-app.use(express.json());
+// Whole-app JSON snapshots (report archives, import logs, ...) can grow
+// past Express's 100kb default body limit.
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/data', dataRoutes);
 app.use('/tools', toolsRoutes);
 
 // Static assets (css/js/images if any) are public; the HTML pages

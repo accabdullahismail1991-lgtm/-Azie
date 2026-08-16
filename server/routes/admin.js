@@ -36,7 +36,21 @@ router.get('/users', async (req, res, next) => {
     for (const row of permRows) {
       (permsByUser[row.user_id] ||= []).push(row.app_id);
     }
-    res.json(users.map((u) => ({ ...userPublicShape(u), apps: permsByUser[u.id] || [] })));
+    const { rows: screenRows } = await db.query(
+      'SELECT user_id, app_id, screen_key FROM screen_permissions'
+    );
+    const screensByUser = {};
+    for (const row of screenRows) {
+      const byApp = (screensByUser[row.user_id] ||= {});
+      (byApp[row.app_id] ||= []).push(row.screen_key);
+    }
+    res.json(
+      users.map((u) => ({
+        ...userPublicShape(u),
+        apps: permsByUser[u.id] || [],
+        screens: screensByUser[u.id] || {},
+      }))
+    );
   } catch (err) {
     next(err);
   }
@@ -169,6 +183,59 @@ router.delete('/permissions/:user_id/:app_id', async (req, res, next) => {
       Number(user_id),
       app_id,
     ]);
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --- Screens catalog + per-screen permissions (the "permissions matrix") -
+router.get('/screens', async (req, res, next) => {
+  try {
+    const { rows } = await db.query(
+      'SELECT app_id, screen_key, title, sort_order FROM screens ORDER BY app_id ASC, sort_order ASC'
+    );
+    res.json(rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/screen-permissions', async (req, res, next) => {
+  try {
+    const { user_id, app_id, screen_key } = req.body || {};
+    const { rows: screenRows } = await db.query(
+      'SELECT 1 FROM screens WHERE app_id = $1 AND screen_key = $2',
+      [app_id, screen_key]
+    );
+    const { rows: userRows } = await db.query('SELECT id FROM users WHERE id = $1', [user_id]);
+    if (screenRows.length === 0 || userRows.length === 0) {
+      return res.status(404).json({ error: 'مستخدم أو شاشة غير موجودة' });
+    }
+    // Granting a screen implies the user can open the app it belongs to.
+    await db.query(
+      `INSERT INTO permissions (user_id, app_id, granted_by)
+       VALUES ($1,$2,$3) ON CONFLICT (user_id, app_id) DO NOTHING`,
+      [user_id, app_id, req.user.id]
+    );
+    await db.query(
+      `INSERT INTO screen_permissions (user_id, app_id, screen_key, granted_by)
+       VALUES ($1,$2,$3,$4) ON CONFLICT (user_id, app_id, screen_key) DO NOTHING`,
+      [user_id, app_id, screen_key, req.user.id]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/screen-permissions/:user_id/:app_id/:screen_key', async (req, res, next) => {
+  try {
+    const { user_id, app_id, screen_key } = req.params;
+    await db.query(
+      'DELETE FROM screen_permissions WHERE user_id = $1 AND app_id = $2 AND screen_key = $3',
+      [Number(user_id), app_id, screen_key]
+    );
     res.json({ ok: true });
   } catch (err) {
     next(err);

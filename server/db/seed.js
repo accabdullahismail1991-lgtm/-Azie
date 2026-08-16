@@ -61,6 +61,97 @@ const APPS = [
   },
 ];
 
+const SCREENS = {
+  'cashier-nassim': [
+    'إدخال وردية',
+    'سجل ورديتي',
+    'التقرير الشامل',
+    'لوحة المؤشرات',
+    'التقرير اليومي',
+    'أرشيف الورديات',
+    'مصادقات الأنظمة الخارجية',
+    'مؤشرات المطابقة',
+    'كل السجلات',
+    'استيراد من إكسل',
+    'التكاملات',
+    'المستخدمون والفروع',
+  ].map((title, i) => [
+    ['entry', 'my-history', 'report', 'dashboard', 'daily', 'archive', 'external', 'kpi', 'allrecords', 'import', 'integrations', 'users'][i],
+    title,
+  ]),
+  'cfo-dashboard': [
+    ['exec', 'الملخص التنفيذي والرؤى الذكية'],
+    ['pnl', 'القوائم المالية'],
+    ['cashflow', 'التدفق النقدي'],
+    ['trend', 'الموازنة مقابل الفعلي'],
+    ['branches', 'مصفوفة أداء الفروع'],
+    ['cost', 'ضبط التكاليف'],
+    ['waste', 'الهدر'],
+    ['staff', 'إنتاجية الموظفين'],
+    ['aggregators', 'ربحية قنوات التوصيل'],
+    ['analytics', 'التحليلات المتقدمة'],
+    ['masterdata', 'البيانات الأساسية'],
+    ['upload', 'رفع البيانات والقوالب'],
+    ['manual', 'دليل الاستخدام'],
+    ['settings', 'إعدادات النظام ومعايير IFRS'],
+  ],
+  'fb-reference': [
+    ['formulas', 'الفورمات الحسابية'],
+    ['forms', 'النماذج التشغيلية'],
+  ],
+  'fleet-system': [
+    ['dashboard', 'لوحة التحكم'],
+    ['live', 'تتبع مباشر'],
+    ['vehicles', 'المركبات والأصول'],
+    ['drivers', 'السائقون'],
+    ['trips', 'خطوط السير والرحلات'],
+    ['fuel', 'تموين الوقود'],
+    ['maintenance', 'الصيانة والتجديدات'],
+    ['accidents', 'الحوادث والبلاغات'],
+    ['reports', 'التقارير العامة'],
+    ['rpt-vehicle', 'تقرير سيارة مفصل'],
+    ['rpt-driver', 'تقرير سائق مفصل'],
+  ],
+  'rent-manager': [
+    ['dashboard', 'لوحة التحكم'],
+    ['new', 'عقد جديد'],
+    ['contract', 'تفاصيل العقد'],
+  ],
+  'pricing-guide': [
+    ['s1', 'التكلفة والسعر والربح'],
+    ['s2', 'أسباب الخسارة'],
+    ['s3', 'دورة التسعير'],
+    ['s4', 'الأخطاء القاتلة'],
+    ['s5', 'بند غير موجود'],
+    ['s6', 'قراءة الـ BOQ'],
+  ],
+  'strategy-arabic': [
+    ['overview', 'الرئيسية'],
+    ['concepts', 'المفاهيم'],
+    ['tools', 'الأدوات'],
+    ['phases', 'المراحل'],
+    ['restaurant', 'نموذج المطعم'],
+    ['calculator', 'حاسبة الربحية'],
+    ['assistant', 'المساعد الاستراتيجي'],
+  ],
+};
+
+async function upsertScreens() {
+  for (const [appId, screens] of Object.entries(SCREENS)) {
+    for (let i = 0; i < screens.length; i++) {
+      const [screenKey, title] = screens[i];
+      await db.query(
+        `INSERT INTO screens (app_id, screen_key, title, sort_order)
+         VALUES ($1,$2,$3,$4)
+         ON CONFLICT (app_id, screen_key) DO UPDATE SET
+           title = EXCLUDED.title,
+           sort_order = EXCLUDED.sort_order`,
+        [appId, screenKey, title, i]
+      );
+    }
+  }
+}
+
 async function upsertApp(app, index) {
   await db.query(
     `INSERT INTO apps (id, title, description, icon, accent, tags, sort_order)
@@ -82,6 +173,7 @@ async function run() {
   for (let i = 0; i < APPS.length; i++) {
     await upsertApp(APPS[i], i);
   }
+  await upsertScreens();
 
   const adminUsername = process.env.SEED_ADMIN_USERNAME || 'admin';
   const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'ChangeMe123!';
@@ -114,6 +206,18 @@ async function run() {
        VALUES ($1,$2,$3) ON CONFLICT (user_id, app_id) DO NOTHING`,
       [adminId, app.id, adminId]
     );
+  }
+
+  // Same rationale as above: super admin has implicit access to every
+  // screen in code, but explicit rows keep the admin matrix UI accurate.
+  for (const [appId, screens] of Object.entries(SCREENS)) {
+    for (const [screenKey] of screens) {
+      await db.query(
+        `INSERT INTO screen_permissions (user_id, app_id, screen_key, granted_by)
+         VALUES ($1,$2,$3,$4) ON CONFLICT (user_id, app_id, screen_key) DO NOTHING`,
+        [adminId, appId, screenKey, adminId]
+      );
+    }
   }
 
   console.log('Seed complete:', APPS.length, 'apps registered.');

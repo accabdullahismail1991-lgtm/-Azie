@@ -783,5 +783,32 @@
   transition:.2s;display:flex;align-items:center;gap:8px;
 ">🗂️ النماذج العملية</a>
 
+<script src="/assets/azie-screens.js"></script>
+<script>
+(async function initScreenGuard(){
+  let allowed = [];
+  try{
+    allowed = await AzieScreens.fetchAllowed('pricing-guide');
+  }catch(err){
+    console.error(err);
+  }
+  if(allowed.length === 0){
+    AzieScreens.renderNoAccess(document.body, 'دليل التسعير في شركات المقاولات');
+    return;
+  }
+  // This is a single scrolling page (no JS tab-switching), so enforcing a
+  // screen means hiding both the nav-pill link and the section itself —
+  // otherwise a disallowed section would still be reachable by scrolling.
+  const sections = ['s1','s2','s3','s4','s5','s6'];
+  sections.forEach((key) => {
+    if(allowed.includes(key)) return;
+    const section = document.getElementById(key);
+    if(section) section.style.display = 'none';
+    const navLink = document.querySelector(`.nav-pills a[href="#${key}"]`);
+    if(navLink) navLink.style.display = 'none';
+  });
+})();
+</script>
+
 </body>
 </html>

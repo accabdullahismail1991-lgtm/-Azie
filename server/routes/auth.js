@@ -5,7 +5,9 @@ const {
   setSessionCookie,
   clearSessionCookie,
   requireAuth,
+  requireAppAccess,
   userHasAppAccess,
+  userAllowedScreens,
 } = require('../auth');
 
 const router = express.Router();
@@ -67,6 +69,19 @@ router.get('/me', requireAuth, async (req, res, next) => {
     next(err);
   }
 });
+
+router.get(
+  '/screens/:appId',
+  requireAuth,
+  (req, res, next) => requireAppAccess(req.params.appId)(req, res, next),
+  async (req, res, next) => {
+    try {
+      res.json({ screens: await userAllowedScreens(req.user, req.params.appId) });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 router.post('/change-password', requireAuth, async (req, res, next) => {
   try {
