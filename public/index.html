@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>المنصة الموحدة — لوحة الأدوات</title>
+<link rel="stylesheet" href="/assets/theme.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">M</div>
+    <div class="brand-text">
+      <h1>المنصة الموحدة</h1>
+      <span>مركز الأدوات التشغيلية والمالية</span>
+    </div>
+  </div>
+  <div class="topbar-meta">
+    <span>عدد الأدوات المتاحة لك: <b id="appCount">0</b></span>
+    <span id="userLabel"></span>
+    <a class="btn" id="adminLink" href="/admin.html" style="display:none;">لوحة الإدارة</a>
+    <button class="btn btn-danger" id="logoutBtn">تسجيل الخروج</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="intro">
+    <h2>لوحة الأدوات</h2>
+    <p>اختر الأداة اللي بدك تفتحها. كل أداة بتشتغل بشكل مستقل جوّا نفس المنصة — اضغط على البطاقة لفتحها بملء الشاشة، واضغط "رجوع" للعودة للوحة الرئيسية. الأدوات المعروضة هنا هي فقط الأدوات المصرّح لك بالوصول إليها.</p>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty-state" id="emptyState" style="display:none;">
+    لا توجد أدوات مُتاحة لحسابك حالياً. الرجاء التواصل مع مدير المنصة لمنحك الصلاحيات اللازمة.
+  </div>
+
+  <div class="footer-note">تم دمج جميع الأدوات في واجهة واحدة للوصول السريع — كل أداة تحتفظ بتصميمها وبياناتها الخاصة، والوصول إليها محكوم بصلاحيات كل مستخدم.</div>
+</div>
+
+<div class="viewer" id="viewer">
+  <div class="viewer-bar">
+    <button class="back-btn" onclick="closeTool()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      رجوع للوحة الرئيسية
+    </button>
+    <div class="viewer-title" id="viewerTitle"></div>
+  </div>
+  <iframe class="viewer-frame" id="viewerFrame" src=""></iframe>
+</div>
+
+<script>
+async function boot() {
+  let me;
+  try {
+    const res = await fetch('/api/auth/me');
+    if (res.status === 401) {
+      window.location.href = '/login.html';
+      return;
+    }
+    me = await res.json();
+  } catch {
+    window.location.href = '/login.html';
+    return;
+  }
+
+  document.getElementById('userLabel').textContent = `مرحباً، ${me.user.full_name}`;
+  document.getElementById('appCount').textContent = me.apps.length;
+  if (me.user.is_super_admin) {
+    document.getElementById('adminLink').style.display = 'inline-flex';
+  }
+
+  const grid = document.getElementById('grid');
+  const emptyState = document.getElementById('emptyState');
+  if (me.apps.length === 0) {
+    emptyState.style.display = 'block';
+  } else {
+    me.apps.forEach((t) => {
+      const card = document.createElement('div');
+      card.className = 'tool-card';
+      card.style.setProperty('--accent', t.accent);
+      card.innerHTML = `
+        <div class="tool-icon">${t.icon}</div>
+        <h3>${t.title}</h3>
+        <p>${t.description}</p>
+        <div class="tool-tags">${t.tags.map((tag) => `<span class="tag">${tag}</span>`).join('')}</div>
+        <div class="open-hint">
+          فتح الأداة
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        </div>
+      `;
+      card.addEventListener('click', () => openTool(t));
+      grid.appendChild(card);
+    });
+  }
+}
+
+function openTool(t) {
+  document.getElementById('viewerTitle').textContent = t.title;
+  document.getElementById('viewerFrame').src = `/tools/${t.id}`;
+  document.getElementById('viewer').classList.add('active');
+}
+function closeTool() {
+  document.getElementById('viewer').classList.remove('active');
+  document.getElementById('viewerFrame').src = '';
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeTool();
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.href = '/login.html';
+});
+
+boot();
+</script>
+
+</body>
+</html>

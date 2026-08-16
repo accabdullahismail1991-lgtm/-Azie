@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>منظومة إدارة الأسطول الذكية</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
+:root {
+  --navy:#0F172A; --navy-mid:#1E293B; --navy-light:#334155;
+  --blue:#2563EB; --blue-light:#3B82F6; --sky:#38BDF8;
+  --emerald:#10B981; --amber:#F59E0B; --red:#EF4444;
+  --purple:#8B5CF6; --indigo:#6366F1;
+  --s50:#F8FAFC; --s100:#F1F5F9; --s200:#E2E8F0;
+  --s300:#CBD5E1; --s400:#94A3B8; --s500:#64748B;
+  --white:#FFFFFF;
+  --sidebar-w:260px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Cairo','Segoe UI',sans-serif;background:var(--s100);color:var(--navy);display:flex;height:100vh;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;}
+.sidebar-brand{padding:18px 16px 14px;border-bottom:1px solid var(--navy-light);}
+.brand-logo{width:40px;height:40px;background:var(--blue);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px;}
+.brand-name{font-size:14px;font-weight:800;color:var(--white);line-height:1.2;}
+.brand-name span{color:var(--sky);}
+.brand-sub{font-size:10px;color:var(--s400);margin-top:2px;font-weight:500;}
+.sidebar-nav{flex:1;padding:10px 10px;}
+.nav-section{font-size:9.5px;font-weight:700;color:var(--s500);letter-spacing:.08em;text-transform:uppercase;padding:10px 8px 5px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;color:var(--s400);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;margin-bottom:1px;position:relative;}
+.nav-item:hover{background:var(--navy-light);color:var(--white);}
+.nav-item.active{background:var(--blue);color:var(--white);font-weight:700;}
+.nav-item .ni{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+.nav-badge{position:absolute;left:10px;background:var(--red);color:white;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;}
+.sidebar-footer{padding:12px 14px;border-top:1px solid var(--navy-light);display:flex;align-items:center;gap:9px;}
+.footer-avatar{width:32px;height:32px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;}
+.footer-name{font-size:12px;font-weight:700;color:var(--white);}
+.footer-role{font-size:10px;color:var(--s400);}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{background:var(--white);border-bottom:1px solid var(--s200);height:54px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.topbar-title{font-size:16px;font-weight:800;color:var(--navy);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.live-pill{display:flex;align-items:center;gap:5px;background:#ECFDF5;border:1px solid #A7F3D0;color:#059669;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
+.live-dot{width:7px;height:7px;background:var(--emerald);border-radius:50%;animation:pulse 1.8s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+.topbar-clock{font-size:12px;font-weight:700;color:var(--s500);background:var(--s100);border:1px solid var(--s200);padding:5px 10px;border-radius:7px;direction:ltr;}
+
+/* ── CONTENT ── */
+.content{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px;}
+.page{display:none;}
+.page.active{display:flex;flex-direction:column;gap:14px;}
+
+/* ── CARD / PANEL ── */
+.panel{background:var(--white);border-radius:10px;border:1px solid var(--s200);overflow:hidden;}
+.panel-hdr{padding:12px 16px;border-bottom:1px solid var(--s200);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.panel-title{font-size:13.5px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;}
+.pti{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.pti-blue{background:#EFF6FF;} .pti-green{background:#ECFDF5;} .pti-amber{background:#FFFBEB;} .pti-red{background:#FEF2F2;} .pti-purple{background:#F5F3FF;} .pti-navy{background:#F0F4FF;}
+.panel-action{font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;white-space:nowrap;}
+.panel-body{padding:14px 16px;}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
+.kpi-card{background:var(--white);border:1px solid var(--s200);border-radius:10px;padding:14px;position:relative;overflow:hidden;}
+.kpi-card::after{content:'';position:absolute;bottom:0;right:0;left:0;height:3px;border-radius:0 0 10px 10px;}
+.kpi-card.kc-blue::after{background:var(--blue);}
+.kpi-card.kc-green::after{background:var(--emerald);}
+.kpi-card.kc-amber::after{background:var(--amber);}
+.kpi-card.kc-red::after{background:var(--red);}
+.kpi-card.kc-purple::after{background:var(--purple);}
+.kpi-icon{font-size:20px;margin-bottom:8px;}
+.kpi-val{font-size:24px;font-weight:900;color:var(--navy);line-height:1;}
+.kpi-lbl{font-size:11.5px;color:var(--s500);font-weight:600;margin-top:4px;}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fl{font-size:11.5px;font-weight:700;color:var(--s500);}
+.fi{width:100%;padding:9px 11px;border:1.5px solid var(--s200);border-radius:8px;font-size:13px;font-family:inherit;color:var(--navy);background:var(--s50);outline:none;transition:border-color .15s,background .15s;}
+.fi:focus{border-color:var(--blue);background:var(--white);}
+.fi[readonly]{background:var(--s100);color:var(--s500);cursor:default;}
+textarea.fi{resize:none;height:65px;}
+.fi-green{background:#ECFDF5!important;color:var(--emerald)!important;font-weight:700!important;border-color:#A7F3D0!important;}
+.fi-red{background:#FEF2F2!important;color:var(--red)!important;font-weight:700!important;border-color:#FECACA!important;}
+
+/* ── BUTTONS ── */
+.btn{padding:9px 15px;border-radius:8px;border:none;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s,transform .1s;white-space:nowrap;}
+.btn:active{transform:scale(.97);opacity:.85;}
+.btn-blue{background:var(--blue);color:white;}
+.btn-green{background:var(--emerald);color:white;}
+.btn-amber{background:var(--amber);color:white;}
+.btn-red{background:var(--red);color:white;}
+.btn-purple{background:var(--purple);color:white;}
+.btn-ghost{background:var(--s100);color:var(--navy-mid);border:1px solid var(--s200);}
+.btn-full{width:100%;}
+.btn-sm{padding:6px 11px;font-size:12px;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* ── TABLE ── */
+.tbl-scroll{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;text-align:right;min-width:550px;}
+thead tr{background:var(--s50);}
+th{padding:10px 13px;font-size:10.5px;font-weight:700;color:var(--s500);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--s200);white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--s200);transition:background .1s;cursor:pointer;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#EFF6FF;}
+td{padding:11px 13px;font-weight:500;color:var(--navy-mid);vertical-align:middle;}
+.plate{font-size:12.5px;font-weight:700;color:var(--navy);background:var(--s100);border:1px solid var(--s200);padding:3px 8px;border-radius:5px;display:inline-block;direction:ltr;}
+
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:11.5px;font-weight:600;white-space:nowrap;}
+.bd{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.badge.bg-green{background:#ECFDF5;color:#059669;} .badge.bg-green .bd{background:var(--emerald);}
+.badge.bg-amber{background:#FFFBEB;color:#B45309;} .badge.bg-amber .bd{background:var(--amber);}
+.badge.bg-red{background:#FEF2F2;color:#B91C1C;} .badge.bg-red .bd{background:var(--red);}
+.badge.bg-blue{background:#EFF6FF;color:#1D4ED8;} .badge.bg-blue .bd{background:var(--blue);}
+.badge.bg-purple{background:#F5F3FF;color:#6D28D9;} .badge.bg-purple .bd{background:var(--purple);}
+.badge.bg-gray{background:var(--s100);color:var(--s500);} .badge.bg-gray .bd{background:var(--s400);}
+
+/* ── FILE UPLOAD ── */
+.file-upload{border:2px dashed var(--s300);border-radius:8px;padding:14px;text-align:center;cursor:pointer;transition:border-color .15s;}
+.file-upload:hover{border-color:var(--blue);}
+.file-upload-icon{font-size:24px;margin-bottom:5px;}
+.file-upload-text{font-size:12px;color:var(--s500);font-weight:500;}
+.file-upload input{display:none;}
+.file-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.file-tag{background:var(--s100);border:1px solid var(--s200);border-radius:5px;padding:3px 8px;font-size:11px;font-weight:600;color:var(--navy-mid);display:flex;align-items:center;gap:4px;}
+.file-tag-rm{cursor:pointer;color:var(--red);font-size:13px;line-height:1;}
+
+/* ── MAP SECTION ── */
+.map-placeholder{background:linear-gradient(135deg,#EFF6FF 0%,#E0F2FE 60%,#F0FDF4 100%);border-radius:8px;position:relative;overflow:hidden;min-height:220px;display:flex;align-items:center;justify-content:center;}
+.map-controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center;}
+.map-result{margin-top:10px;background:var(--s50);border:1px solid var(--s200);border-radius:8px;padding:11px 13px;font-size:12.5px;}
+.map-result-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--s200);}
+.map-result-row:last-child{border-bottom:none;}
+.v-dot{position:absolute;width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.25);}
+.v-dot::after{content:'';position:absolute;inset:-5px;border-radius:50%;background:inherit;opacity:.2;animation:ripple 2s infinite;}
+@keyframes ripple{0%{transform:scale(1);opacity:.3;}100%{transform:scale(2.5);opacity:0;}}
+.v-dot.active-dot{background:var(--emerald);}
+.v-dot.maint-dot{background:var(--amber);animation:blink 1.5s infinite;}
+.v-dot.scrap-dot{background:var(--s400);}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.map-legend{position:absolute;bottom:8px;left:8px;background:rgba(255,255,255,.92);border-radius:6px;padding:6px 9px;font-size:10.5px;font-weight:600;color:var(--s500);display:flex;flex-direction:column;gap:3px;}
+.leg-item{display:flex;align-items:center;gap:5px;}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* ── REPORTS LIST ── */
+.report-list{display:flex;flex-direction:column;gap:0;}
+.report-item{padding:13px 16px;border-bottom:1px solid var(--s200);display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .1s;}
+.report-item:last-child{border-bottom:none;}
+.report-item:hover{background:var(--s50);}
+.report-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.report-body{flex:1;min-width:0;}
+.report-title{font-size:13px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.report-meta{font-size:11.5px;color:var(--s500);margin-top:2px;}
+.report-arrow{font-size:16px;color:var(--s400);flex-shrink:0;}
+
+/* ── MODAL ── */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(15,23,42,.65);z-index:500;align-items:flex-end;justify-content:center;}
+.modal-ov.open{display:flex;}
+.modal-sheet{background:var(--white);border-radius:16px 16px 0 0;width:100%;max-width:700px;padding:18px 18px 30px;display:flex;flex-direction:column;gap:12px;max-height:92vh;overflow-y:auto;animation:slideUp .25s ease;}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-handle{width:36px;height:4px;background:var(--s200);border-radius:2px;margin:0 auto -4px;}
+.modal-title{font-size:15px;font-weight:800;color:var(--navy);}
+.modal-sec{border:1px solid var(--s200);border-radius:8px;overflow:hidden;margin-bottom:2px;}
+.modal-sec-hdr{padding:9px 13px;background:var(--s50);border-bottom:1px solid var(--s200);font-size:12px;font-weight:700;}
+.modal-sec-body{padding:11px 13px;}
+.detail-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--s200);font-size:12.5px;}
+.detail-row:last-child{border-bottom:none;}
+.dk{color:var(--s500);font-weight:600;}
+.dv{font-weight:700;color:var(--navy);}
+.log-entry{font-size:12px;color:var(--navy-mid);padding:5px 0;border-bottom:1px solid var(--s200);display:flex;gap:7px;align-items:baseline;}
+.log-entry:last-child{border-bottom:none;}
+.log-bullet{color:var(--s400);font-size:9px;flex-shrink:0;}
+
+/* ── TOAST ── */
+.toast{position:fixed;top:63px;left:50%;transform:translateX(-50%);padding:10px 18px;border-radius:9px;font-size:12.5px;font-weight:600;font-family:'Cairo',sans-serif;z-index:999;max-width:90vw;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.15);pointer-events:none;animation:fadeInOut 3.2s ease forwards;}
+@keyframes fadeInOut{0%{opacity:0;transform:translateX(-50%) translateY(-8px);}12%{opacity:1;transform:translateX(-50%) translateY(0);}75%{opacity:1;}100%{opacity:0;}}
+.toast.ts{background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46;}
+.toast.te{background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;}
+.toast.ti{background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF;}
+.toast.tw{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--s200);border-radius:10px;}
+.hidden{display:none!important;}
+
+/* ── DISTANCE BADGE ── */
+.dist-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:20px;font-size:12.5px;font-weight:700;color:var(--blue);}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-logo">🚛</div>
+    <div class="brand-name">نظام <span>إدارة الأسطول</span></div>
+    <div class="brand-sub">Fleet Management System v2.0</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">الرئيسية</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="ni">📊</span> لوحة التحكم</div>
+    <div class="nav-item" onclick="showPage('live',this)"><span class="ni">📍</span> تتبع مباشر <span class="nav-badge">18</span></div>
+
+    <div class="nav-section">إدارة الأصول</div>
+    <div class="nav-item" onclick="showPage('vehicles',this)"><span class="ni">🚛</span> المركبات والأصول</div>
+    <div class="nav-item" onclick="showPage('drivers',this)"><span class="ni">👤</span> السائقون</div>
+
+    <div class="nav-section">العمليات</div>
+    <div class="nav-item" onclick="showPage('trips',this)"><span class="ni">🛣️</span> خطوط السير والرحلات</div>
+    <div class="nav-item" onclick="showPage('fuel',this)"><span class="ni">⛽</span> تموين الوقود</div>
+    <div class="nav-item" onclick="showPage('maintenance',this)"><span class="ni">🔧</span> الصيانة والتجديدات</div>
+    <div class="nav-item" onclick="showPage('accidents',this)"><span class="ni">🚨</span> الحوادث والبلاغات</div>
+
+    <div class="nav-section">التقارير</div>
+    <div class="nav-item" onclick="showPage('reports',this)"><span class="ni">📈</span> التقارير العامة</div>
+    <div class="nav-item" onclick="showPage('rpt-vehicle',this)"><span class="ni">🚛</span> تقرير سيارة مفصل</div>
+    <div class="nav-item" onclick="showPage('rpt-driver',this)"><span class="ni">👤</span> تقرير سائق مفصل</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="footer-avatar">م</div>
+    <div>
+      <div class="footer-name">محمد الإدارة</div>
+      <div class="footer-role">مشرف الأسطول</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="page-title">لوحة التحكم الرئيسية</div>
+    <div class="topbar-right">
+      <div class="live-pill"><div class="live-dot"></div>مباشر</div>
+      <div class="topbar-clock" id="clock">--:--:--</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ════ PAGE: DASHBOARD ════ -->
+    <div class="page active" id="page-dashboard">
+      <div class="kpi-grid" id="kpi-main"></div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;">
+        <div class="panel">
+          <div class="panel-hdr">
+            <div class="panel-title"><div class="pti pti-purple">📊</div>ساعات التشغيل واستهلاك الوقود</div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-ghost btn-sm" onclick="switchChart('bar')">شريطي</button>
+              <button class="btn btn-ghost btn-sm" onclick="switchChart('line')">خطي</button>
+            </div>
+          </div>
+          <div class="panel-body"><div style="height:230px;position:relative;"><canvas id="mainChart"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title"><div class="pti pti-green">📍</div>الخريطة الحية</div></div>
+          <div class="map-placeholder" style="height:260px;">
+            <div class="v-dot active-dot" style="top:35%;right:28%"></div>
+            <div class="v-dot active-dot" style="top:55%;right:58%"></div>
+            <div class="v-dot maint-dot" style="top:65%;right:38%"></div>
+            <div class="v-dot scrap-dot" style="top:25%;right:72%"></div>
+            <div class="v-dot active-dot" style="top:45%;right:82%"></div>
+            <div class="map-legend">
+              <div class="leg-item"><div class="leg-dot" style="background:var(--emerald)"></div>نشطة</div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div>صيانة</div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--s400)"></div>هالكة</div>
+            </div>
+            <div style="position:absolute;bottom:8px;right:8px;background:rgba(255,255,255,.9);border-radius:6px;padding:5px 9px;font-size:10.5px;font-weight:700;color:var(--navy-mid);">🛰️ قمر صناعي نشط</div>
+          </div>
+        </div>
+      </div>
+      <!-- Recent Trips -->
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-blue">🛣️</div>آخر الرحلات المسجلة</div><div class="panel-action" onclick="showPage('trips',document.querySelector('[onclick*=trips]'))">عرض الكل ←</div></div>
+        <div class="tbl-scroll"><table><thead><tr><th>السيارة</th><th>السائق</th><th>المسار</th><th>المسافة</th><th>الحالة</th></tr></thead><tbody id="recent-trips-tbl"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE: LIVE ════ -->
+    <div class="page" id="page-live">
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-green">📍</div>تتبع المركبات المباشر (GPS)</div></div>
+        <div class="map-placeholder" style="height:380px;">
+          <div class="v-dot active-dot" style="top:32%;right:25%"></div>
+          <div class="v-dot active-dot" style="top:50%;right:55%"></div>
+          <div class="v-dot maint-dot" style="top:68%;right:40%"></div>
+          <div class="v-dot active-dot" style="top:20%;right:70%"></div>
+          <div class="v-dot active-dot" style="top:45%;right:80%"></div>
+          <div class="map-legend">
+            <div class="leg-item"><div class="leg-dot" style="background:var(--emerald)"></div>نشطة</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div>صيانة</div>
+          </div>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
+            <div style="font-size:32px">🗺️</div>
+            <div style="font-size:12px;color:var(--s500);margin-top:4px;">اربط Google Maps API هنا</div>
+          </div>
+        </div>
+        <div class="panel-body"><button class="btn btn-blue" onclick="toast('🛰️ تم تحديث إشارة GPS لجميع المركبات','ti')">🔄 تحديث الإشارة</button></div>
+      </div>
+      <!-- Alerts -->
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-red">⚠️</div>تنبيهات النظام الفورية</div></div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:8px;">
+          <div style="padding:10px 12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-size:13px;font-weight:700;color:#991B1B;">🌡️ انخفاض تبريد سيارة أغذية — رقم 104</div><div style="font-size:11px;color:#B91C1C;margin-top:2px;">منذ 3 دقائق</div></div>
+            <span style="background:#FEE2E2;color:#B91C1C;font-size:12px;font-weight:700;padding:3px 9px;border-radius:5px;">8°C</span>
+          </div>
+          <div style="padding:10px 12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-size:13px;font-weight:700;color:#991B1B;">🚗 تجاوز السرعة — سيارة 202</div><div style="font-size:11px;color:#B91C1C;margin-top:2px;">منذ 7 دقائق</div></div>
+            <span style="background:#FEE2E2;color:#B91C1C;font-size:12px;font-weight:700;padding:3px 9px;border-radius:5px;">130 كم/س</span>
+          </div>
+          <div style="padding:10px 12px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-size:13px;font-weight:700;color:#92400E;">⛽ انخفاض وقود — شاحنة نقل ثقيل</div><div style="font-size:11px;color:#B45309;margin-top:2px;">منذ 15 دقيقة</div></div>
+            <span style="background:#FEF3C7;color:#B45309;font-size:12px;font-weight:700;padding:3px 9px;border-radius:5px;">12% متبقي</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE: VEHICLES ════ -->
+    <div class="page" id="page-vehicles">
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title"><div class="pti pti-blue">🚛</div>سجل المركبات والأصول</div>
+          <button class="btn btn-blue btn-sm" onclick="openModal('addVehicleModal')">＋ إضافة مركبة</button>
+        </div>
+        <div class="tbl-scroll">
+          <table><thead><tr><th>اللوحة</th><th>الموديل</th><th>النشاط</th><th>السائق</th><th>انتهاء الرخصة</th><th>انتهاء التأمين</th><th>الحالة</th><th>إجراء</th></tr></thead>
+          <tbody id="vehicles-tbl"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE: DRIVERS ════ -->
+    <div class="page" id="page-drivers">
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title"><div class="pti pti-navy">👤</div>سجل السائقين</div>
+          <button class="btn btn-blue btn-sm" onclick="openModal('addDriverModal')">＋ إضافة سائق</button>
+        </div>
+        <div class="tbl-scroll">
+          <table><thead><tr><th>الاسم</th><th>رقم الهوية</th><th>رقم الجوال</th><th>انتهاء الرخصة</th><th>المركبة المعينة</th><th>الحالة</th><th>ملف</th></tr></thead>
+          <tbody id="drivers-tbl"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE: TRIPS ════ -->
+    <div class="page" id="page-trips">
+      <!-- Add Trip Form -->
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-blue">🛣️</div>فتح خط سير جديد</div></div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="fg"><label class="fl">المركبة</label><select class="fi" id="trip-vehicle-sel"></select></div>
+            <div class="fg"><label class="fl">نقطة الانطلاق</label><input class="fi" id="trip-from" placeholder="مثال: مستودع جدة الرئيسي"></div>
+            <div class="fg"><label class="fl">نقطة الوصول</label><input class="fi" id="trip-to" placeholder="مثال: فرع مكة الشوقية"></div>
+            <div class="fg"><label class="fl">نوع الرحلة</label>
+              <select class="fi" id="trip-type">
+                <option>نقل بضاعة</option><option>توزيع فروع</option>
+                <option>توجه لورشة صيانة</option><option>مشاوير داخلية</option><option>أخرى</option>
+              </select>
+            </div>
+            <div class="fg"><label class="fl">وقت الانطلاق</label><input class="fi" type="datetime-local" id="trip-start"></div>
+            <div class="fg"><label class="fl">وقت الوصول (يُقيَّد تلقائياً)</label><input class="fi" id="trip-end" readonly placeholder="اضغط 'تم الوصول'"></div>
+          </div>
+          <!-- Distance calculator -->
+          <div style="margin:12px 0;background:var(--s50);border:1px solid var(--s200);border-radius:8px;padding:12px;">
+            <div style="font-size:12.5px;font-weight:700;color:var(--navy);margin-bottom:8px;">📏 احتساب المسافة عبر Google Maps</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+              <div class="fg" style="flex:1;min-width:120px;"><label class="fl">من</label><input class="fi" id="gmap-from" placeholder="جدة"></div>
+              <div class="fg" style="flex:1;min-width:120px;"><label class="fl">إلى</label><input class="fi" id="gmap-to" placeholder="مكة المكرمة"></div>
+              <button class="btn btn-blue btn-sm" onclick="calcDistance()">احتساب</button>
+              <button class="btn btn-ghost btn-sm" onclick="shareDestination()">📤 مشاركة الوجهة</button>
+            </div>
+            <div id="dist-result" class="map-result hidden">
+              <div class="map-result-row"><span class="dk">المسافة التقديرية</span><span class="dv" id="dist-km">—</span></div>
+              <div class="map-result-row"><span class="dk">الوقت التقديري</span><span class="dv" id="dist-time">—</span></div>
+              <div class="map-result-row"><span class="dk">رابط خرائط Google</span><a id="dist-link" href="#" target="_blank" style="color:var(--blue);font-weight:700;font-size:12px;">فتح في الخرائط ↗</a></div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-amber" onclick="stampArrival()">⏱ تم الوصول / التنزيل</button>
+            <button class="btn btn-green" onclick="saveTrip()">💾 حفظ خط السير</button>
+          </div>
+        </div>
+      </div>
+      <!-- Trips Table -->
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-blue">📋</div>سجل الرحلات</div></div>
+        <div class="tbl-scroll"><table><thead><tr><th>السيارة</th><th>السائق</th><th>المسار</th><th>النوع</th><th>المسافة</th><th>الانطلاق</th><th>الوصول</th></tr></thead><tbody id="trips-tbl"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE: FUEL ════ -->
+    <div class="page" id="page-fuel">
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-amber">⛽</div>تسجيل تعبئة وقود</div></div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="fg"><label class="fl">المركبة</label><select class="fi" id="fuel-vehicle-sel"></select></div>
+            <div class="fg"><label class="fl">العداد السابق (كم)</label><input class="fi" id="fuel-prev" readonly value="0"></div>
+            <div class="fg"><label class="fl">العداد الحالي (كم)</label><input class="fi" id="fuel-curr" type="number" oninput="calcFuelDist()" placeholder="أدخل القراءة الآن"></div>
+            <div class="fg"><label class="fl">المسافة المحتسبة</label><input class="fi fi-green" id="fuel-diff" readonly value="— كم"></div>
+            <div class="fg"><label class="fl">كمية التعبئة (لتر)</label><input class="fi" id="fuel-liters" type="number" placeholder="عدد اللترات"></div>
+            <div class="fg"><label class="fl">التكلفة (ر.س)</label><input class="fi" id="fuel-cost" type="number" placeholder="المبلغ"></div>
+            <div class="fg"><label class="fl">محطة التموين</label><input class="fi" id="fuel-station" placeholder="مثال: ساسكو طريق جيزان"></div>
+          </div>
+          <div class="btn-row" style="margin-top:10px;">
+            <button class="btn btn-green" onclick="saveFuel()">💾 حفظ في سجل الوقود</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-amber">📋</div>سجل التموين</div></div>
+        <div class="tbl-scroll"><table><thead><tr><th>السيارة</th><th>التاريخ</th><th>المحطة</th><th>اللترات</th><th>التكلفة</th><th>المسافة المقطوعة</th></tr></thead><tbody id="fuel-tbl"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE: MAINTENANCE ════ -->
+    <div class="page" id="page-maintenance">
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-amber">🔧</div>تسجيل صيانة / تجديد</div></div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="fg"><label class="fl">المركبة</label><select class="fi" id="maint-vehicle-sel"></select></div>
+            <div class="fg"><label class="fl">نوع العملية</label>
+              <select class="fi" id="maint-type">
+                <option>صيانة دورية</option><option>إصلاح عطل</option>
+                <option>تجديد رخصة السير</option><option>تجديد التأمين</option>
+                <option>فحص دوري</option><option>تغيير زيت وفلاتر</option>
+              </select>
+            </div>
+            <div class="fg"><label class="fl">وصف العملية</label><input class="fi" id="maint-desc" placeholder="تفاصيل الصيانة أو التجديد"></div>
+            <div class="fg"><label class="fl">التكلفة (ر.س)</label><input class="fi" id="maint-cost" type="number" placeholder="المبلغ"></div>
+            <div class="fg"><label class="fl">تاريخ العملية</label><input class="fi" type="date" id="maint-date"></div>
+            <div class="fg"><label class="fl">تاريخ التجديد القادم</label><input class="fi" type="date" id="maint-next"></div>
+            <div class="fg"><label class="fl">أيام التوقف في الورشة</label><input class="fi" type="number" id="maint-days" placeholder="عدد الأيام" min="0"></div>
+          </div>
+          <!-- File upload for maintenance docs -->
+          <div style="margin-top:10px;">
+            <div class="fl" style="margin-bottom:6px;">📎 مستندات الصيانة (فواتير، تقارير، وثائق)</div>
+            <div class="file-upload" onclick="document.getElementById('maint-files').click()">
+              <div class="file-upload-icon">📄</div>
+              <div class="file-upload-text">اضغط لرفع المستندات (PDF، صور)</div>
+              <input type="file" id="maint-files" multiple accept=".pdf,image/*" onchange="handleFiles(this,'maint-file-tags')">
+            </div>
+            <div class="file-tags" id="maint-file-tags"></div>
+          </div>
+          <div class="btn-row" style="margin-top:10px;">
+            <button class="btn btn-amber" onclick="saveMaintenance()">💾 حفظ سجل الصيانة</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-amber">📋</div>سجل الصيانات والتجديدات</div></div>
+        <div class="tbl-scroll"><table><thead><tr><th>السيارة</th><th>النوع</th><th>الوصف</th><th>التكلفة</th><th>التاريخ</th><th>التجديد القادم</th><th>الحالة</th></tr></thead><tbody id="maint-tbl"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE: ACCIDENTS ════ -->
+    <div class="page" id="page-accidents">
+      <div class="panel" style="border-color:#FECACA;background:#FFFBFB;">
+        <div class="panel-hdr" style="background:#FEF2F2;border-bottom-color:#FECACA;">
+          <div class="panel-title" style="color:#B91C1C;"><div class="pti pti-red">🚨</div>تسجيل بلاغ حادثة</div>
+        </div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="fg"><label class="fl">المركبة</label><select class="fi" id="acc-vehicle-sel"></select></div>
+            <div class="fg"><label class="fl">تاريخ ووقت الحادث</label><input class="fi" type="datetime-local" id="acc-date"></div>
+            <div class="fg"><label class="fl">موقع الحادث</label><input class="fi" id="acc-location" placeholder="مثال: طريق المدينة السريع"></div>
+            <div class="fg"><label class="fl">تكلفة الإصلاح (ر.س)</label><input class="fi" type="number" id="acc-cost" placeholder="التقدير الأولي"></div>
+          </div>
+          <div class="fg" style="margin-top:10px;">
+            <label class="fl">وصف تفصيلي للحادث</label>
+            <textarea class="fi" id="acc-desc" placeholder="اكتب تفاصيل الاصطدام والأضرار..."></textarea>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+            <div>
+              <div class="fl" style="margin-bottom:6px;">📷 صور الحادث الميدانية</div>
+              <div class="file-upload" onclick="document.getElementById('acc-photos').click()">
+                <div class="file-upload-icon">📷</div>
+                <div class="file-upload-text">رفع صور الحادث</div>
+                <input type="file" id="acc-photos" multiple accept="image/*" onchange="handleFiles(this,'acc-photo-tags')">
+              </div>
+              <div class="file-tags" id="acc-photo-tags"></div>
+            </div>
+            <div>
+              <div class="fl" style="margin-bottom:6px;">📄 تقرير المرور (نجم)</div>
+              <div class="file-upload" onclick="document.getElementById('acc-report').click()">
+                <div class="file-upload-icon">📋</div>
+                <div class="file-upload-text">رفع تقرير نجم / المرور</div>
+                <input type="file" id="acc-report" accept=".pdf,image/*" onchange="handleFiles(this,'acc-report-tags')">
+              </div>
+              <div class="file-tags" id="acc-report-tags"></div>
+            </div>
+          </div>
+          <div class="btn-row" style="margin-top:12px;">
+            <button class="btn btn-red" onclick="saveAccident()">🚨 إرسال البلاغ وأرشفته</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-red">📋</div>سجل الحوادث والبلاغات</div></div>
+        <div class="tbl-scroll"><table><thead><tr><th>السيارة</th><th>التاريخ</th><th>الموقع</th><th>الوصف</th><th>التكلفة</th></tr></thead><tbody id="acc-tbl"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE: REPORTS ════ -->
+    <div class="page" id="page-reports">
+      <div class="kpi-grid" id="kpi-reports"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title"><div class="pti pti-purple">📊</div>تقرير الرحلات</div></div>
+          <div class="report-list" id="report-trips-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title"><div class="pti pti-amber">⛽</div>تقرير الوقود</div></div>
+          <div class="report-list" id="report-fuel-list"></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title"><div class="pti pti-amber">🔧</div>تقرير الصيانات</div></div>
+          <div class="report-list" id="report-maint-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title"><div class="pti pti-red">🚨</div>تقرير الحوادث</div></div>
+          <div class="report-list" id="report-acc-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE: VEHICLE REPORT ════ -->
+    <div class="page" id="page-rpt-vehicle">
+      <!-- Filter Bar -->
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-blue">🔍</div>فلاتر تقرير السيارة</div>
+          <button class="btn btn-ghost btn-sm" onclick="clearVehicleFilters()">مسح الفلاتر ✕</button>
+        </div>
+        <div class="panel-body">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px;">
+            <div class="fg">
+              <label class="fl">اختر السيارة</label>
+              <select class="fi" id="rv-vehicle" onchange="applyVehicleReport()">
+                <option value="">— كل السيارات —</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl">نوع السجل</label>
+              <select class="fi" id="rv-type" onchange="applyVehicleReport()">
+                <option value="all">كل السجلات</option>
+                <option value="trips">الرحلات فقط</option>
+                <option value="fuel">الوقود فقط</option>
+                <option value="maintenance">الصيانة فقط</option>
+                <option value="accidents">الحوادث فقط</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl">من تاريخ</label>
+              <input class="fi" type="date" id="rv-from" onchange="applyVehicleReport()">
+            </div>
+            <div class="fg">
+              <label class="fl">إلى تاريخ</label>
+              <input class="fi" type="date" id="rv-to" onchange="applyVehicleReport()">
+            </div>
+            <div class="fg">
+              <label class="fl">نوع الرحلة</label>
+              <select class="fi" id="rv-trip-type" onchange="applyVehicleReport()">
+                <option value="">— الكل —</option>
+                <option>نقل بضاعة</option><option>توزيع فروع</option>
+                <option>توجه لورشة صيانة</option><option>مشاوير داخلية</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl">البحث النصي</label>
+              <input class="fi" type="text" id="rv-search" placeholder="بحث في الوصف / المسار..." oninput="applyVehicleReport()">
+            </div>
+          </div>
+          <button class="btn btn-blue btn-sm" onclick="applyVehicleReport()">🔍 تطبيق الفلتر</button>
+        </div>
+      </div>
+      <!-- KPIs for selected vehicle -->
+      <div class="kpi-grid" id="rv-kpis"></div>
+      <!-- Chart -->
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-purple">📊</div>الرسم البياني للسيارة</div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-ghost btn-sm" onclick="switchVChart('bar')">شريطي</button>
+            <button class="btn btn-ghost btn-sm" onclick="switchVChart('line')">خطي</button>
+          </div>
+        </div>
+        <div class="panel-body"><div style="height:200px;position:relative;"><canvas id="rv-chart"></canvas></div></div>
+      </div>
+      <!-- Results -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title"><div class="pti pti-blue">📋</div>نتائج التقرير</div>
+          <div id="rv-count" style="font-size:12px;color:var(--s500);font-weight:600;"></div>
+        </div>
+        <div class="report-list" id="rv-results"></div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE: DRIVER REPORT ════ -->
+    <div class="page" id="page-rpt-driver">
+      <!-- Filter Bar -->
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-navy">🔍</div>فلاتر تقرير السائق</div>
+          <button class="btn btn-ghost btn-sm" onclick="clearDriverFilters()">مسح الفلاتر ✕</button>
+        </div>
+        <div class="panel-body">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px;">
+            <div class="fg">
+              <label class="fl">اختر السائق</label>
+              <select class="fi" id="rd-driver" onchange="applyDriverReport()">
+                <option value="">— كل السائقين —</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl">نوع السجل</label>
+              <select class="fi" id="rd-type" onchange="applyDriverReport()">
+                <option value="all">كل السجلات</option>
+                <option value="trips">الرحلات فقط</option>
+                <option value="fuel">الوقود فقط</option>
+                <option value="accidents">الحوادث فقط</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl">من تاريخ</label>
+              <input class="fi" type="date" id="rd-from" onchange="applyDriverReport()">
+            </div>
+            <div class="fg">
+              <label class="fl">إلى تاريخ</label>
+              <input class="fi" type="date" id="rd-to" onchange="applyDriverReport()">
+            </div>
+            <div class="fg">
+              <label class="fl">البحث النصي</label>
+              <input class="fi" type="text" id="rd-search" placeholder="بحث في المسار / الوصف..." oninput="applyDriverReport()">
+            </div>
+          </div>
+          <button class="btn btn-blue btn-sm" onclick="applyDriverReport()">🔍 تطبيق الفلتر</button>
+        </div>
+      </div>
+      <!-- Driver Profile Card -->
+      <div id="rd-profile-wrap"></div>
+      <!-- KPIs -->
+      <div class="kpi-grid" id="rd-kpis"></div>
+      <!-- Chart -->
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-purple">📊</div>الرسم البياني للسائق</div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-ghost btn-sm" onclick="switchDChart('bar')">شريطي</button>
+            <button class="btn btn-ghost btn-sm" onclick="switchDChart('line')">خطي</button>
+          </div>
+        </div>
+        <div class="panel-body"><div style="height:200px;position:relative;"><canvas id="rd-chart"></canvas></div></div>
+      </div>
+      <!-- Results -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title"><div class="pti pti-navy">📋</div>نتائج التقرير</div>
+          <div id="rd-count" style="font-size:12px;color:var(--s500);font-weight:600;"></div>
+        </div>
+        <div class="report-list" id="rd-results"></div>
+      </div>
+    </div>
+
+  </div><!-- end .content -->
+</div><!-- end .main -->
+
+<!-- ═══ ADD VEHICLE MODAL ═══ -->
+<div id="addVehicleModal" class="modal-ov" onclick="handleOv(event,'addVehicleModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🚛 إضافة مركبة جديدة</div>
+    <div class="form-grid">
+      <div class="fg"><label class="fl">رقم اللوحة</label><input class="fi" id="v-plate" placeholder="أ ب ج 111"></div>
+      <div class="fg"><label class="fl">الجهة المصنعة والموديل</label><input class="fi" id="v-model" placeholder="إيسوزو تبريد 2024"></div>
+      <div class="fg"><label class="fl">نوع النشاط</label>
+        <select class="fi" id="v-activity"><option>مطاعم وأغذية مبردة</option><option>مقاولات وإنشاءات</option><option>توزيع بضائع عامة</option><option>خدمات لوجستية</option></select>
+      </div>
+      <div class="fg"><label class="fl">رقم الهيكل (Chassis)</label><input class="fi" id="v-chassis" placeholder="JH4CU21876XXXXX" style="direction:ltr;text-align:right;"></div>
+      <div class="fg"><label class="fl">سنة الصنع</label><input class="fi" id="v-year" type="number" placeholder="2024" min="2000" max="2030"></div>
+      <div class="fg"><label class="fl">السائق المعيَّن</label><select class="fi" id="v-driver-assign"></select></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <div class="fl" style="margin-bottom:5px;">🪪 بيانات رخصة السير</div>
+        <div class="form-grid" style="grid-template-columns:1fr;">
+          <div class="fg"><label class="fl">رقم الرخصة</label><input class="fi" id="v-lic-num" placeholder="رقم الاستمارة"></div>
+          <div class="fg"><label class="fl">تاريخ الانتهاء</label><input class="fi" type="date" id="v-lic-exp"></div>
+        </div>
+        <div class="fl" style="margin-bottom:5px;margin-top:8px;">📎 مستند الرخصة</div>
+        <div class="file-upload" onclick="document.getElementById('v-lic-file').click()">
+          <div class="file-upload-icon">📄</div><div class="file-upload-text">رفع صورة الرخصة / الاستمارة</div>
+          <input type="file" id="v-lic-file" accept=".pdf,image/*" onchange="handleFiles(this,'v-lic-tags')">
+        </div>
+        <div class="file-tags" id="v-lic-tags"></div>
+      </div>
+      <div>
+        <div class="fl" style="margin-bottom:5px;">🛡️ بيانات التأمين</div>
+        <div class="form-grid" style="grid-template-columns:1fr;">
+          <div class="fg"><label class="fl">شركة التأمين</label><input class="fi" id="v-ins-co" placeholder="التعاونية"></div>
+          <div class="fg"><label class="fl">رقم الوثيقة</label><input class="fi" id="v-ins-num" placeholder="وثيقة 123456"></div>
+          <div class="fg"><label class="fl">تاريخ الانتهاء</label><input class="fi" type="date" id="v-ins-exp"></div>
+        </div>
+        <div class="fl" style="margin-bottom:5px;margin-top:8px;">📎 وثيقة التأمين</div>
+        <div class="file-upload" onclick="document.getElementById('v-ins-file').click()">
+          <div class="file-upload-icon">🛡️</div><div class="file-upload-text">رفع وثيقة التأمين</div>
+          <input type="file" id="v-ins-file" accept=".pdf,image/*" onchange="handleFiles(this,'v-ins-tags')">
+        </div>
+        <div class="file-tags" id="v-ins-tags"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="btn btn-blue btn-full" onclick="saveVehicle()">💾 حفظ المركبة</button>
+      <button class="btn btn-ghost" onclick="closeModal('addVehicleModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADD DRIVER MODAL ═══ -->
+<div id="addDriverModal" class="modal-ov" onclick="handleOv(event,'addDriverModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">👤 إضافة سائق جديد</div>
+    <div class="form-grid">
+      <div class="fg"><label class="fl">الاسم الكامل</label><input class="fi" id="d-name" placeholder="الاسم الثلاثي"></div>
+      <div class="fg"><label class="fl">رقم الهوية / الإقامة</label><input class="fi" id="d-id" placeholder="10XXXXXXXXX" style="direction:ltr;text-align:right;"></div>
+      <div class="fg"><label class="fl">رقم الجوال</label><input class="fi" id="d-phone" placeholder="05XXXXXXXX" style="direction:ltr;text-align:right;"></div>
+      <div class="fg"><label class="fl">الجنسية</label><input class="fi" id="d-nationality" placeholder="سعودي"></div>
+      <div class="fg"><label class="fl">رقم رخصة القيادة</label><input class="fi" id="d-lic-num" placeholder="رقم الرخصة"></div>
+      <div class="fg"><label class="fl">انتهاء رخصة القيادة</label><input class="fi" type="date" id="d-lic-exp"></div>
+      <div class="fg"><label class="fl">انتهاء تصريح العمل</label><input class="fi" type="date" id="d-work-exp"></div>
+      <div class="fg"><label class="fl">المركبة المعيَّنة</label><select class="fi" id="d-vehicle-assign"></select></div>
+    </div>
+    <!-- Driver docs -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px;">
+      <div>
+        <div class="fl" style="margin-bottom:5px;">🪪 صورة الهوية</div>
+        <div class="file-upload" onclick="document.getElementById('d-id-file').click()">
+          <div class="file-upload-icon">🪪</div><div class="file-upload-text">رفع الهوية</div>
+          <input type="file" id="d-id-file" accept="image/*,.pdf" onchange="handleFiles(this,'d-id-tags')">
+        </div>
+        <div class="file-tags" id="d-id-tags"></div>
+      </div>
+      <div>
+        <div class="fl" style="margin-bottom:5px;">🚗 رخصة القيادة</div>
+        <div class="file-upload" onclick="document.getElementById('d-lic-file').click()">
+          <div class="file-upload-icon">🚗</div><div class="file-upload-text">رفع الرخصة</div>
+          <input type="file" id="d-lic-file" accept="image/*,.pdf" onchange="handleFiles(this,'d-lic-tags')">
+        </div>
+        <div class="file-tags" id="d-lic-tags"></div>
+      </div>
+      <div>
+        <div class="fl" style="margin-bottom:5px;">📄 تصريح العمل</div>
+        <div class="file-upload" onclick="document.getElementById('d-work-file').click()">
+          <div class="file-upload-icon">📄</div><div class="file-upload-text">رفع التصريح</div>
+          <input type="file" id="d-work-file" accept="image/*,.pdf" onchange="handleFiles(this,'d-work-tags')">
+        </div>
+        <div class="file-tags" id="d-work-tags"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="btn btn-blue btn-full" onclick="saveDriver()">💾 حفظ السائق</button>
+      <button class="btn btn-ghost" onclick="closeModal('addDriverModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DETAIL MODAL (reports click-through) ═══ -->
+<div id="detailModal" class="modal-ov" onclick="handleOv(event,'detailModal')">
+  <div class="modal-sheet" id="detail-sheet-content"></div>
+</div>
+
+<script>
+// ════ DATA STORE ════
+const DB = {
+  vehicles: [],
+  drivers: [],
+  trips: [],
+  fuel: [],
+  maintenance: [],
+  accidents: []
+};
+
+// ════ SEED DATA ════
+function seed() {
+  DB.drivers = [
+    {id:1,name:'أحمد مصطفى',idNum:'1012345678',phone:'0501234567',nationality:'سعودي',licNum:'DL-1001',licExp:'2027-06-01',workExp:'2028-01-01',vehicleId:'أ ب ج 111',status:'نشط',docs:[]},
+    {id:2,name:'خالد العتيبي',idNum:'1023456789',phone:'0552345678',nationality:'سعودي',licNum:'DL-1002',licExp:'2026-12-15',workExp:'2027-06-15',vehicleId:'خ ل ج 444',status:'نشط',docs:[]},
+    {id:3,name:'سعيد عبد الله',idNum:'1034567890',phone:'0533456789',nationality:'يمني',licNum:'DL-1003',licExp:'2025-11-01',workExp:'2026-03-01',vehicleId:'',status:'متاح',docs:[]}
+  ];
+  DB.vehicles = [
+    {id:'أ ب ج 111',model:'إيسوزو مبرد 2024',activity:'مطاعم وأغذية',chassis:'JH4CU21876XXXXX',year:2024,driver:'أحمد مصطفى',licNum:'STC-1001',licExp:'2028-11-20',insCompany:'التعاونية',insNum:'POL-5001',insExp:'2027-02-14',status:'نشطة',odom:45200,docs:[]},
+    {id:'خ ل ج 444',model:'مرسيدس قلاب 2021',activity:'مقاولات وإنشاءات',chassis:'NKR66L-740XXXXX',year:2021,driver:'خالد العتيبي',licNum:'STC-1002',licExp:'2026-07-01',insCompany:'التعاونية',insNum:'POL-5002',insExp:'2026-06-30',status:'صيانة',odom:128400,docs:[]},
+    {id:'ط ر ق 999',model:'هيونداي فان 2018',activity:'خدمات عامة',chassis:'HY18XXX9999',year:2018,driver:'',licNum:'STC-1003',licExp:'2024-05-01',insCompany:'—',insNum:'—',insExp:'2024-04-30',status:'هالكة',odom:310000,docs:[]}
+  ];
+  DB.trips = [
+    {id:1,vehicle:'أ ب ج 111',driver:'أحمد مصطفى',from:'المستودع الرئيسي جدة',to:'فرع مكة الشوقية',type:'توزيع فروع',dist:'83 كم',start:'2026-06-10 08:00',end:'2026-06-10 10:30'},
+    {id:2,vehicle:'خ ل ج 444',driver:'خالد العتيبي',from:'الكسارة الرئيسية',to:'موقع نيوم الإنشائي',type:'نقل مواد بناء',dist:'540 كم',start:'2026-06-09 06:00',end:'2026-06-09 14:00'}
+  ];
+  DB.fuel = [
+    {id:1,vehicle:'أ ب ج 111',date:'2026-06-10',station:'ساسكو طريق جيزان',liters:60,cost:120,dist:'320 كم'},
+    {id:2,vehicle:'خ ل ج 444',date:'2026-06-09',station:'محطة نفط الداخلية',liters:210,cost:420,dist:'540 كم'}
+  ];
+  DB.maintenance = [
+    {id:1,vehicle:'أ ب ج 111',type:'تغيير زيت وفلاتر',desc:'تغيير زيت المحرك والفلاتر الدورية',cost:350,date:'2026-05-20',nextDate:'2026-11-20',days:1,status:'منتهية'},
+    {id:2,vehicle:'خ ل ج 444',type:'تجديد التأمين',desc:'تجديد وثيقة التأمين الشامل — التعاونية',cost:3500,date:'2026-06-01',nextDate:'2027-06-01',days:0,status:'منتهية'},
+    {id:3,vehicle:'خ ل ج 444',type:'إصلاح عطل',desc:'تغيير راديتر ومروحة تبريد المحرك',cost:1800,date:'2026-06-08',nextDate:'',days:5,status:'جارية'}
+  ];
+  DB.accidents = [
+    {id:1,vehicle:'خ ل ج 444',date:'2026-06-05',location:'طريق الملك فهد السريع',desc:'تصادم جانبي بسيط — إصلاح الرفرف الأمامي',cost:1200}
+  ];
+}
+
+// ════ INIT ════
+window.onload = function() {
+  seed();
+  populateSelects();
+  renderAll();
+  initChart();
+  setInterval(() => {
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      now.toLocaleTimeString('ar-SA',{hour12:false});
+  }, 1000);
+};
+
+function renderAll() {
+  renderKPI();
+  renderVehiclesTable();
+  renderDriversTable();
+  renderTripsTable();
+  renderFuelTable();
+  renderMaintenanceTable();
+  renderAccidentsTable();
+  renderRecentTrips();
+  renderReports();
+}
+
+// ════ SELECTS ════
+function populateSelects() {
+  const vOpts = DB.vehicles.map(v=>`<option value="${v.id}">${v.id} — ${v.model}</option>`).join('');
+  const dOpts = ['<option value="">— لا يوجد —</option>',...DB.drivers.map(d=>`<option value="${d.name}">${d.name}</option>`)].join('');
+  ['trip-vehicle-sel','fuel-vehicle-sel','maint-vehicle-sel','acc-vehicle-sel'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.innerHTML=vOpts;
+  });
+  const vda=document.getElementById('v-driver-assign'); if(vda) vda.innerHTML=dOpts;
+  const dva=document.getElementById('d-vehicle-assign');
+  if(dva) dva.innerHTML=['<option value="">— لا يوجد —</option>',...DB.vehicles.map(v=>`<option value="${v.id}">${v.id}</option>`)].join('');
+  // report selects
+  const rvSel=document.getElementById('rv-vehicle');
+  if(rvSel) rvSel.innerHTML='<option value="">— كل السيارات —</option>'+DB.vehicles.map(v=>`<option value="${v.id}">${v.id} — ${v.model}</option>`).join('');
+  const rdSel=document.getElementById('rd-driver');
+  if(rdSel) rdSel.innerHTML='<option value="">— كل السائقين —</option>'+DB.drivers.map(d=>`<option value="${d.name}">${d.name}</option>`).join('');
+  // set fuel prev odom
+  const fvs=document.getElementById('fuel-vehicle-sel');
+  if(fvs) fvs.onchange = function(){
+    const v=DB.vehicles.find(x=>x.id===this.value);
+    if(v) document.getElementById('fuel-prev').value=v.odom;
+  };
+  if(DB.vehicles.length) { const fvsel=document.getElementById('fuel-vehicle-sel'); if(fvsel&&DB.vehicles[0]) document.getElementById('fuel-prev').value=DB.vehicles[0].odom; }
+}
+
+// ════ KPI ════
+function renderKPI() {
+  const active=DB.vehicles.filter(v=>v.status==='نشطة').length;
+  const maint=DB.vehicles.filter(v=>v.status==='صيانة').length;
+  const totalFuel=DB.fuel.reduce((a,f)=>a+f.cost,0);
+  const accCount=DB.accidents.length;
+  const kpis=[
+    {icon:'🚛',val:DB.vehicles.length,lbl:'إجمالي المركبات',cls:'kc-blue'},
+    {icon:'👤',val:DB.drivers.length,lbl:'السائقون المسجلون',cls:'kc-purple'},
+    {icon:'🛣️',val:DB.trips.length,lbl:'رحلات مسجلة',cls:'kc-green'},
+    {icon:'🔧',val:maint,lbl:'في الصيانة الآن',cls:'kc-amber'},
+    {icon:'⛽',val:totalFuel.toLocaleString('ar-SA')+' ر.س',lbl:'إجمالي تكلفة الوقود',cls:'kc-amber'},
+    {icon:'🚨',val:accCount,lbl:'حوادث مسجلة',cls:'kc-red'}
+  ];
+  const html=kpis.map(k=>`<div class="kpi-card ${k.cls}"><div class="kpi-icon">${k.icon}</div><div class="kpi-val">${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`).join('');
+  document.getElementById('kpi-main').innerHTML=html;
+
+  // Reports KPIs
+  const totalMaint=DB.maintenance.reduce((a,m)=>a+m.cost,0);
+  const totalAcc=DB.accidents.reduce((a,m)=>a+m.cost,0);
+  const rKpis=[
+    {icon:'🛣️',val:DB.trips.length,lbl:'إجمالي الرحلات',cls:'kc-blue'},
+    {icon:'⛽',val:DB.fuel.reduce((a,f)=>a+f.liters,0)+' لتر',lbl:'إجمالي الوقود',cls:'kc-amber'},
+    {icon:'🔧',val:totalMaint.toLocaleString('ar-SA')+' ر.س',lbl:'تكلفة الصيانات',cls:'kc-amber'},
+    {icon:'🚨',val:totalAcc.toLocaleString('ar-SA')+' ر.س',lbl:'تكلفة الحوادث',cls:'kc-red'}
+  ];
+  const re=document.getElementById('kpi-reports');
+  if(re) re.innerHTML=rKpis.map(k=>`<div class="kpi-card ${k.cls}"><div class="kpi-icon">${k.icon}</div><div class="kpi-val">${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`).join('');
+}
+
+// ════ TABLES ════
+function statusBadge(s) {
+  const map={
+    'نشطة':'bg-green','نشط':'bg-green','صيانة':'bg-amber','قيد الصيانة':'bg-amber',
+    'هالكة':'bg-red','متاح':'bg-blue','منتهية':'bg-green','جارية':'bg-amber'
+  };
+  return `<span class="badge ${map[s]||'bg-gray'}"><span class="bd"></span>${s}</span>`;
+}
+
+function expiryClass(dateStr) {
+  if(!dateStr) return '';
+  const d=new Date(dateStr), now=new Date();
+  const days=(d-now)/(1000*60*60*24);
+  return days<30?'style="color:var(--red);font-weight:700;"':days<90?'style="color:var(--amber);font-weight:700;"':'';
+}
+
+function renderVehiclesTable() {
+  document.getElementById('vehicles-tbl').innerHTML = DB.vehicles.map(v=>`
+    <tr onclick="openVehicleDetail('${v.id}')">
+      <td><span class="plate">${v.id}</span></td>
+      <td>${v.model}</td>
+      <td><span class="badge bg-blue"><span class="bd"></span>${v.activity}</span></td>
+      <td>${v.driver||'—'}</td>
+      <td ${expiryClass(v.licExp)}>${v.licExp}</td>
+      <td ${expiryClass(v.insExp)}>${v.insExp}</td>
+      <td>${statusBadge(v.status)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openVehicleDetail('${v.id}')">📂 ملف</button></td>
+    </tr>`).join('');
+}
+
+function renderDriversTable() {
+  document.getElementById('drivers-tbl').innerHTML = DB.drivers.map(d=>`
+    <tr onclick="openDriverDetail(${d.id})">
+      <td><strong>${d.name}</strong></td>
+      <td style="direction:ltr;text-align:right;">${d.idNum}</td>
+      <td style="direction:ltr;text-align:right;">${d.phone}</td>
+      <td ${expiryClass(d.licExp)}>${d.licExp}</td>
+      <td>${d.vehicleId?`<span class="plate">${d.vehicleId}</span>`:'—'}</td>
+      <td>${statusBadge(d.status)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDriverDetail(${d.id})">📂 ملف</button></td>
+    </tr>`).join('');
+}
+
+function renderTripsTable() {
+  document.getElementById('trips-tbl').innerHTML = DB.trips.map(t=>`
+    <tr onclick="openTripDetail(${t.id})">
+      <td><span class="plate">${t.vehicle}</span></td>
+      <td>${t.driver}</td>
+      <td style="font-size:12px;">${t.from} ← ${t.to}</td>
+      <td><span class="badge bg-blue"><span class="bd"></span>${t.type}</span></td>
+      <td><span class="dist-badge">📏 ${t.dist||'—'}</span></td>
+      <td style="font-size:11.5px;color:var(--s500);">${t.start}</td>
+      <td style="font-size:11.5px;color:var(--s500);">${t.end||'—'}</td>
+    </tr>`).join('');
+}
+
+function renderFuelTable() {
+  document.getElementById('fuel-tbl').innerHTML = DB.fuel.map(f=>`
+    <tr onclick="openFuelDetail(${f.id})">
+      <td><span class="plate">${f.vehicle}</span></td>
+      <td style="font-size:12px;">${f.date}</td>
+      <td>${f.station}</td>
+      <td><strong>${f.liters}</strong> لتر</td>
+      <td><strong style="color:var(--navy);">${f.cost}</strong> ر.س</td>
+      <td><span class="dist-badge">📏 ${f.dist}</span></td>
+    </tr>`).join('');
+}
+
+function renderMaintenanceTable() {
+  document.getElementById('maint-tbl').innerHTML = DB.maintenance.map(m=>`
+    <tr onclick="openMaintDetail(${m.id})">
+      <td><span class="plate">${m.vehicle}</span></td>
+      <td><span class="badge bg-amber"><span class="bd"></span>${m.type}</span></td>
+      <td style="font-size:12px;">${m.desc}</td>
+      <td><strong>${m.cost.toLocaleString('ar-SA')}</strong> ر.س</td>
+      <td style="font-size:12px;">${m.date}</td>
+      <td style="font-size:12px;" ${expiryClass(m.nextDate)}>${m.nextDate||'—'}</td>
+      <td>${statusBadge(m.status)}</td>
+    </tr>`).join('');
+}
+
+function renderAccidentsTable() {
+  document.getElementById('acc-tbl').innerHTML = DB.accidents.map(a=>`
+    <tr onclick="openAccDetail(${a.id})">
+      <td><span class="plate">${a.vehicle}</span></td>
+      <td style="font-size:12px;">${a.date}</td>
+      <td>${a.location}</td>
+      <td style="font-size:12px;">${a.desc}</td>
+      <td><strong style="color:var(--red);">${a.cost.toLocaleString('ar-SA')}</strong> ر.س</td>
+    </tr>`).join('');
+}
+
+function renderRecentTrips() {
+  document.getElementById('recent-trips-tbl').innerHTML = DB.trips.slice(-3).map(t=>`
+    <tr onclick="showPage('trips',document.querySelector('[onclick*=trips]'))">
+      <td><span class="plate">${t.vehicle}</span></td>
+      <td>${t.driver}</td>
+      <td style="font-size:12px;">${t.from} ← ${t.to}</td>
+      <td><span class="dist-badge">📏 ${t.dist||'—'}</span></td>
+      <td><span class="badge bg-green"><span class="bd"></span>مكتملة</span></td>
+    </tr>`).join('');
+}
+
+// ════ REPORTS LISTS ════
+function renderReports() {
+  const icons={trip:'🛣️',fuel:'⛽',maint:'🔧',acc:'🚨'};
+  const rTrips=document.getElementById('report-trips-list');
+  if(rTrips) rTrips.innerHTML=DB.trips.map(t=>`
+    <div class="report-item" onclick="openTripDetail(${t.id})">
+      <div class="report-icon" style="background:#EFF6FF;">${icons.trip}</div>
+      <div class="report-body">
+        <div class="report-title">${t.from} ← ${t.to}</div>
+        <div class="report-meta">${t.vehicle} · ${t.driver} · ${t.start}</div>
+      </div>
+      <div class="report-arrow">›</div>
+    </div>`).join('')||'<div style="padding:14px;font-size:12px;color:var(--s400);">لا توجد رحلات مسجلة</div>';
+
+  const rFuel=document.getElementById('report-fuel-list');
+  if(rFuel) rFuel.innerHTML=DB.fuel.map(f=>`
+    <div class="report-item" onclick="openFuelDetail(${f.id})">
+      <div class="report-icon" style="background:#FFFBEB;">${icons.fuel}</div>
+      <div class="report-body">
+        <div class="report-title">${f.station}</div>
+        <div class="report-meta">${f.vehicle} · ${f.liters} لتر · ${f.cost} ر.س · ${f.date}</div>
+      </div>
+      <div class="report-arrow">›</div>
+    </div>`).join('')||'<div style="padding:14px;font-size:12px;color:var(--s400);">لا توجد تموينات</div>';
+
+  const rMaint=document.getElementById('report-maint-list');
+  if(rMaint) rMaint.innerHTML=DB.maintenance.map(m=>`
+    <div class="report-item" onclick="openMaintDetail(${m.id})">
+      <div class="report-icon" style="background:#FFFBEB;">${icons.maint}</div>
+      <div class="report-body">
+        <div class="report-title">${m.type} — ${m.vehicle}</div>
+        <div class="report-meta">${m.desc} · ${m.cost.toLocaleString('ar-SA')} ر.س · ${m.date}</div>
+      </div>
+      <div class="report-arrow">›</div>
+    </div>`).join('')||'<div style="padding:14px;font-size:12px;color:var(--s400);">لا توجد صيانات</div>';
+
+  const rAcc=document.getElementById('report-acc-list');
+  if(rAcc) rAcc.innerHTML=DB.accidents.map(a=>`
+    <div class="report-item" onclick="openAccDetail(${a.id})">
+      <div class="report-icon" style="background:#FEF2F2;">${icons.acc}</div>
+      <div class="report-body">
+        <div class="report-title">${a.location}</div>
+        <div class="report-meta">${a.vehicle} · ${a.cost.toLocaleString('ar-SA')} ر.س · ${a.date}</div>
+      </div>
+      <div class="report-arrow">›</div>
+    </div>`).join('')||'<div style="padding:14px;font-size:12px;color:var(--s400);">لا توجد حوادث مسجلة</div>';
+}
+
+// ════ DETAIL MODALS ════
+function detailRow(k,v){return `<div class="detail-row"><span class="dk">${k}</span><span class="dv">${v}</span></div>`;}
+
+function openVehicleDetail(id) {
+  const v=DB.vehicles.find(x=>x.id===id); if(!v) return;
+  const trips=DB.trips.filter(t=>t.vehicle===id);
+  const fuel=DB.fuel.filter(f=>f.vehicle===id);
+  const maint=DB.maintenance.filter(m=>m.vehicle===id);
+  const acc=DB.accidents.filter(a=>a.vehicle===id);
+  document.getElementById('detail-sheet-content').innerHTML=`
+    <div class="modal-handle"></div>
+    <div class="modal-title">🚛 ملف المركبة: ${v.id}</div>
+    <div class="modal-sec"><div class="modal-sec-hdr" style="color:var(--blue);">📋 البيانات الأساسية</div><div class="modal-sec-body">
+      ${detailRow('الموديل',v.model)}${detailRow('النشاط',v.activity)}${detailRow('رقم الهيكل',v.chassis)}
+      ${detailRow('السائق المعيَّن',v.driver||'—')}${detailRow('العداد',v.odom.toLocaleString('ar-SA')+' كم')}${detailRow('الحالة',v.status)}
+    </div></div>
+    <div class="modal-sec"><div class="modal-sec-hdr" style="color:var(--purple);">🪪 الرخصة والتأمين</div><div class="modal-sec-body">
+      ${detailRow('رقم الرخصة',v.licNum)}${detailRow('انتهاء الرخصة',v.licExp)}
+      ${detailRow('شركة التأمين',v.insCompany)}${detailRow('رقم الوثيقة',v.insNum)}${detailRow('انتهاء التأمين',v.insExp)}
+    </div></div>
+    <div class="modal-sec"><div class="modal-sec-hdr" style="color:var(--emerald);">🛣️ آخر الرحلات (${trips.length})</div><div class="modal-sec-body">
+      ${trips.length?trips.map(t=>`<div class="log-entry"><span class="log-bullet">●</span>${t.from} ← ${t.to} | ${t.type} | ${t.start}</div>`).join(''):'<div style="font-size:12px;color:var(--s400);">لا توجد رحلات</div>'}
+    </div></div>
+    <div class="modal-sec"><div class="modal-sec-hdr" style="color:var(--amber);">🔧 سجل الصيانات (${maint.length})</div><div class="modal-sec-body">
+      ${maint.length?maint.map(m=>`<div class="log-entry"><span class="log-bullet">●</span>${m.type} — ${m.desc} | ${m.cost.toLocaleString('ar-SA')} ر.س | ${m.date}</div>`).join(''):'<div style="font-size:12px;color:var(--s400);">لا توجد صيانات</div>'}
+    </div></div>
+    <div class="modal-sec"><div class="modal-sec-hdr" style="color:var(--red);">🚨 الحوادث (${acc.length})</div><div class="modal-sec-body">
+      ${acc.length?acc.map(a=>`<div class="log-entry"><span class="log-bullet">●</span>${a.location} — ${a.desc} | ${a.cost.toLocaleString('ar-SA')} ر.س | ${a.date}</div>`).join(''):'<div style="font-size:12px;color:var(--s400);">✅ لا توجد حوادث</div>'}
+    </div></div>
+    <button class="btn btn-ghost btn-full" onclick="closeModal('detailModal')">إغلاق</button>`;
+  openModal('detailModal');
+}
+
+function openDriverDetail(id) {
+  const d=DB.drivers.find(x=>x.id===id); if(!d) return;
+  document.getElementById('detail-sheet-content').innerHTML=`
+    <div class="modal-handle"></div>
+    <div class="modal-title">👤 ملف السائق: ${d.name}</div>
+    <div class="modal-sec"><div class="modal-sec-hdr" style="color:var(--blue);">📋 البيانات الشخصية</div><div class="modal-sec-body">
+      ${detailRow('الاسم',d.name)}${detailRow('رقم الهوية',d.idNum)}${detailRow('الجوال',d.phone)}
+      ${detailRow('الجنسية',d.nationality)}${detailRow('الحالة',d.status)}
+    </div></div>
+    <div class="modal-sec"><div class="modal-sec-hdr" style="color:var(--purple);">📄 الوثائق والتراخيص</div><div class="modal-sec-body">
+      ${detailRow('رقم رخصة القيادة',d.licNum)}${detailRow('انتهاء رخصة القيادة',d.licExp)}
+      ${detailRow('انتهاء تصريح العمل',d.workExp)}${detailRow('المركبة المعيَّنة',d.vehicleId||'—')}
+    </div></div>
+    <button class="btn btn-ghost btn-full" onclick="closeModal('detailModal')">إغلاق</button>`;
+  openModal('detailModal');
+}
+
+function openTripDetail(id) {
+  const t=DB.trips.find(x=>x.id===id); if(!t) return;
+  document.getElementById('detail-sheet-content').innerHTML=`
+    <div class="modal-handle"></div>
+    <div class="modal-title">🛣️ تفاصيل الرحلة</div>
+    <div class="modal-sec"><div class="modal-sec-hdr" style="color:var(--blue);">تفاصيل خط السير</div><div class="modal-sec-body">
+      ${detailRow('المركبة',t.vehicle)}${detailRow('السائق',t.driver)}
+      ${detailRow('الانطلاق',t.from)}${detailRow('الوجهة',t.to)}
+      ${detailRow('نوع الرحلة',t.type)}${detailRow('المسافة',t.dist||'—')}
+      ${detailRow('وقت الانطلاق',t.start)}${detailRow('وقت الوصول',t.end||'—')}
+    </div></div>
+    ${t.dist?`<div style="text-align:center;margin:8px 0;"><a href="https://www.google.com/maps/dir/${encodeURIComponent(t.from)}/${encodeURIComponent(t.to)}" target="_blank" class="btn btn-blue">🗺️ فتح في Google Maps</a></div>`:''}
+    <button class="btn btn-ghost btn-full" onclick="closeModal('detailModal')">إغلاق</button>`;
+  openModal('detailModal');
+}
+
+function openFuelDetail(id) {
+  const f=DB.fuel.find(x=>x.id===id); if(!f) return;
+  document.getElementById('detail-sheet-content').innerHTML=`
+    <div class="modal-handle"></div>
+    <div class="modal-title">⛽ تفاصيل تموين الوقود</div>
+    <div class="modal-sec"><div class="modal-sec-hdr" style="color:var(--amber);">بيانات التعبئة</div><div class="modal-sec-body">
+      ${detailRow('المركبة',f.vehicle)}${detailRow('التاريخ',f.date)}
+      ${detailRow('المحطة',f.station)}${detailRow('الكمية',f.liters+' لتر')}
+      ${detailRow('التكلفة',f.cost+' ر.س')}${detailRow('المسافة المقطوعة',f.dist)}
+    </div></div>
+    <button class="btn btn-ghost btn-full" onclick="closeModal('detailModal')">إغلاق</button>`;
+  openModal('detailModal');
+}
+
+function openMaintDetail(id) {
+  const m=DB.maintenance.find(x=>x.id===id); if(!m) return;
+  document.getElementById('detail-sheet-content').innerHTML=`
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔧 تفاصيل عملية الصيانة</div>
+    <div class="modal-sec"><div class="modal-sec-hdr" style="color:var(--amber);">بيانات الصيانة</div><div class="modal-sec-body">
+      ${detailRow('المركبة',m.vehicle)}${detailRow('نوع العملية',m.type)}
+      ${detailRow('الوصف',m.desc)}${detailRow('التكلفة',m.cost.toLocaleString('ar-SA')+' ر.س')}
+      ${detailRow('التاريخ',m.date)}${detailRow('التجديد القادم',m.nextDate||'—')}
+      ${detailRow('أيام التوقف',m.days+' أيام')}${detailRow('الحالة',m.status)}
+    </div></div>
+    <button class="btn btn-ghost btn-full" onclick="closeModal('detailModal')">إغلاق</button>`;
+  openModal('detailModal');
+}
+
+function openAccDetail(id) {
+  const a=DB.accidents.find(x=>x.id===id); if(!a) return;
+  document.getElementById('detail-sheet-content').innerHTML=`
+    <div class="modal-handle"></div>
+    <div class="modal-title">🚨 تفاصيل الحادثة</div>
+    <div class="modal-sec"><div class="modal-sec-hdr" style="color:var(--red);">بيانات البلاغ</div><div class="modal-sec-body">
+      ${detailRow('المركبة',a.vehicle)}${detailRow('التاريخ والوقت',a.date)}
+      ${detailRow('الموقع',a.location)}${detailRow('الوصف',a.desc)}
+      ${detailRow('تكلفة الإصلاح',a.cost.toLocaleString('ar-SA')+' ر.س')}
+    </div></div>
+    <button class="btn btn-ghost btn-full" onclick="closeModal('detailModal')">إغلاق</button>`;
+  openModal('detailModal');
+}
+
+// ════ SAVE FUNCTIONS ════
+function saveVehicle() {
+  const plate=document.getElementById('v-plate').value.trim();
+  const model=document.getElementById('v-model').value.trim();
+  if(!plate||!model){toast('❌ أدخل رقم اللوحة والموديل','te');return;}
+  DB.vehicles.push({
+    id:plate,model,activity:document.getElementById('v-activity').value,
+    chassis:document.getElementById('v-chassis').value,
+    year:+document.getElementById('v-year').value,
+    driver:document.getElementById('v-driver-assign').value,
+    licNum:document.getElementById('v-lic-num').value,
+    licExp:document.getElementById('v-lic-exp').value,
+    insCompany:document.getElementById('v-ins-co').value,
+    insNum:document.getElementById('v-ins-num').value,
+    insExp:document.getElementById('v-ins-exp').value,
+    status:'نشطة',odom:0,docs:[]
+  });
+  closeModal('addVehicleModal');
+  populateSelects();
+  renderVehiclesTable();
+  renderKPI();
+  toast('✔ تم حفظ المركبة في قاعدة البيانات','ts');
+}
+
+function saveDriver() {
+  const name=document.getElementById('d-name').value.trim();
+  const idNum=document.getElementById('d-id').value.trim();
+  if(!name||!idNum){toast('❌ أدخل الاسم ورقم الهوية','te');return;}
+  DB.drivers.push({
+    id:DB.drivers.length+1,name,idNum,
+    phone:document.getElementById('d-phone').value,
+    nationality:document.getElementById('d-nationality').value,
+    licNum:document.getElementById('d-lic-num').value,
+    licExp:document.getElementById('d-lic-exp').value,
+    workExp:document.getElementById('d-work-exp').value,
+    vehicleId:document.getElementById('d-vehicle-assign').value,
+    status:'نشط',docs:[]
+  });
+  closeModal('addDriverModal');
+  populateSelects();
+  renderDriversTable();
+  renderKPI();
+  toast('✔ تم حفظ السائق في قاعدة البيانات','ts');
+}
+
+function saveTrip() {
+  const from=document.getElementById('trip-from').value.trim();
+  const to=document.getElementById('trip-to').value.trim();
+  if(!from||!to){toast('❌ أدخل نقطة الانطلاق والوصول','te');return;}
+  const v=document.getElementById('trip-vehicle-sel').value;
+  const vObj=DB.vehicles.find(x=>x.id===v)||{};
+  DB.trips.push({
+    id:DB.trips.length+1,
+    vehicle:v,driver:vObj.driver||'—',
+    from,to,type:document.getElementById('trip-type').value,
+    dist:document.getElementById('dist-km').textContent!=='—'?document.getElementById('dist-km').textContent:'—',
+    start:document.getElementById('trip-start').value||new Date().toLocaleDateString('ar-SA'),
+    end:document.getElementById('trip-end').value||''
+  });
+  renderTripsTable();renderRecentTrips();renderReports();renderKPI();
+  document.getElementById('trip-from').value='';
+  document.getElementById('trip-to').value='';
+  toast('✔ تم حفظ خط السير','ts');
+}
+
+function saveFuel() {
+  const curr=document.getElementById('fuel-curr').value;
+  const liters=document.getElementById('fuel-liters').value;
+  if(!curr||!liters){toast('❌ أدخل قراءة العداد والكمية','te');return;}
+  const v=document.getElementById('fuel-vehicle-sel').value;
+  const vObj=DB.vehicles.find(x=>x.id===v);
+  const prev=vObj?vObj.odom:0;
+  const dist=(+curr-prev).toLocaleString('ar-SA')+' كم';
+  if(vObj) vObj.odom=+curr;
+  DB.fuel.push({
+    id:DB.fuel.length+1,vehicle:v,
+    date:new Date().toLocaleDateString('ar-SA'),
+    station:document.getElementById('fuel-station').value||'—',
+    liters:+liters,cost:+document.getElementById('fuel-cost').value,dist
+  });
+  renderFuelTable();renderReports();renderKPI();
+  document.getElementById('fuel-curr').value='';
+  document.getElementById('fuel-liters').value='';
+  document.getElementById('fuel-cost').value='';
+  document.getElementById('fuel-diff').value='— كم';
+  if(vObj) document.getElementById('fuel-prev').value=vObj.odom;
+  toast('✔ تم ترحيل فاتورة الوقود','ts');
+}
+
+function saveMaintenance() {
+  const v=document.getElementById('maint-vehicle-sel').value;
+  const desc=document.getElementById('maint-desc').value.trim();
+  if(!desc){toast('❌ أدخل وصف العملية','te');return;}
+  DB.maintenance.push({
+    id:DB.maintenance.length+1,vehicle:v,
+    type:document.getElementById('maint-type').value,
+    desc,cost:+document.getElementById('maint-cost').value,
+    date:document.getElementById('maint-date').value||new Date().toLocaleDateString('ar-SA'),
+    nextDate:document.getElementById('maint-next').value,
+    days:+document.getElementById('maint-days').value,status:'منتهية'
+  });
+  // update vehicle status if staying in workshop
+  const days=+document.getElementById('maint-days').value;
+  const vObj=DB.vehicles.find(x=>x.id===v);
+  if(vObj&&days>0) vObj.status='صيانة';
+  renderMaintenanceTable();renderVehiclesTable();renderReports();renderKPI();
+  document.getElementById('maint-desc').value='';
+  document.getElementById('maint-cost').value='';
+  toast('✔ تم حفظ سجل الصيانة','ts');
+}
+
+function saveAccident() {
+  const v=document.getElementById('acc-vehicle-sel').value;
+  const desc=document.getElementById('acc-desc').value.trim();
+  if(!desc){toast('❌ أدخل وصف الحادثة','te');return;}
+  DB.accidents.push({
+    id:DB.accidents.length+1,vehicle:v,
+    date:document.getElementById('acc-date').value||new Date().toLocaleDateString('ar-SA'),
+    location:document.getElementById('acc-location').value||'—',
+    desc,cost:+document.getElementById('acc-cost').value
+  });
+  renderAccidentsTable();renderReports();renderKPI();
+  document.getElementById('acc-desc').value='';
+  document.getElementById('acc-cost').value='';
+  toast('🚨 تم إرسال البلاغ وأرشفته في السجل','tw');
+}
+
+// ════ DISTANCE CALC ════
+function calcDistance() {
+  const from=document.getElementById('gmap-from').value.trim();
+  const to=document.getElementById('gmap-to').value.trim();
+  if(!from||!to){toast('❌ أدخل نقطة البداية والوجهة','te');return;}
+  // Simulate realistic distances based on common Saudi routes
+  const routes={
+    'جدة-مكة':83,'جدة-الرياض':949,'جدة-المدينة':420,'مكة-الرياض':870,
+    'الرياض-الدمام':400,'جدة-الدمام':1350,'مكة-المدينة':430,'الرياض-نيوم':1300
+  };
+  const key1=`${from}-${to}`, key2=`${to}-${from}`;
+  let km=routes[key1]||routes[key2]||(Math.floor(Math.random()*500)+80);
+  let mins=Math.round(km/100*60);
+  let hrs=Math.floor(mins/60), rmins=mins%60;
+  document.getElementById('dist-km').textContent=km.toLocaleString('ar-SA')+' كم';
+  document.getElementById('dist-time').textContent=(hrs>0?hrs+' ساعة و':'')+rmins+' دقيقة';
+  const link=`https://www.google.com/maps/dir/${encodeURIComponent(from)}/${encodeURIComponent(to)}`;
+  document.getElementById('dist-link').href=link;
+  document.getElementById('dist-result').classList.remove('hidden');
+  // sync to trip form
+  document.getElementById('trip-from').value=from;
+  document.getElementById('trip-to').value=to;
+}
+
+function shareDestination() {
+  const to=document.getElementById('gmap-to').value.trim()||document.getElementById('trip-to').value.trim();
+  if(!to){toast('❌ أدخل الوجهة أولاً','te');return;}
+  const link=`https://www.google.com/maps/search/${encodeURIComponent(to)}`;
+  if(navigator.share){
+    navigator.share({title:'الوجهة',text:'موقع الوجهة على الخريطة',url:link}).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(link).then(()=>toast('✔ تم نسخ رابط الوجهة — الصقه في واتساب','ts'));
+  }
+}
+
+// ════ TRIP HELPERS ════
+function stampArrival() {
+  const now=new Date();
+  const offset=now.getTimezoneOffset()*60000;
+  document.getElementById('trip-end').value=new Date(now-offset).toISOString().slice(0,16).replace('T',' ');
+  toast('✔ تم تثبيت وقت الوصول الفعلي','ts');
+}
+
+// ════ FUEL CALC ════
+function calcFuelDist() {
+  const prev=+document.getElementById('fuel-prev').value||0;
+  const curr=+document.getElementById('fuel-curr').value||0;
+  const el=document.getElementById('fuel-diff');
+  if(!curr){el.value='— كم';el.className='fi fi-green';return;}
+  if(curr>=prev){el.value=(curr-prev).toLocaleString('ar-SA')+' كم';el.className='fi fi-green';}
+  else{el.value='⚠ قراءة غير منطقية';el.className='fi fi-red';}
+}
+
+// ════ FILE UPLOAD ════
+function handleFiles(input,tagsId) {
+  const tags=document.getElementById(tagsId);
+  Array.from(input.files).forEach(file=>{
+    const tag=document.createElement('div');
+    tag.className='file-tag';
+    tag.innerHTML=`📄 ${file.name} <span class="file-tag-rm" onclick="this.parentElement.remove()">✕</span>`;
+    tags.appendChild(tag);
+  });
+}
+
+// ════ CHART ════
+let globalChart=null, chartType='bar';
+function initChart() {
+  const ctx=document.getElementById('mainChart').getContext('2d');
+  globalChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:DB.vehicles.map(v=>v.id),
+      datasets:[{
+        label:'ساعات التشغيل',
+        data:DB.vehicles.map(v=>Math.round(v.odom/100)),
+        backgroundColor:['rgba(37,99,235,.75)','rgba(245,158,11,.75)','rgba(239,68,68,.75)'],
+        borderColor:['#2563EB','#F59E0B','#EF4444'],
+        borderWidth:1.5,borderRadius:5,tension:.4
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#F1F5F9'}},x:{grid:{display:false}}}}
+  });
+}
+function switchChart(type){chartType=type;if(globalChart)globalChart.destroy();globalChart=null;initChart();if(chartType==='line'){globalChart.config.type='line';globalChart.update();}}
+
+// ════ NAVIGATION ════
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  const titles={dashboard:'لوحة التحكم الرئيسية',live:'التتبع المباشر',vehicles:'المركبات والأصول',drivers:'السائقون',trips:'خطوط السير والرحلات',fuel:'تموين الوقود',maintenance:'الصيانة والتجديدات',accidents:'الحوادث والبلاغات',reports:'التقارير التفاعلية','rpt-vehicle':'تقرير سيارة مفصل','rpt-driver':'تقرير سائق مفصل'};
+  document.getElementById('page-title').textContent=titles[name]||name;
+  if(name==='rpt-vehicle') { populateRVSelects(); applyVehicleReport(); }
+  if(name==='rpt-driver')  { populateRDSelects(); applyDriverReport(); }
+}
+
+// ════ POPULATE REPORT SELECTS ════
+function populateRVSelects() {
+  const sel=document.getElementById('rv-vehicle');
+  if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— كل السيارات —</option>'+DB.vehicles.map(v=>`<option value="${v.id}">${v.id} — ${v.model}</option>`).join('');
+  sel.value=cur;
+}
+function populateRDSelects() {
+  const sel=document.getElementById('rd-driver');
+  if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— كل السائقين —</option>'+DB.drivers.map(d=>`<option value="${d.name}">${d.name}</option>`).join('');
+  sel.value=cur;
+}
+
+// ════ DATE FILTER HELPER ════
+function inRange(dateStr, from, to) {
+  if(!dateStr) return true;
+  const d=new Date(dateStr.split(' ')[0]);
+  if(isNaN(d)) return true;
+  if(from && d < new Date(from)) return false;
+  if(to   && d > new Date(to))   return false;
+  return true;
+}
+function matchText(str, q) {
+  if(!q) return true;
+  return str.toLowerCase().includes(q.toLowerCase());
+}
+
+// ════ VEHICLE REPORT ════
+let rvChart=null, rvChartType='bar';
+function clearVehicleFilters() {
+  ['rv-vehicle','rv-type','rv-trip-type'].forEach(id=>document.getElementById(id).value=id==='rv-type'?'all':'');
+  ['rv-from','rv-to','rv-search'].forEach(id=>document.getElementById(id).value='');
+  applyVehicleReport();
+}
+function switchVChart(t){rvChartType=t;applyVehicleReport();}
+
+function applyVehicleReport() {
+  const vid     = document.getElementById('rv-vehicle').value;
+  const recType = document.getElementById('rv-type').value;
+  const fromD   = document.getElementById('rv-from').value;
+  const toD     = document.getElementById('rv-to').value;
+  const tripT   = document.getElementById('rv-trip-type').value;
+  const srch    = document.getElementById('rv-search').value;
+
+  // Collect matching records
+  let results = [];
+
+  if(recType==='all'||recType==='trips') {
+    DB.trips.filter(t=>(vid?t.vehicle===vid:true)&&inRange(t.start,fromD,toD)&&(tripT?t.type===tripT:true)&&matchText(t.from+t.to+t.type+t.driver,srch))
+    .forEach(t=>results.push({_cat:'trip',_date:t.start,icon:'🛣️',iconBg:'#EFF6FF',title:`${t.from} ← ${t.to}`,meta:`${t.vehicle} · ${t.driver} · ${t.type} · ${t.dist||'—'} · ${t.start}`,raw:t,cost:0}));
+  }
+  if(recType==='all'||recType==='fuel') {
+    DB.fuel.filter(f=>(vid?f.vehicle===vid:true)&&inRange(f.date,fromD,toD)&&matchText(f.vehicle+f.station,srch))
+    .forEach(f=>results.push({_cat:'fuel',_date:f.date,icon:'⛽',iconBg:'#FFFBEB',title:`تموين ${f.liters} لتر — ${f.station}`,meta:`${f.vehicle} · ${f.cost} ر.س · ${f.dist} · ${f.date}`,raw:f,cost:f.cost}));
+  }
+  if(recType==='all'||recType==='maintenance') {
+    DB.maintenance.filter(m=>(vid?m.vehicle===vid:true)&&inRange(m.date,fromD,toD)&&matchText(m.vehicle+m.type+m.desc,srch))
+    .forEach(m=>results.push({_cat:'maint',_date:m.date,icon:'🔧',iconBg:'#FFFBEB',title:`${m.type} — ${m.vehicle}`,meta:`${m.desc} · ${m.cost.toLocaleString('ar-SA')} ر.س · ${m.date}`,raw:m,cost:m.cost}));
+  }
+  if(recType==='all'||recType==='accidents') {
+    DB.accidents.filter(a=>(vid?a.vehicle===vid:true)&&inRange(a.date,fromD,toD)&&matchText(a.vehicle+a.location+a.desc,srch))
+    .forEach(a=>results.push({_cat:'acc',_date:a.date,icon:'🚨',iconBg:'#FEF2F2',title:`حادثة — ${a.location}`,meta:`${a.vehicle} · ${a.cost.toLocaleString('ar-SA')} ر.س · ${a.date}`,raw:a,cost:a.cost}));
+  }
+
+  // Sort by date desc
+  results.sort((a,b)=>new Date(b._date||0)-new Date(a._date||0));
+
+  // KPIs
+  const totalCost=results.reduce((s,r)=>s+r.cost,0);
+  const trips=results.filter(r=>r._cat==='trip').length;
+  const fuelL=DB.fuel.filter(f=>(vid?f.vehicle===vid:true)&&inRange(f.date,fromD,toD)).reduce((s,f)=>s+f.liters,0);
+  const accs=results.filter(r=>r._cat==='acc').length;
+  document.getElementById('rv-kpis').innerHTML=`
+    <div class="kpi-card kc-blue"><div class="kpi-icon">📋</div><div class="kpi-val">${results.length}</div><div class="kpi-lbl">إجمالي السجلات</div></div>
+    <div class="kpi-card kc-green"><div class="kpi-icon">🛣️</div><div class="kpi-val">${trips}</div><div class="kpi-lbl">رحلة مسجلة</div></div>
+    <div class="kpi-card kc-amber"><div class="kpi-icon">⛽</div><div class="kpi-val">${fuelL} لتر</div><div class="kpi-lbl">إجمالي الوقود</div></div>
+    <div class="kpi-card kc-red"><div class="kpi-icon">🚨</div><div class="kpi-val">${accs}</div><div class="kpi-lbl">حوادث مسجلة</div></div>
+    <div class="kpi-card kc-purple"><div class="kpi-icon">💰</div><div class="kpi-val">${totalCost.toLocaleString('ar-SA')} ر.س</div><div class="kpi-lbl">إجمالي التكاليف</div></div>`;
+
+  // Chart — monthly cost breakdown
+  buildVehicleChart(results);
+
+  // Count
+  document.getElementById('rv-count').textContent=`${results.length} سجل`;
+
+  // List
+  if(!results.length) {
+    document.getElementById('rv-results').innerHTML='<div style="padding:20px;text-align:center;font-size:13px;color:var(--s400);">لا توجد نتائج مطابقة للفلاتر المحددة</div>';
+    return;
+  }
+  document.getElementById('rv-results').innerHTML=results.map((r,i)=>`
+    <div class="report-item" onclick="openRvDetail(${i},'${r._cat}',${r.raw.id})">
+      <div class="report-icon" style="background:${r.iconBg};">${r.icon}</div>
+      <div class="report-body">
+        <div class="report-title">${r.title}</div>
+        <div class="report-meta">${r.meta}</div>
+      </div>
+      <div class="report-arrow">›</div>
+    </div>`).join('');
+
+  // store for detail opening
+  window._rvResults=results;
+}
+
+function buildVehicleChart(results) {
+  const ctx=document.getElementById('rv-chart');
+  if(!ctx) return;
+  if(rvChart){rvChart.destroy();rvChart=null;}
+  // Group by category
+  const cats=['رحلات','وقود','صيانة','حوادث'];
+  const counts=[
+    results.filter(r=>r._cat==='trip').length,
+    results.filter(r=>r._cat==='fuel').length,
+    results.filter(r=>r._cat==='maint').length,
+    results.filter(r=>r._cat==='acc').length
+  ];
+  rvChart=new Chart(ctx.getContext('2d'),{
+    type:rvChartType,
+    data:{labels:cats,datasets:[{label:'عدد السجلات',data:counts,
+      backgroundColor:['rgba(37,99,235,.7)','rgba(245,158,11,.7)','rgba(139,92,246,.7)','rgba(239,68,68,.7)'],
+      borderColor:['#2563EB','#F59E0B','#8B5CF6','#EF4444'],
+      borderWidth:1.5,borderRadius:rvChartType==='bar'?5:0,tension:.4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#F1F5F9'}},x:{grid:{display:false}}}}
+  });
+}
+
+function openRvDetail(idx,cat,id) {
+  if(cat==='trip') openTripDetail(id);
+  else if(cat==='fuel') openFuelDetail(id);
+  else if(cat==='maint') openMaintDetail(id);
+  else if(cat==='acc') openAccDetail(id);
+}
+
+// ════ DRIVER REPORT ════
+let rdChart=null, rdChartType='bar';
+function clearDriverFilters() {
+  ['rd-driver','rd-type'].forEach(id=>document.getElementById(id).value=id==='rd-type'?'all':'');
+  ['rd-from','rd-to','rd-search'].forEach(id=>document.getElementById(id).value='');
+  applyDriverReport();
+}
+function switchDChart(t){rdChartType=t;applyDriverReport();}
+
+function applyDriverReport() {
+  const dname  = document.getElementById('rd-driver').value;
+  const recType= document.getElementById('rd-type').value;
+  const fromD  = document.getElementById('rd-from').value;
+  const toD    = document.getElementById('rd-to').value;
+  const srch   = document.getElementById('rd-search').value;
+
+  // Profile card
+  const profileWrap=document.getElementById('rd-profile-wrap');
+  if(dname) {
+    const d=DB.drivers.find(x=>x.name===dname);
+    if(d) {
+      const licOk=d.licExp&&new Date(d.licExp)>new Date();
+      const workOk=d.workExp&&new Date(d.workExp)>new Date();
+      profileWrap.innerHTML=`<div class="panel" style="margin-bottom:0;">
+        <div class="panel-hdr"><div class="panel-title"><div class="pti pti-navy">👤</div>بطاقة السائق: ${d.name}</div></div>
+        <div class="panel-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;">
+          <div style="font-size:12.5px;"><span style="color:var(--s500);font-weight:600;">رقم الهوية: </span><strong>${d.idNum}</strong></div>
+          <div style="font-size:12.5px;"><span style="color:var(--s500);font-weight:600;">الجوال: </span><strong>${d.phone}</strong></div>
+          <div style="font-size:12.5px;"><span style="color:var(--s500);font-weight:600;">الجنسية: </span><strong>${d.nationality}</strong></div>
+          <div style="font-size:12.5px;"><span style="color:var(--s500);font-weight:600;">المركبة: </span><strong>${d.vehicleId||'—'}</strong></div>
+          <div style="font-size:12.5px;"><span style="color:var(--s500);font-weight:600;">رخصة القيادة: </span><span style="color:${licOk?'var(--emerald)':'var(--red)'};font-weight:700;">${d.licExp} ${licOk?'✓':'⚠ منتهية'}</span></div>
+          <div style="font-size:12.5px;"><span style="color:var(--s500);font-weight:600;">تصريح العمل: </span><span style="color:${workOk?'var(--emerald)':'var(--red)'};font-weight:700;">${d.workExp} ${workOk?'✓':'⚠ منتهي'}</span></div>
+        </div></div>`;
+    }
+  } else {
+    profileWrap.innerHTML='';
+  }
+
+  // Collect records by driver
+  let results=[];
+  if(recType==='all'||recType==='trips') {
+    DB.trips.filter(t=>(dname?t.driver===dname:true)&&inRange(t.start,fromD,toD)&&matchText(t.from+t.to+t.type+t.vehicle,srch))
+    .forEach(t=>results.push({_cat:'trip',_date:t.start,icon:'🛣️',iconBg:'#EFF6FF',title:`${t.from} ← ${t.to}`,meta:`السيارة: ${t.vehicle} · ${t.type} · ${t.dist||'—'} · ${t.start}`,raw:t,cost:0}));
+  }
+  if(recType==='all'||recType==='fuel') {
+    // link fuel to driver via vehicle assignment
+    DB.fuel.filter(f=>{
+      if(!dname) return inRange(f.date,fromD,toD)&&matchText(f.vehicle+f.station,srch);
+      const d=DB.drivers.find(x=>x.name===dname);
+      return d&&f.vehicle===d.vehicleId&&inRange(f.date,fromD,toD)&&matchText(f.vehicle+f.station,srch);
+    }).forEach(f=>results.push({_cat:'fuel',_date:f.date,icon:'⛽',iconBg:'#FFFBEB',title:`تموين ${f.liters} لتر — ${f.station}`,meta:`السيارة: ${f.vehicle} · ${f.cost} ر.س · ${f.dist} · ${f.date}`,raw:f,cost:f.cost}));
+  }
+  if(recType==='all'||recType==='accidents') {
+    DB.accidents.filter(a=>{
+      if(!dname) return inRange(a.date,fromD,toD)&&matchText(a.vehicle+a.location+a.desc,srch);
+      const d=DB.drivers.find(x=>x.name===dname);
+      return d&&a.vehicle===d.vehicleId&&inRange(a.date,fromD,toD)&&matchText(a.vehicle+a.location+a.desc,srch);
+    }).forEach(a=>results.push({_cat:'acc',_date:a.date,icon:'🚨',iconBg:'#FEF2F2',title:`حادثة — ${a.location}`,meta:`السيارة: ${a.vehicle} · ${a.cost.toLocaleString('ar-SA')} ر.س · ${a.date}`,raw:a,cost:a.cost}));
+  }
+
+  results.sort((a,b)=>new Date(b._date||0)-new Date(a._date||0));
+
+  // KPIs
+  const trips=results.filter(r=>r._cat==='trip').length;
+  const totalFuelCost=results.filter(r=>r._cat==='fuel').reduce((s,r)=>s+r.cost,0);
+  const accs=results.filter(r=>r._cat==='acc').length;
+  const totalKm=DB.trips.filter(t=>(dname?t.driver===dname:true)).reduce((s,t)=>{const n=parseFloat((t.dist||'0').replace(/[^\d.]/g,''));return s+(isNaN(n)?0:n);},0);
+  document.getElementById('rd-kpis').innerHTML=`
+    <div class="kpi-card kc-blue"><div class="kpi-icon">🛣️</div><div class="kpi-val">${trips}</div><div class="kpi-lbl">رحلة منجزة</div></div>
+    <div class="kpi-card kc-green"><div class="kpi-icon">📏</div><div class="kpi-val">${totalKm.toLocaleString('ar-SA')} كم</div><div class="kpi-lbl">إجمالي المسافة</div></div>
+    <div class="kpi-card kc-amber"><div class="kpi-icon">⛽</div><div class="kpi-val">${totalFuelCost.toLocaleString('ar-SA')} ر.س</div><div class="kpi-lbl">تكلفة الوقود</div></div>
+    <div class="kpi-card kc-red"><div class="kpi-icon">🚨</div><div class="kpi-val">${accs}</div><div class="kpi-lbl">حوادث مسجلة</div></div>
+    <div class="kpi-card kc-purple"><div class="kpi-icon">📋</div><div class="kpi-val">${results.length}</div><div class="kpi-lbl">إجمالي السجلات</div></div>`;
+
+  // Chart
+  buildDriverChart(results, dname);
+
+  // Count
+  document.getElementById('rd-count').textContent=`${results.length} سجل`;
+
+  if(!results.length) {
+    document.getElementById('rd-results').innerHTML='<div style="padding:20px;text-align:center;font-size:13px;color:var(--s400);">لا توجد نتائج مطابقة للفلاتر المحددة</div>';
+    return;
+  }
+  document.getElementById('rd-results').innerHTML=results.map((r,i)=>`
+    <div class="report-item" onclick="openRdDetail('${r._cat}',${r.raw.id})">
+      <div class="report-icon" style="background:${r.iconBg};">${r.icon}</div>
+      <div class="report-body">
+        <div class="report-title">${r.title}</div>
+        <div class="report-meta">${r.meta}</div>
+      </div>
+      <div class="report-arrow">›</div>
+    </div>`).join('');
+
+  window._rdResults=results;
+}
+
+function buildDriverChart(results, dname) {
+  const ctx=document.getElementById('rd-chart');
+  if(!ctx) return;
+  if(rdChart){rdChart.destroy();rdChart=null;}
+  // If single driver selected: show monthly trip counts; else show per-driver
+  let labels, data, colors;
+  if(dname) {
+    // monthly trips for this driver
+    const months={};
+    results.filter(r=>r._cat==='trip').forEach(r=>{
+      const m=(r._date||'').slice(0,7);
+      if(m) months[m]=(months[m]||0)+1;
+    });
+    labels=Object.keys(months).sort();
+    data=labels.map(m=>months[m]);
+    colors=labels.map(()=>'rgba(37,99,235,.7)');
+  } else {
+    // trips per driver
+    labels=DB.drivers.map(d=>d.name);
+    data=DB.drivers.map(d=>DB.trips.filter(t=>t.driver===d.name).length);
+    colors=['rgba(37,99,235,.7)','rgba(245,158,11,.7)','rgba(16,185,129,.7)'];
+  }
+  rdChart=new Chart(ctx.getContext('2d'),{
+    type:rdChartType,
+    data:{labels,datasets:[{label:'عدد الرحلات',data,backgroundColor:colors,borderColor:colors.map(c=>c.replace('.7)','1)')),borderWidth:1.5,borderRadius:rdChartType==='bar'?5:0,tension:.4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#F1F5F9'}},x:{grid:{display:false}}}}
+  });
+}
+
+function openRdDetail(cat,id) {
+  if(cat==='trip') openTripDetail(id);
+  else if(cat==='fuel') openFuelDetail(id);
+  else if(cat==='acc') openAccDetail(id);
+}
+
+// ════ MODAL ════
+function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
+function handleOv(e,id){if(e.target===e.currentTarget)closeModal(id);}
+
+// ════ TOAST ════
+function toast(msg,type='ts'){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;el.textContent=msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),3400);
+}
+</script>
+</body>
+</html>

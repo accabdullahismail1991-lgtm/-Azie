@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام إدارة عقود الإيجار</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+:root{
+  --bg:#F4F3EF;--surface:#fff;--border:#E2E0D8;--text:#18170F;--muted:#7A7870;
+  --accent:#1B5DA6;--accent-l:#E8F1FB;
+  --green:#0F6E42;--green-l:#E3F5EC;
+  --red:#B02E2E;--red-l:#FAEAEA;
+  --amber:#956000;--amber-l:#FEF0D6;
+  --purple:#5336A0;--purple-l:#EEE9FB;
+  --teal:#0C6650;--teal-l:#E0F4EE;
+  --orange:#C15A00;--orange-l:#FEF0E3;
+  --r:10px;--sh:0 1px 4px rgba(0,0,0,.06),0 0 0 .5px rgba(0,0,0,.04);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans Arabic','Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+/* Layout */
+.app{display:flex;min-height:100vh}
+.sidebar{width:220px;background:#181714;color:#E8E6E0;display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;bottom:0;right:0;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:18px 16px 12px;border-bottom:1px solid #2A2824;display:flex;align-items:center;gap:10px}
+.sidebar-logo h2{font-size:14px;font-weight:600;color:#fff;line-height:1.3}
+.sidebar-logo p{font-size:10px;color:#8A8780;margin-top:1px}
+.logo-ico{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.nav{padding:12px 0}
+.nav-lbl{font-size:10px;color:#5A5850;letter-spacing:.07em;font-weight:600;padding:10px 16px 4px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 16px;cursor:pointer;font-size:13px;color:#A8A69F;transition:all .15s;border-right:3px solid transparent}
+.nav-item:hover{background:#222018;color:#E8E6E0}
+.nav-item.active{background:#222018;color:#fff;border-right-color:var(--accent)}
+.nav-item .ico{width:16px;text-align:center;font-size:15px}
+.contracts-list{padding:8px 0;border-top:1px solid #2A2824;flex:1}
+.cl-item{padding:7px 16px;cursor:pointer;font-size:12px;color:#8A8780;transition:all .15s;display:flex;align-items:center;gap:8px;border-right:3px solid transparent}
+.cl-item:hover{background:#222018;color:#E8E6E0}
+.cl-item.active{color:#fff;background:#222018;border-right-color:var(--accent)}
+.cl-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.cl-dot.expired{background:var(--red)}
+.cl-dot.renewed{background:var(--teal)}
+.main{margin-right:220px;flex:1;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar h1{font-size:16px;font-weight:600}
+.topbar p{font-size:12px;color:var(--muted);margin-top:1px}
+.content{padding:24px}
+/* Cards & Grid */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:1.25rem;box-shadow:var(--sh)}
+.card-sm{padding:1rem}
+.sec-lbl{font-size:11px;font-weight:600;letter-spacing:.07em;color:var(--muted);text-transform:uppercase;margin-bottom:1rem}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:5px}
+label{font-size:12px;color:var(--muted);font-weight:500}
+input,select,textarea{width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-family:inherit;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);background:#fff}
+textarea{resize:vertical;min-height:60px}
+.actions{display:flex;gap:8px;margin-top:1.25rem;flex-wrap:wrap}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#154d8f}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#0a5232}
+.btn-teal{background:var(--teal);color:#fff}.btn-teal:hover{background:#084d3a}
+.btn-orange{background:var(--orange);color:#fff}.btn-orange:hover{background:#9a4800}
+.btn-outline{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-outline:hover{background:var(--bg);color:var(--text)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid var(--border);padding:5px 10px;font-size:12px}.btn-danger:hover{background:var(--red-l)}
+.btn-sm{padding:5px 12px;font-size:12px}
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:1.25rem}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:500}
+.stat-val{font-size:18px;font-weight:700;color:var(--text);line-height:1.2}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.c-blue{color:var(--accent)}.c-green{color:var(--green)}.c-red{color:var(--red)}.c-purple{color:var(--purple)}.c-teal{color:var(--teal)}.c-amber{color:var(--amber)}.c-orange{color:var(--orange)}
+/* Progress */
+.prog-wrap{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:8px}
+.prog-fill{height:100%;border-radius:3px;background:var(--green);transition:width .4s}
+.prog-fill.warn{background:var(--amber)}
+.prog-fill.danger{background:var(--red)}
+/* Tables */
+.t-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);margin-bottom:14px}
+.t-head{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+.t-title{font-size:13px;font-weight:600}
+.filters{display:flex;gap:5px;flex-wrap:wrap}
+.fb{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;transition:all .15s}
+.fb.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.t-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:8px 12px;text-align:right;background:var(--bg);color:var(--muted);font-weight:600;font-size:11px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);color:var(--text);white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg)}
+tfoot td{background:var(--bg);font-weight:600;font-size:12px;border-top:2px solid var(--border)}
+/* Badges */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.b-paid{background:var(--green-l);color:var(--green)}
+.b-pend{background:var(--amber-l);color:var(--amber)}
+.b-part{background:var(--purple-l);color:var(--purple)}
+.b-over{background:var(--red-l);color:var(--red)}
+.b-in{background:var(--teal-l);color:var(--teal)}
+.b-renewed{background:var(--teal-l);color:var(--teal)}
+.b-active{background:var(--green-l);color:var(--green)}
+.b-expired{background:var(--red-l);color:var(--red)}
+/* Colors */
+.gt{color:var(--green);font-weight:500}.rt{color:var(--red);font-weight:500}.pt{color:var(--purple);font-weight:500}.tt{color:var(--teal);font-weight:500}
+.num-cell{color:var(--muted);font-size:11px}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--red);font-size:12px;padding:2px 6px;border-radius:4px}.del-btn:hover{background:var(--red-l)}
+/* Progress bar mini */
+.pb-wrap{height:4px;background:var(--border);border-radius:2px;overflow:hidden;width:55px;display:inline-block;vertical-align:middle;margin-left:4px}
+.pb-fill{height:100%;border-radius:2px;background:var(--green)}
+/* Contract bar */
+.cbar{display:flex;gap:14px;flex-wrap:wrap;padding:9px 15px;background:var(--accent-l);border-bottom:1px solid #C0D8F5;font-size:11px;color:var(--accent)}
+.cbar span{font-weight:600}
+/* Dashboard charts */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:1.5rem}
+.donut-wrap{position:relative;width:100px;height:100px;margin:0 auto 8px}
+canvas.donut{width:100px!important;height:100px!important}
+/* payment entry */
+.pay-entry{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;align-items:end;background:var(--teal-l);border:1px solid #9FE1CB;border-radius:8px;padding:14px 16px;margin-bottom:1rem}
+/* stripe */
+.stripe{background:#FAFAF8}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--surface);border-radius:12px;padding:1.5rem;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:1.25rem;display:flex;align-items:center;gap:8px}
+.modal-close{margin-right:auto;background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted);line-height:1}
+/* Indicator */
+.ind-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.ind-row:last-child{border-bottom:none}
+.ind-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.tag-renewed{display:inline-block;background:var(--teal-l);color:var(--teal);font-size:10px;padding:1px 6px;border-radius:20px;font-weight:600;margin-right:4px}
+/* Overdue warning */
+.overdue-banner{background:var(--red-l);border:1px solid #F5C0C0;border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--red)}
+/* Location tag */
+.loc-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);margin-top:2px}
+/* Tabs */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1.5rem}
+.tab{padding:10px 18px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+/* Responsive */
+@media(max-width:700px){.sidebar{display:none}.main{margin-right:0}}
+@media print{.sidebar,.topbar,.actions,.pay-entry,.filters,.del-btn{display:none!important}.main{margin-right:0}.content{padding:1rem}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-ico">🏢</div>
+    <div><h2>إدارة عقود الإيجار</h2><p>نظام متكامل</p></div>
+  </div>
+  <nav class="nav">
+    <div class="nav-lbl">القائمة</div>
+    <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="ico">📊</span> لوحة التحكم</div>
+    <div class="nav-item" onclick="showPage('new')" id="nav-new"><span class="ico">➕</span> عقد جديد</div>
+  </nav>
+  <div class="contracts-list">
+    <div class="nav-lbl" style="padding-bottom:8px">العقود المسجلة</div>
+    <div id="sidebarContracts"></div>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+  <div class="topbar">
+    <div>
+      <h1 id="topbarTitle">لوحة التحكم</h1>
+      <p id="topbarSub">نظرة عامة على جميع العقود</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" onclick="exportAllExcel()">⬇ تصدير Excel الكل</button>
+      <button class="btn btn-primary btn-sm" onclick="showPage('new')">➕ عقد جديد</button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- Dashboard -->
+    <div id="page-dashboard">
+      <div class="stats-grid" id="dash-stats"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px" id="dash-charts-row">
+        <div class="card card-sm">
+          <div class="sec-lbl">توزيع المسدَّد / المستحق</div>
+          <canvas id="donutChart" width="180" height="180" style="display:block;margin:0 auto"></canvas>
+          <div id="donutLegend" style="margin-top:12px;font-size:12px"></div>
+        </div>
+        <div class="card card-sm">
+          <div class="sec-lbl">مؤشر اكتمال السداد لكل عقد</div>
+          <div id="dash-progress"></div>
+        </div>
+      </div>
+      <div class="t-card">
+        <div class="t-head"><div class="t-title">📋 جميع العقود</div></div>
+        <div class="t-scroll"><table>
+          <thead><tr><th>#</th><th>المستأجر</th><th>الموقع</th><th>تاريخ البداية</th><th>تاريخ الانتهاء</th><th>الإجمالي</th><th>المسدَّد</th><th>المستحق</th><th>الحالة</th><th></th></tr></thead>
+          <tbody id="dash-contracts-table"></tbody>
+        </table></div>
+      </div>
+      <div class="overdue-banner" id="overdue-banner" style="display:none">
+        ⚠️ <span id="overdue-text"></span>
+      </div>
+    </div>
+
+    <!-- New/Edit Contract -->
+    <div id="page-new" style="display:none">
+      <div class="card">
+        <div class="sec-lbl" id="form-title-lbl">بيانات العقد الجديد</div>
+        <div class="form-grid">
+          <div class="field"><label>اسم المستأجر / الجهة</label><input id="f-tenant" placeholder="أحمد محمد"></div>
+          <div class="field"><label>رقم العقد</label><input id="f-no" placeholder="عقد-2024-001"></div>
+          <div class="field"><label>📍 الموقع / العنوان</label><input id="f-loc" placeholder="مثال: الرياض - حي العليا، برج A"></div>
+          <div class="field"><label>وصف النشاط / الاستخدام</label><input id="f-activity" placeholder="مثال: مكتب تجاري، محل، مستودع"></div>
+          <div class="field"><label>تاريخ بداية العقد</label><input type="date" id="f-start"></div>
+          <div class="field"><label>مدة العقد</label><input type="number" id="f-dur" value="1" min="1"></div>
+          <div class="field"><label>وحدة المدة</label><select id="f-durunit"><option value="year" selected>سنة</option><option value="month">شهر</option></select></div>
+          <div class="field"><label>إجمالي قيمة الإيجار (ر.س)</label><input type="number" id="f-total" placeholder="100000"></div>
+          <div class="field"><label>المبلغ المقدم (ر.س)</label><input type="number" id="f-adv" value="0"></div>
+          <div class="field"><label>دورية الدفع</label>
+            <select id="f-paymode">
+              <option value="monthly">شهري</option>
+              <option value="quarterly">ربع سنوي</option>
+              <option value="biannual">نصف سنوي</option>
+              <option value="annual" selected>سنوي</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>ملاحظات</label><textarea id="f-notes" placeholder="أي ملاحظات إضافية..."></textarea></div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="saveContract()">💾 حفظ العقد</button>
+          <button class="btn btn-outline" onclick="showPage('dashboard')">إلغاء</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contract Detail -->
+    <div id="page-contract" style="display:none">
+      <!-- tabs -->
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('overview',this)">نظرة عامة</button>
+        <button class="tab" onclick="showTab('payments',this)">جدول الدفعات</button>
+        <button class="tab" onclick="showTab('monthly',this)">التوزيع الشهري</button>
+        <button class="tab" onclick="showTab('ledger',this)">حركة السداد</button>
+        <button class="tab" onclick="showTab('renewals',this)">التجديدات</button>
+      </div>
+
+      <!-- Overview -->
+      <div id="tab-overview">
+        <div class="stats-grid" id="c-stats"></div>
+        <div id="c-overdue-banner" class="overdue-banner" style="display:none">⚠️ <span id="c-overdue-txt"></span></div>
+        <div class="cbar" id="c-bar"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+          <div class="card card-sm">
+            <div class="sec-lbl">مؤشر اكتمال السداد</div>
+            <div id="c-completion"></div>
+          </div>
+          <div class="card card-sm">
+            <div class="sec-lbl">تفاصيل العقد</div>
+            <div id="c-details"></div>
+          </div>
+        </div>
+        <div class="actions" style="margin-top:0">
+          <button class="btn btn-teal" onclick="openRenewModal()">🔄 تجديد العقد</button>
+          <button class="btn btn-orange" onclick="exportContractExcel()">⬇ تصدير Excel</button>
+          <button class="btn btn-outline" onclick="editContract()">✏️ تعديل</button>
+          <button class="btn btn-danger" onclick="deleteContract()">🗑 حذف</button>
+        </div>
+      </div>
+
+      <!-- Payments -->
+      <div id="tab-payments" style="display:none">
+        <div id="c-overdue2" class="overdue-banner" style="display:none">⚠️ <span id="c-overdue2-txt"></span></div>
+        <div class="t-card">
+          <div class="t-head">
+            <div class="t-title">🧾 جدول الدفعات</div>
+            <div class="filters">
+              <button class="fb on" onclick="fPay('all',this)">الكل</button>
+              <button class="fb" onclick="fPay('paid',this)">مدفوع</button>
+              <button class="fb" onclick="fPay('partial',this)">جزئي</button>
+              <button class="fb" onclick="fPay('overdue',this)">متأخر</button>
+              <button class="fb" onclick="fPay('pending',this)">قادم</button>
+            </div>
+          </div>
+          <div class="t-scroll"><table>
+            <thead><tr><th>#</th><th>تاريخ الاستحقاق</th><th>القيمة</th><th>المدفوع</th><th>المتبقي</th><th>أيام التأخير</th><th>الحالة</th></tr></thead>
+            <tbody id="pay-body"></tbody>
+            <tfoot id="pay-foot"></tfoot>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- Monthly -->
+      <div id="tab-monthly" style="display:none">
+        <div class="t-card">
+          <div class="t-head">
+            <div class="t-title" style="color:var(--purple)">📅 التوزيع الشهري للاستحقاق</div>
+            <div class="filters">
+              <button class="fb on" onclick="fMonth('all',this)">الكل</button>
+              <button class="fb" onclick="fMonth('past',this)">مضى</button>
+              <button class="fb" onclick="fMonth('future',this)">قادم</button>
+            </div>
+          </div>
+          <div class="t-scroll"><table>
+            <thead><tr><th>#</th><th>الشهر / الفترة</th><th>الأيام</th><th>الاستحقاق</th><th>متراكم</th><th>نسبة</th></tr></thead>
+            <tbody id="month-body"></tbody>
+            <tfoot id="month-foot"></tfoot>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- Ledger -->
+      <div id="tab-ledger" style="display:none">
+        <!-- Add payment -->
+        <div class="card card-sm" style="margin-bottom:14px">
+          <div class="sec-lbl">➕ تسجيل حركة سداد</div>
+          <div class="pay-entry">
+            <div class="field"><label>تاريخ السداد</label><input type="date" id="l-date"></div>
+            <div class="field"><label>المبلغ (ر.س)</label><input type="number" id="l-amount" placeholder="0"></div>
+            <div class="field"><label>طريقة الدفع</label>
+              <select id="l-method">
+                <option>تحويل بنكي</option><option>شيك</option><option>نقداً</option><option>أمر دفع</option><option>أخرى</option>
+              </select>
+            </div>
+            <div class="field"><label>رقم المرجع</label><input id="l-ref" placeholder="اختياري"></div>
+            <div class="field"><label>ملاحظة</label><input id="l-note" placeholder="اختياري"></div>
+            <div class="field" style="align-self:end"><button class="btn btn-green" onclick="addPayment()">✚ إضافة</button></div>
+          </div>
+        </div>
+        <div class="t-card">
+          <div class="t-head">
+            <div class="t-title" style="color:var(--teal)">💳 سجل حركة السداد والرصيد</div>
+            <div class="filters">
+              <button class="fb on" onclick="fLedger('all',this)">الكل</button>
+              <button class="fb" onclick="fLedger('payments',this)">سدادات فقط</button>
+            </div>
+          </div>
+          <div class="t-scroll"><table>
+            <thead><tr><th>#</th><th>التاريخ</th><th>البيان</th><th>طريقة الدفع</th><th>مرجع</th><th>مدين</th><th>دائن</th><th>الرصيد المتبقي</th><th>ملاحظة</th><th></th></tr></thead>
+            <tbody id="ledger-body"></tbody>
+            <tfoot id="ledger-foot"></tfoot>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- Renewals -->
+      <div id="tab-renewals" style="display:none">
+        <div id="renewals-list"></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+</div>
+
+<!-- Renew Modal -->
+<div class="modal-overlay" id="renewModal" style="display:none">
+  <div class="modal">
+    <h3>🔄 تجديد العقد <button class="modal-close" onclick="closeModal()">×</button></h3>
+    <div class="form-grid">
+      <div class="field"><label>تاريخ بداية التجديد</label><input type="date" id="r-start"></div>
+      <div class="field"><label>مدة التجديد</label><input type="number" id="r-dur" value="1" min="1"></div>
+      <div class="field"><label>وحدة المدة</label><select id="r-durunit"><option value="year" selected>سنة</option><option value="month">شهر</option></select></div>
+      <div class="field"><label>إجمالي إيجار التجديد (ر.س)</label><input type="number" id="r-total" placeholder="100000"></div>
+      <div class="field"><label>مقدم التجديد (ر.س)</label><input type="number" id="r-adv" value="0"></div>
+      <div class="field"><label>دورية الدفع</label>
+        <select id="r-paymode">
+          <option value="monthly">شهري</option><option value="quarterly">ربع سنوي</option>
+          <option value="biannual">نصف سنوي</option><option value="annual" selected>سنوي</option>
+        </select>
+      </div>
+    </div>
+    <div id="r-carry-info" style="background:var(--amber-l);border:1px solid #EFD080;border-radius:8px;padding:10px 14px;margin-top:12px;font-size:13px;color:var(--amber)"></div>
+    <div class="actions">
+      <button class="btn btn-teal" onclick="confirmRenew()">✅ تأكيد التجديد</button>
+      <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ======================== DATA ========================
+let DB = JSON.parse(localStorage.getItem('rentDB') || '{"contracts":[]}');
+let activeId = null;
+let activeSub = null; // index in renewals or -1 for original
+let payFilter='all', monthFilter='all', ledgerFilter='all';
+
+function save(){ localStorage.setItem('rentDB', JSON.stringify(DB)); }
+
+// ======================== UTILS ========================
+const fmt = n => Number(n).toLocaleString('ar-SA',{minimumFractionDigits:0,maximumFractionDigits:0}) + ' ر.س';
+const fmt2 = n => Number(n).toLocaleString('ar-SA',{minimumFractionDigits:0,maximumFractionDigits:0});
+const fmtS = d => new Date(d).toLocaleDateString('ar-SA-u-ca-gregory',{year:'numeric',month:'short',day:'numeric'});
+const fmtM = d => new Date(d).toLocaleDateString('ar-SA-u-ca-gregory',{year:'numeric',month:'long'});
+const today = () => { const d=new Date(); d.setHours(0,0,0,0); return d; };
+const toDate = s => new Date(s);
+
+function daysInMonth(y,m){ return new Date(y,m+1,0).getDate(); }
+
+// ======================== COMPUTE ========================
+function computeContract(c){
+  // c = one segment (original or renewal)
+  const sd = toDate(c.startDate);
+  const totalM = c.durUnit==='year' ? c.dur*12 : c.dur;
+  const ed = new Date(sd); ed.setMonth(ed.getMonth()+totalM);
+  const inv = {monthly:1,quarterly:3,biannual:6,annual:12}[c.payMode];
+  const numP = Math.ceil(totalM/inv);
+  const net = c.total - c.advance;
+  const eachP = net / numP;
+
+  // daily distribution
+  const totalDays = Math.round((ed-sd)/86400e3);
+  const dailyR = net / totalDays;
+
+  // payment rows
+  const today_ = today();
+  let payRows = [];
+  for(let i=0;i<numP;i++){
+    const due = new Date(sd); due.setMonth(due.getMonth()+i*inv);
+    const daysLate = due<today_ ? Math.round((today_-due)/86400e3) : 0;
+    payRows.push({num:i+1,date:due,amount:eachP,paid:0,remaining:eachP,isPaid:false,isPartial:false,isOverdue:false,daysLate});
+  }
+
+  // apply payments + carryover
+  const allPaid = (c.advance||0) + (c.payments||[]).reduce((s,p)=>s+p.amount,0) + (c.carryover||0);
+  payRows.forEach(pr=>{
+    const paidSoFar = Math.min(Math.max(allPaid-(pr.num-1)*eachP,0),eachP);
+    pr.paid = paidSoFar;
+    pr.remaining = Math.max(eachP-paidSoFar,0);
+    pr.isPaid = pr.remaining<0.01;
+    pr.isPartial = pr.paid>0 && !pr.isPaid;
+    pr.isOverdue = !pr.isPaid && pr.date<today_;
+  });
+
+  // monthly rows
+  let monthRows=[], cumAcc=0, cursor=new Date(sd);
+  const firstMonthEnd=new Date(sd.getFullYear(),sd.getMonth()+1,1);
+  const firstDays=Math.round((firstMonthEnd-cursor)/86400e3);
+  const isFullFirst=sd.getDate()===1;
+  if(!isFullFirst){
+    const mv=dailyR*firstDays;
+    cumAcc+=mv;
+    const dim=daysInMonth(sd.getFullYear(),sd.getMonth());
+    monthRows.push({num:1,date:new Date(sd),monthEnd:new Date(firstMonthEnd-86400e3),monthly:mv,cumAcc,pct:Math.round(cumAcc/net*100),past:cursor<=today_,days:firstDays,daysInMonth:dim,isPartial:true});
+    cursor=new Date(firstMonthEnd);
+  }
+  while(cursor<ed){
+    const mStart=new Date(cursor);
+    const mEnd=new Date(cursor.getFullYear(),cursor.getMonth()+1,1);
+    const actualEnd=mEnd<ed?mEnd:ed;
+    const days=Math.round((actualEnd-mStart)/86400e3);
+    const dim=daysInMonth(mStart.getFullYear(),mStart.getMonth());
+    const mv=dailyR*days;
+    cumAcc+=mv;
+    monthRows.push({num:monthRows.length+1,date:new Date(mStart),monthEnd:new Date(actualEnd-86400e3),monthly:mv,cumAcc,pct:Math.round(cumAcc/net*100),past:mStart<=today_,days,daysInMonth:dim,isPartial:days<dim});
+    cursor=new Date(mEnd);
+  }
+
+  // ledger
+  const ledger=[];
+  ledger.push({id:'contract',date:c.startDate,desc:'قيمة العقد الإجمالية',method:'—',ref:'—',debit:c.total,credit:0,note:'',type:'contract'});
+  if(c.advance>0) ledger.push({id:'adv',date:c.startDate,desc:'مبلغ مقدم',method:'—',ref:'—',debit:0,credit:c.advance,note:'مقدم عند التعاقد',type:'advance'});
+  if(c.carryover>0) ledger.push({id:'carry',date:c.startDate,desc:'رصيد منقول من العقد السابق',method:'—',ref:'—',debit:0,credit:c.carryover,note:'ترحيل',type:'carry'});
+
+  // due entries
+  payRows.filter(r=>r.date<=today_).forEach((r,i)=>{
+    ledger.push({id:'due_'+i,date:r.date.toISOString().split('T')[0],desc:'استحقاق دفعة '+(i+1),method:'—',ref:'—',debit:r.amount,credit:0,note:'',type:'due'});
+  });
+
+  // payments
+  (c.payments||[]).forEach((p,i)=>{
+    ledger.push({id:'pmt_'+i,date:p.date,desc:'سداد',method:p.method,ref:p.ref||'—',debit:0,credit:p.amount,note:p.note||'',type:'payment',_idx:i});
+  });
+
+  const typeOrd={contract:0,advance:1,carry:1,due:2,payment:3};
+  ledger.sort((a,b)=>{
+    const dt=toDate(a.date)-toDate(b.date);
+    return dt!==0?dt:(typeOrd[a.type]||2)-(typeOrd[b.type]||2);
+  });
+  let bal=0;
+  ledger.forEach(r=>{bal=bal+r.debit-r.credit;r.balance=bal;});
+
+  // summary numbers
+  const totalPaid=(c.advance||0)+(c.payments||[]).reduce((s,p)=>s+p.amount,0)+(c.carryover||0);
+  const balance=Math.max(net-totalPaid,0);
+  const overdueRows=payRows.filter(r=>r.isOverdue);
+  const overdueAmt=overdueRows.reduce((s,r)=>s+r.remaining,0);
+  const pctPaid=net>0?Math.min(Math.round(totalPaid/net*100),100):0;
+
+  return {sd,ed,totalM,inv,numP,net,eachP,dailyR,totalDays,payRows,monthRows,ledger,totalPaid,balance,overdueRows,overdueAmt,pctPaid};
+}
+
+// ======================== PAGES ========================
+function showPage(page, contractId){
+  document.querySelectorAll('[id^="page-"]').forEach(el=>el.style.display='none');
+  document.getElementById('page-'+page).style.display='';
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const navEl=document.getElementById('nav-'+page);
+  if(navEl) navEl.classList.add('active');
+
+  if(page==='dashboard'){ renderDashboard(); document.getElementById('topbarTitle').textContent='لوحة التحكم'; document.getElementById('topbarSub').textContent='نظرة عامة على جميع العقود'; }
+  if(page==='new'){ clearForm(); document.getElementById('topbarTitle').textContent='عقد جديد'; document.getElementById('topbarSub').textContent='إنشاء عقد إيجار جديد'; }
+  if(page==='contract' && contractId){ activeId=contractId; renderContractPage(); }
+  renderSidebar();
+}
+
+function showTab(tab,btn){
+  document.querySelectorAll('[id^="tab-"]').forEach(el=>el.style.display='none');
+  document.getElementById('tab-'+tab).style.display='';
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  btn.classList.add('active');
+  if(tab==='payments') renderPayTable();
+  if(tab==='monthly') renderMonthTable();
+  if(tab==='ledger') renderLedger();
+  if(tab==='renewals') renderRenewals();
+}
+
+// ======================== SIDEBAR ========================
+function renderSidebar(){
+  const el=document.getElementById('sidebarContracts');
+  if(!DB.contracts.length){ el.innerHTML='<div style="padding:12px 16px;font-size:11px;color:#5A5850">لا توجد عقود</div>'; return; }
+  el.innerHTML=DB.contracts.map(c=>{
+    const segs=getAllSegments(c);
+    const lastSeg=segs[segs.length-1];
+    const ed=new Date(lastSeg.startDate); ed.setMonth(ed.getMonth()+(lastSeg.durUnit==='year'?lastSeg.dur*12:lastSeg.dur));
+    const isExpired=ed<today();
+    const isRenewed=c.renewals&&c.renewals.length>0;
+    const dot=isRenewed?'renewed':isExpired?'expired':'';
+    return `<div class="cl-item ${activeId===c.id?'active':''}" onclick="showPage('contract','${c.id}')">
+      <div class="cl-dot ${dot}"></div>
+      <div style="min-width:0"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.tenant}</div>
+      <div style="font-size:10px;color:#5A5850;margin-top:1px">${c.contractNo||'—'}</div></div>
+    </div>`;
+  }).join('');
+}
+
+// ======================== DASHBOARD ========================
+function renderDashboard(){
+  const cs=DB.contracts;
+  if(!cs.length){
+    document.getElementById('dash-stats').innerHTML='<div style="grid-column:1/-1;padding:2rem;text-align:center;color:var(--muted)">لا توجد عقود. <a href="#" onclick="showPage(\'new\')" style="color:var(--accent)">إضافة عقد جديد</a></div>';
+    document.getElementById('dash-progress').innerHTML='';
+    document.getElementById('dash-contracts-table').innerHTML='';
+    document.getElementById('overdue-banner').style.display='none';
+    drawDonut(0,0);
+    return;
+  }
+
+  let totTotal=0,totPaid=0,totBalance=0,totOverdue=0,activeCount=0;
+  const rows=[];
+
+  cs.forEach(c=>{
+    const segs=getAllSegments(c);
+    let cTotal=0,cPaid=0,cBalance=0,cOverdue=0;
+    segs.forEach(seg=>{
+      const r=computeContract(seg);
+      cTotal+=r.net; cPaid+=r.totalPaid; cBalance+=r.balance; cOverdue+=r.overdueAmt;
+    });
+    totTotal+=cTotal; totPaid+=cPaid; totBalance+=cBalance; totOverdue+=cOverdue;
+    const lastSeg=segs[segs.length-1];
+    const ed=new Date(lastSeg.startDate); ed.setMonth(ed.getMonth()+(lastSeg.durUnit==='year'?lastSeg.dur*12:lastSeg.dur));
+    const isExpired=ed<today();
+    if(!isExpired) activeCount++;
+    const pct=cTotal>0?Math.min(Math.round(cPaid/cTotal*100),100):0;
+    rows.push({c,cTotal,cPaid,cBalance,cOverdue,pct,isExpired,ed});
+  });
+
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat"><div class="stat-lbl">إجمالي العقود</div><div class="stat-val c-blue">${cs.length}</div><div class="stat-sub">${activeCount} نشط</div></div>
+    <div class="stat"><div class="stat-lbl">إجمالي الإيجارات</div><div class="stat-val c-blue">${fmt(totTotal)}</div></div>
+    <div class="stat"><div class="stat-lbl">إجمالي المسدَّد</div><div class="stat-val c-green">${fmt(totPaid)}</div></div>
+    <div class="stat"><div class="stat-lbl">إجمالي المستحق</div><div class="stat-val c-red">${fmt(totBalance)}</div></div>
+    <div class="stat"><div class="stat-lbl">المتأخر (متعثر)</div><div class="stat-val c-amber">${fmt(totOverdue)}</div></div>
+    <div class="stat"><div class="stat-lbl">نسبة التحصيل</div><div class="stat-val c-teal">${totTotal>0?Math.round(totPaid/totTotal*100):0}%</div></div>
+  `;
+
+  drawDonut(totPaid, totBalance);
+
+  document.getElementById('dash-progress').innerHTML=rows.map(r=>{
+    const col=r.pct>=80?'':'warn';
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span>${r.c.tenant}</span><span class="${r.pct>=80?'gt':'rt'}">${r.pct}%</span>
+      </div>
+      <div class="prog-wrap"><div class="prog-fill ${col}" style="width:${r.pct}%"></div></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">${fmt(r.cPaid)} من ${fmt(r.cTotal)}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('dash-contracts-table').innerHTML=rows.map((r,i)=>{
+    const lastSeg=getAllSegments(r.c)[getAllSegments(r.c).length-1];
+    const renewed=r.c.renewals&&r.c.renewals.length>0;
+    const st=r.isExpired?'<span class="badge b-expired">منتهي</span>':renewed?'<span class="badge b-renewed">مجدَّد</span>':'<span class="badge b-active">نشط</span>';
+    return `<tr>
+      <td class="num-cell">${i+1}</td>
+      <td><b>${r.c.tenant}</b><div style="font-size:10px;color:var(--muted)">${r.c.contractNo||''}</div></td>
+      <td style="font-size:11px;color:var(--muted)">${r.c.location||'—'}</td>
+      <td>${fmtS(lastSeg.startDate)}</td>
+      <td>${fmtS(r.ed)}</td>
+      <td>${fmt(r.cTotal)}</td>
+      <td class="gt">${fmt(r.cPaid)}</td>
+      <td class="${r.cBalance>0?'rt':''}">${fmt(r.cBalance)}</td>
+      <td>${st}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="showPage('contract','${r.c.id}')">عرض</button></td>
+    </tr>`;
+  }).join('');
+
+  if(totOverdue>0){
+    document.getElementById('overdue-banner').style.display='flex';
+    document.getElementById('overdue-text').textContent=`يوجد ${fmt(totOverdue)} متأخر السداد عبر العقود`;
+  } else {
+    document.getElementById('overdue-banner').style.display='none';
+  }
+}
+
+function drawDonut(paid,balance){
+  const canvas=document.getElementById('donutChart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const total=paid+balance;
+  const W=180,H=180,cx=W/2,cy=H/2,r=70,ri=45;
+  canvas.width=W; canvas.height=H;
+  ctx.clearRect(0,0,W,H);
+  if(total===0){
+    ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);ctx.strokeStyle='#E2E0D8';ctx.lineWidth=ri*0.8;ctx.stroke();
+    return;
+  }
+  const paidAng=(paid/total)*2*Math.PI;
+  const draw=(start,end,color)=>{
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,end);ctx.closePath();
+    ctx.fillStyle=color;ctx.fill();
+  };
+  draw(-Math.PI/2,-Math.PI/2+paidAng,'#0F6E42');
+  draw(-Math.PI/2+paidAng,-Math.PI/2+2*Math.PI,'#B02E2E');
+  ctx.beginPath();ctx.arc(cx,cy,ri,0,2*Math.PI);ctx.fillStyle='#fff';ctx.fill();
+  ctx.fillStyle='#18170F';ctx.font='bold 20px IBM Plex Sans Arabic, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(total>0?Math.round(paid/total*100)+'%':'—',cx,cy);
+  document.getElementById('donutLegend').innerHTML=`
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#0F6E42;display:inline-block"></span> مسدَّد: ${fmt(paid)}</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#B02E2E;display:inline-block"></span> مستحق: ${fmt(balance)}</span>
+    </div>`;
+}
+
+// ======================== CONTRACT FORM ========================
+let editingId=null;
+function clearForm(){
+  editingId=null;
+  document.getElementById('form-title-lbl').textContent='بيانات العقد الجديد';
+  ['f-tenant','f-no','f-loc','f-activity','f-notes','f-total'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-start').valueAsDate=new Date();
+  document.getElementById('f-dur').value='1';
+  document.getElementById('f-durunit').value='year';
+  document.getElementById('f-adv').value='0';
+  document.getElementById('f-paymode').value='annual';
+}
+function editContract(){
+  const c=DB.contracts.find(x=>x.id===activeId);
+  if(!c) return;
+  editingId=activeId;
+  document.getElementById('form-title-lbl').textContent='تعديل بيانات العقد';
+  document.getElementById('f-tenant').value=c.tenant;
+  document.getElementById('f-no').value=c.contractNo||'';
+  document.getElementById('f-loc').value=c.location||'';
+  document.getElementById('f-activity').value=c.activity||'';
+  document.getElementById('f-notes').value=c.notes||'';
+  document.getElementById('f-start').value=c.startDate;
+  document.getElementById('f-dur').value=c.dur;
+  document.getElementById('f-durunit').value=c.durUnit;
+  document.getElementById('f-total').value=c.total;
+  document.getElementById('f-adv').value=c.advance||0;
+  document.getElementById('f-paymode').value=c.payMode;
+  showPage('new');
+}
+function saveContract(){
+  const tenant=document.getElementById('f-tenant').value.trim();
+  const total=parseFloat(document.getElementById('f-total').value)||0;
+  const start=document.getElementById('f-start').value;
+  if(!tenant||!total||!start){alert('يرجى إدخال المستأجر والتاريخ والقيمة');return;}
+  const data={
+    tenant,contractNo:document.getElementById('f-no').value.trim(),
+    location:document.getElementById('f-loc').value.trim(),
+    activity:document.getElementById('f-activity').value.trim(),
+    notes:document.getElementById('f-notes').value.trim(),
+    startDate:start,dur:parseInt(document.getElementById('f-dur').value)||1,
+    durUnit:document.getElementById('f-durunit').value,
+    total,advance:parseFloat(document.getElementById('f-adv').value)||0,
+    payMode:document.getElementById('f-paymode').value
+  };
+  if(editingId){
+    const c=DB.contracts.find(x=>x.id===editingId);
+    Object.assign(c,data); save(); showPage('contract',editingId);
+  } else {
+    const c={...data,id:'c_'+Date.now(),payments:[],renewals:[]};
+    DB.contracts.push(c); save(); showPage('contract',c.id);
+  }
+}
+function deleteContract(){
+  if(!confirm('هل أنت متأكد من حذف هذا العقد؟')) return;
+  DB.contracts=DB.contracts.filter(c=>c.id!==activeId);
+  save(); activeId=null; showPage('dashboard');
+}
+
+// ======================== GET SEGMENTS ========================
+function getAllSegments(c){
+  // returns array of segment objects (original + renewals merged)
+  const segs=[{...c}];
+  (c.renewals||[]).forEach(r=>segs.push({...c,...r,payments:r.payments||[],carryover:r.carryover||0}));
+  return segs;
+}
+function getActiveContract(){
+  return DB.contracts.find(x=>x.id===activeId);
+}
+function getActiveSegment(){
+  const c=getActiveContract();
+  if(!c) return null;
+  if(activeSub===null||activeSub===undefined||activeSub<0) return c;
+  return getAllSegments(c)[activeSub];
+}
+
+// ======================== CONTRACT PAGE ========================
+function renderContractPage(){
+  const c=getActiveContract();
+  if(!c){showPage('dashboard');return;}
+  const segs=getAllSegments(c);
+  activeSub=segs.length-1; // show latest segment
+  const seg=segs[activeSub];
+  const r=computeContract(seg);
+
+  document.getElementById('topbarTitle').textContent=c.tenant;
+  document.getElementById('topbarSub').textContent=(c.contractNo||'')+(c.location?' · '+c.location:'')+(c.activity?' · '+c.activity:'');
+
+  // stats
+  document.getElementById('c-stats').innerHTML=`
+    <div class="stat"><div class="stat-lbl">إجمالي الإيجار</div><div class="stat-val c-blue">${fmt(seg.total)}</div></div>
+    <div class="stat"><div class="stat-lbl">المبلغ المقدم</div><div class="stat-val c-green">${fmt(seg.advance||0)}</div></div>
+    <div class="stat"><div class="stat-lbl">صافي المستحق</div><div class="stat-val">${fmt(r.net)}</div></div>
+    <div class="stat"><div class="stat-lbl">إجمالي المسدَّد</div><div class="stat-val c-green">${fmt(r.totalPaid)}</div></div>
+    <div class="stat"><div class="stat-lbl">الرصيد المتبقي</div><div class="stat-val ${r.balance>0?'c-red':''}">${fmt(r.balance)}</div></div>
+    <div class="stat"><div class="stat-lbl">المتأخر</div><div class="stat-val ${r.overdueAmt>0?'c-amber':''}">${fmt(r.overdueAmt)}</div></div>
+    <div class="stat"><div class="stat-lbl">نسبة التحصيل</div><div class="stat-val c-teal">${r.pctPaid}%</div></div>
+    <div class="stat"><div class="stat-lbl">عدد الدفعات</div><div class="stat-val">${r.numP}</div></div>
+  `;
+
+  // overdue
+  if(r.overdueRows.length>0){
+    document.getElementById('c-overdue-banner').style.display='flex';
+    document.getElementById('c-overdue-txt').textContent=`${r.overdueRows.length} دفعة متأخرة بإجمالي ${fmt(r.overdueAmt)}`;
+  } else {
+    document.getElementById('c-overdue-banner').style.display='none';
+  }
+
+  // contract bar
+  document.getElementById('c-bar').innerHTML=`
+    <div>المستأجر: <span>${c.tenant}</span></div>
+    <div>رقم العقد: <span>${c.contractNo||'—'}</span></div>
+    <div>📍 <span>${c.location||'—'}</span></div>
+    <div>النشاط: <span>${c.activity||'—'}</span></div>
+    <div>بداية: <span>${fmtS(seg.startDate)}</span></div>
+    <div>نهاية: <span>${fmtS(r.ed)}</span></div>
+    <div>دورية: <span>${{monthly:'شهري',quarterly:'ربع سنوي',biannual:'نصف سنوي',annual:'سنوي'}[seg.payMode]}</span></div>
+    <div>يومي: <span>${fmt(r.dailyR)}</span></div>
+    ${c.renewals&&c.renewals.length>0?`<div><span class="tag-renewed">مجدَّد ${c.renewals.length} مرة</span></div>`:''}
+  `;
+
+  // completion
+  const col=r.pctPaid>=80?'':'warn';
+  document.getElementById('c-completion').innerHTML=`
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span>نسبة اكتمال السداد</span><b class="${r.pctPaid>=80?'gt':'rt'}">${r.pctPaid}%</b></div>
+    <div class="prog-wrap" style="height:10px"><div class="prog-fill ${col}" style="width:${r.pctPaid}%"></div></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px">${fmt(r.totalPaid)} مسدَّد من ${fmt(r.net)}</div>
+    <div style="margin-top:14px">
+      <div style="font-size:12px;margin-bottom:6px;font-weight:500">مؤشرات الدفعات:</div>
+      <div class="ind-row"><div class="ind-dot" style="background:var(--green)"></div><span>${r.payRows.filter(x=>x.isPaid).length} دفعة مكتملة السداد</span></div>
+      <div class="ind-row"><div class="ind-dot" style="background:var(--purple)"></div><span>${r.payRows.filter(x=>x.isPartial).length} دفعة سداد جزئي</span></div>
+      <div class="ind-row"><div class="ind-dot" style="background:var(--red)"></div><span>${r.overdueRows.length} دفعة متأخرة</span></div>
+      <div class="ind-row"><div class="ind-dot" style="background:var(--amber)"></div><span>${r.payRows.filter(x=>!x.isPaid&&!x.isOverdue).length} دفعة قادمة</span></div>
+    </div>
+  `;
+
+  // details
+  document.getElementById('c-details').innerHTML=`
+    <div class="ind-row"><span style="color:var(--muted);min-width:120px">إجمالي أيام العقد</span><b>${r.totalDays} يوم</b></div>
+    <div class="ind-row"><span style="color:var(--muted);min-width:120px">الإيجار اليومي</span><b>${fmt(r.dailyR)}</b></div>
+    <div class="ind-row"><span style="color:var(--muted);min-width:120px">قيمة كل دفعة</span><b>${fmt(r.eachP)}</b></div>
+    <div class="ind-row"><span style="color:var(--muted);min-width:120px">عدد التجديدات</span><b>${(c.renewals||[]).length}</b></div>
+    ${c.notes?`<div class="ind-row" style="flex-direction:column;align-items:start;gap:4px"><span style="color:var(--muted)">ملاحظات</span><span>${c.notes}</span></div>`:''}
+  `;
+}
+
+// ======================== PAY TABLE ========================
+function renderPayTable(){
+  const seg=getActiveSegment(); if(!seg) return;
+  const r=computeContract(seg);
+  const today_=today();
+  let rows=r.payRows;
+  if(payFilter==='paid') rows=rows.filter(x=>x.isPaid);
+  else if(payFilter==='partial') rows=rows.filter(x=>x.isPartial);
+  else if(payFilter==='overdue') rows=rows.filter(x=>x.isOverdue);
+  else if(payFilter==='pending') rows=rows.filter(x=>!x.isPaid&&!x.isOverdue);
+
+  // overdue banner
+  const od=r.overdueRows;
+  const ob=document.getElementById('c-overdue2');
+  if(od.length>0){ob.style.display='flex';document.getElementById('c-overdue2-txt').textContent=`${od.length} دفعة متأخرة بإجمالي ${fmt(r.overdueAmt)}`;}
+  else ob.style.display='none';
+
+  let tA=0,tP=0,tRm=0;
+  document.getElementById('pay-body').innerHTML=rows.map(row=>{
+    tA+=row.amount;tP+=row.paid;tRm+=row.remaining;
+    const st=row.isPaid?'<span class="badge b-paid">✓ مدفوع</span>':row.isOverdue?'<span class="badge b-over">⚠ متأخر</span>':row.isPartial?'<span class="badge b-part">◑ جزئي</span>':'<span class="badge b-pend">● قادم</span>';
+    const late=row.daysLate>0&&!row.isPaid?`<span class="rt">${row.daysLate} يوم</span>`:'—';
+    return `<tr>
+      <td class="num-cell">${row.num}</td>
+      <td>${fmtS(row.date)}</td>
+      <td>${fmt(row.amount)}</td>
+      <td class="${row.paid>0?'gt':''}">${row.paid>0?fmt(row.paid):'—'}</td>
+      <td class="${row.remaining>0?'rt':''}">${row.remaining>0?fmt(row.remaining):'—'}</td>
+      <td>${late}</td>
+      <td>${st}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('pay-foot').innerHTML=`<tr><td colspan="2">الإجمالي (${rows.length})</td><td>${fmt(tA)}</td><td class="gt">${fmt(tP)}</td><td class="rt">${fmt(tRm)}</td><td></td><td></td></tr>`;
+}
+
+// ======================== MONTHLY TABLE ========================
+function renderMonthTable(){
+  const seg=getActiveSegment(); if(!seg) return;
+  const r=computeContract(seg);
+  let rows=r.monthRows;
+  if(monthFilter==='past') rows=rows.filter(x=>x.past);
+  else if(monthFilter==='future') rows=rows.filter(x=>!x.past);
+
+  let tM=0,tD=0;
+  document.getElementById('month-body').innerHTML=rows.map((row,i)=>{
+    tM+=row.monthly; tD+=row.days;
+    const partTag=row.isPartial?`<span class="badge b-part">${row.days}/${row.daysInMonth} يوم</span>`:`<span style="font-size:10px;color:var(--muted)">${row.days} يوم</span>`;
+    const bar=`<div class="pb-wrap"><div class="pb-fill" style="width:${row.pct}%"></div></div><span style="font-size:11px;color:var(--muted)">${row.pct}%</span>`;
+    return `<tr class="${i%2?'stripe':''}">
+      <td class="num-cell">${row.num}</td>
+      <td>${fmtM(row.date)}<div style="font-size:10px;color:var(--muted)">${fmtS(row.date)} — ${fmtS(row.monthEnd)}</div>${partTag}</td>
+      <td>${row.days}</td>
+      <td class="pt">${fmt(row.monthly)}</td>
+      <td style="font-size:11px;color:var(--muted)">${fmt(row.cumAcc)}</td>
+      <td>${bar}</td>
+    </tr>`;
+  }).join('');
+  const last=rows[rows.length-1];
+  document.getElementById('month-foot').innerHTML=`<tr><td></td><td>الإجمالي (${rows.length} فترة)</td><td>${tD}</td><td class="pt">${fmt(tM)}</td><td>${last?fmt(last.cumAcc):'—'}</td><td></td></tr>`;
+}
+
+// ======================== LEDGER ========================
+function renderLedger(){
+  const seg=getActiveSegment(); if(!seg) return;
+  const r=computeContract(seg);
+  let rows=r.ledger;
+  if(ledgerFilter==='payments') rows=rows.filter(x=>x.type==='payment'||x.type==='advance'||x.type==='carry');
+
+  let tD=0,tC=0;
+  document.getElementById('ledger-body').innerHTML=rows.map((row,i)=>{
+    tD+=row.debit||0; tC+=row.credit||0;
+    const icon={contract:'📄',advance:'💰',carry:'🔄',due:'📋',payment:'💳'}[row.type]||'•';
+    const dTag=row.debit>0?`<span class="rt">${fmt(row.debit)}</span>`:'—';
+    const cTag=row.credit>0?`<span class="gt">${fmt(row.credit)}</span>`:'—';
+    const balCol=row.balance>0?`<span class="rt">${fmt(row.balance)}</span>`:`<span class="gt">—</span>`;
+    const del=row.type==='payment'?`<button class="del-btn" onclick="deletePayment(${row._idx})">✕</button>`:'';
+    return `<tr class="${i%2?'stripe':''}">
+      <td class="num-cell">${i+1}</td>
+      <td>${fmtS(row.date)}</td>
+      <td>${icon} ${row.desc}</td>
+      <td>${row.method!=='—'?row.method:'—'}</td>
+      <td style="font-size:11px;color:var(--muted)">${row.ref!=='—'?row.ref:'—'}</td>
+      <td>${dTag}</td>
+      <td>${cTag}</td>
+      <td>${balCol}</td>
+      <td style="font-size:11px;max-width:100px;overflow:hidden;text-overflow:ellipsis">${row.note||'—'}</td>
+      <td>${del}</td>
+    </tr>`;
+  }).join('');
+  const finalBal=rows.length>0?rows[rows.length-1].balance:0;
+  document.getElementById('ledger-foot').innerHTML=`<tr><td colspan="5">الإجمالي</td><td class="rt">${fmt(tD)}</td><td class="gt">${fmt(tC)}</td><td class="${finalBal>0?'rt':''}">${fmt(finalBal)}</td><td colspan="2"></td></tr>`;
+}
+
+function addPayment(){
+  const c=getActiveContract(); if(!c) return;
+  const d=document.getElementById('l-date').value;
+  const a=parseFloat(document.getElementById('l-amount').value)||0;
+  if(!d||!a){alert('أدخل التاريخ والمبلغ');return;}
+  const seg=activeSub>0?(c.renewals[activeSub-1]):c;
+  if(!seg.payments) seg.payments=[];
+  seg.payments.push({date:d,amount:a,method:document.getElementById('l-method').value,ref:document.getElementById('l-ref').value,note:document.getElementById('l-note').value});
+  document.getElementById('l-amount').value='';
+  document.getElementById('l-ref').value='';
+  document.getElementById('l-note').value='';
+  save(); renderContractPage(); renderLedger(); renderPayTable();
+}
+
+function deletePayment(idx){
+  const c=getActiveContract(); if(!c) return;
+  const seg=activeSub>0?(c.renewals[activeSub-1]):c;
+  seg.payments.splice(idx,1);
+  save(); renderContractPage(); renderLedger(); renderPayTable();
+}
+
+// ======================== RENEWALS ========================
+function renderRenewals(){
+  const c=getActiveContract(); if(!c) return;
+  const segs=getAllSegments(c);
+  if(segs.length===1){
+    document.getElementById('renewals-list').innerHTML='<div class="card" style="text-align:center;color:var(--muted);padding:2rem">لا توجد تجديدات بعد. <button class="btn btn-teal" onclick="openRenewModal()" style="margin-right:10px">🔄 تجديد الآن</button></div>';
+    return;
+  }
+  document.getElementById('renewals-list').innerHTML=segs.map((seg,i)=>{
+    if(i===0) return '';
+    const r=computeContract(seg);
+    return `<div class="card card-sm" style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><span class="tag-renewed">تجديد ${i}</span> <b>${fmtS(seg.startDate)}</b> — <b>${fmtS(r.ed)}</b></div>
+        <div style="display:flex;gap:8px">
+          <span class="gt">${fmt(r.totalPaid)} مسدَّد</span>
+          <span class="rt">${fmt(r.balance)} متبقي</span>
+          ${seg.carryover>0?`<span class="c-amber">رُحِّل: ${fmt(seg.carryover)}</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ======================== RENEW MODAL ========================
+function openRenewModal(){
+  const c=getActiveContract(); if(!c) return;
+  // compute remaining balance
+  const segs=getAllSegments(c);
+  let totalBalance=0;
+  segs.forEach(seg=>{const r=computeContract(seg);totalBalance+=r.balance;});
+  const lastSeg=segs[segs.length-1];
+  const lastR=computeContract(lastSeg);
+  // set start date to day after last contract end
+  const nextDay=new Date(lastR.ed); nextDay.setDate(nextDay.getDate()+1);
+  document.getElementById('r-start').value=nextDay.toISOString().split('T')[0];
+  document.getElementById('r-dur').value='1';
+  document.getElementById('r-durunit').value='year';
+  document.getElementById('r-total').value='';
+  document.getElementById('r-adv').value='0';
+  document.getElementById('r-carry-info').innerHTML=totalBalance>0
+    ?`💡 يوجد رصيد غير مسدَّد من العقد السابق: <b>${fmt(totalBalance)}</b> — سيُرحَّل تلقائياً للعقد الجديد.`
+    :'✅ لا يوجد رصيد متبقي من العقد السابق.';
+  document.getElementById('renewModal').style.display='flex';
+}
+function closeModal(){ document.getElementById('renewModal').style.display='none'; }
+function confirmRenew(){
+  const c=getActiveContract(); if(!c) return;
+  const start=document.getElementById('r-start').value;
+  const total=parseFloat(document.getElementById('r-total').value)||0;
+  if(!start||!total){alert('أدخل تاريخ البداية والقيمة');return;}
+  const segs=getAllSegments(c);
+  let carryover=0;
+  segs.forEach(seg=>{const r=computeContract(seg);carryover+=r.balance;});
+  if(!c.renewals) c.renewals=[];
+  c.renewals.push({
+    startDate:start,
+    dur:parseInt(document.getElementById('r-dur').value)||1,
+    durUnit:document.getElementById('r-durunit').value,
+    total,advance:parseFloat(document.getElementById('r-adv').value)||0,
+    payMode:document.getElementById('r-paymode').value,
+    payments:[],carryover:Math.max(carryover,0)
+  });
+  save(); closeModal(); activeSub=getAllSegments(c).length-1; renderContractPage(); renderSidebar();
+}
+
+// ======================== FILTERS ========================
+function fPay(t,b){ payFilter=t; b.closest('.filters').querySelectorAll('.fb').forEach(x=>x.classList.remove('on')); b.classList.add('on'); renderPayTable(); }
+function fMonth(t,b){ monthFilter=t; b.closest('.filters').querySelectorAll('.fb').forEach(x=>x.classList.remove('on')); b.classList.add('on'); renderMonthTable(); }
+function fLedger(t,b){ ledgerFilter=t; b.closest('.filters').querySelectorAll('.fb').forEach(x=>x.classList.remove('on')); b.classList.add('on'); renderLedger(); }
+
+// ======================== EXCEL EXPORT ========================
+function buildExcelWorkbook(c){
+  const wb=XLSX.utils.book_new();
+  const segs=getAllSegments(c);
+  segs.forEach((seg,si)=>{
+    const r=computeContract(seg);
+    const label=si===0?'عقد أصلي':`تجديد ${si}`;
+
+    // Payments sheet
+    const payData=[['#','تاريخ الاستحقاق','القيمة','المدفوع','المتبقي','الحالة']];
+    r.payRows.forEach(row=>{
+      payData.push([row.num,fmtS(row.date),row.amount,row.paid,row.remaining,row.isPaid?'مدفوع':row.isOverdue?'متأخر':row.isPartial?'جزئي':'قادم']);
+    });
+    const wsPay=XLSX.utils.aoa_to_sheet(payData);
+    XLSX.utils.book_append_sheet(wb,wsPay,`دفعات - ${label}`);
+
+    // Monthly sheet
+    const monData=[['#','الشهر','من','إلى','الأيام','الاستحقاق الشهري','المتراكم','النسبة %']];
+    r.monthRows.forEach(row=>{
+      monData.push([row.num,fmtM(row.date),fmtS(row.date),fmtS(row.monthEnd),row.days,Math.round(row.monthly),Math.round(row.cumAcc),row.pct+'%']);
+    });
+    const wsMon=XLSX.utils.aoa_to_sheet(monData);
+    XLSX.utils.book_append_sheet(wb,wsMon,`شهري - ${label}`);
+
+    // Ledger sheet
+    const ledData=[['#','التاريخ','البيان','طريقة الدفع','المرجع','مدين','دائن','الرصيد','ملاحظة']];
+    r.ledger.forEach((row,i)=>{
+      ledData.push([i+1,fmtS(row.date),row.desc,row.method,row.ref,row.debit||0,row.credit||0,row.balance,row.note||'']);
+    });
+    const wsLed=XLSX.utils.aoa_to_sheet(ledData);
+    XLSX.utils.book_append_sheet(wb,wsLed,`سجل - ${label}`);
+  });
+
+  // Summary sheet
+  const sumData=[['بند','القيمة'],
+    ['المستأجر',c.tenant],['رقم العقد',c.contractNo||'—'],['الموقع',c.location||'—'],
+    ['النشاط',c.activity||'—'],['ملاحظات',c.notes||'—'],['',''],
+  ];
+  segs.forEach((seg,si)=>{
+    const r=computeContract(seg);
+    const lbl=si===0?'العقد الأصلي':`التجديد ${si}`;
+    sumData.push([lbl,'']);
+    sumData.push(['  من',fmtS(seg.startDate)],['  إلى',fmtS(r.ed)],['  الإجمالي',seg.total],['  المقدم',seg.advance||0],['  صافي المستحق',r.net],['  المسدَّد',r.totalPaid],['  المتبقي',r.balance],['  الرصيد المرحّل',seg.carryover||0],['','']);
+  });
+  const wsSum=XLSX.utils.aoa_to_sheet(sumData);
+  XLSX.utils.book_append_sheet(wb,wsSum,'ملخص');
+  return wb;
+}
+
+function exportContractExcel(){
+  const c=getActiveContract(); if(!c) return;
+  const wb=buildExcelWorkbook(c);
+  XLSX.writeFile(wb,`عقد_${c.tenant}_${c.contractNo||c.id}.xlsx`);
+}
+
+function exportAllExcel(){
+  if(!DB.contracts.length){alert('لا توجد عقود');return;}
+  if(DB.contracts.length===1){ exportContractExcel(); return; }
+  const wb=XLSX.utils.book_new();
+  DB.contracts.forEach(c=>{
+    const sub=buildExcelWorkbook(c);
+    sub.SheetNames.forEach(name=>{
+      const shortName=(c.tenant.slice(0,8)+' '+name).slice(0,31);
+      XLSX.utils.book_append_sheet(wb,sub.Sheets[name],shortName);
+    });
+  });
+  // Dashboard summary
+  const dashData=[['#','المستأجر','الموقع','النشاط','الإجمالي','المسدَّد','المتبقي','المتأخر']];
+  DB.contracts.forEach((c,i)=>{
+    const segs=getAllSegments(c);
+    let tot=0,paid=0,bal=0,od=0;
+    segs.forEach(seg=>{const r=computeContract(seg);tot+=r.net;paid+=r.totalPaid;bal+=r.balance;od+=r.overdueAmt;});
+    dashData.push([i+1,c.tenant,c.location||'—',c.activity||'—',tot,paid,bal,od]);
+  });
+  const wsDash=XLSX.utils.aoa_to_sheet(dashData);
+  XLSX.utils.book_append_sheet(wb,wsDash,'ملخص الكل');
+  XLSX.writeFile(wb,'جميع_عقود_الإيجار.xlsx');
+}
+
+// ======================== INIT ========================
+document.getElementById('f-start').valueAsDate=new Date();
+document.getElementById('l-date').valueAsDate=new Date();
+showPage('dashboard');
+</script>
+</body>
+</html>
