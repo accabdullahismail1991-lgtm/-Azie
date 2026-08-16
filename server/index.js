@@ -4,6 +4,11 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 
+// Applying the (idempotent) seed on every boot means a fresh deployment
+// gets its schema, apps, and first super-admin without a separate manual
+// step — safe to run repeatedly since it only inserts what's missing.
+require('./db/seed');
+
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const toolsRoutes = require('./routes/tools');
