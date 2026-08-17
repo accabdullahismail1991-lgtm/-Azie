@@ -67,6 +67,14 @@ const APPS = [
     accent: '#E39A3D',
     tags: ['مبيعات', 'تحليلات', 'متوسط متحرك'],
   },
+  {
+    id: 'cashflow-riyadh',
+    title: 'دفتر التدفقات النقدية — الرياض',
+    description: 'إدارة مصروفات وإيرادات كل مشروع على حدة مع سجل حركات مجمّع، رصيد تراكمي، تصدير CSV، وطباعة.',
+    icon: '💵',
+    accent: '#3D8361',
+    tags: ['تدفقات نقدية', 'مشاريع', 'مصروفات وإيرادات'],
+  },
 ];
 
 const SCREENS = {
@@ -147,6 +155,11 @@ const SCREENS = {
   // whole tool rather than a per-section breakdown like the other apps.
   'sales-pulse': [
     ['dashboard', 'لوحة نبض المبيعات'],
+  ],
+  // Project chips + entry/ledger toggle are all in-page navigation within
+  // one tool, not separate functional areas — one screen, same as sales-pulse.
+  'cashflow-riyadh': [
+    ['dashboard', 'دفتر التدفقات النقدية'],
   ],
 };
 
