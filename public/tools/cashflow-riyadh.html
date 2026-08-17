@@ -191,8 +191,8 @@
   .filter-bar .fb-sep{ color:var(--text-soft); font-size:.78rem; }
   .filter-bar .spacer{ flex:1 1 auto; }
 
-  .ledger-panel{ background:var(--paper); color:var(--ink); border-radius:14px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.28); }
-  table.ledger-table{ width:100%; border-collapse:collapse; font-size:.82rem; }
+  .ledger-panel{ background:var(--paper); color:var(--ink); border-radius:14px; overflow-x:auto; box-shadow:0 10px 30px rgba(0,0,0,0.28); }
+  table.ledger-table{ width:100%; min-width:640px; border-collapse:collapse; font-size:.82rem; }
   table.ledger-table th{ text-align:right; font-weight:700; color:var(--brass-soft); padding:9px 10px; border-bottom:1px solid var(--paper-dim); font-size:.72rem; position:sticky; top:0; background:var(--paper);}
   table.ledger-table td{ padding:9px 10px; border-bottom:1px solid var(--paper-dim); vertical-align:middle; }
   table.ledger-table tr:last-child td{ border-bottom:none; }
@@ -225,7 +225,7 @@
   <header class="top">
     <div class="brand">
       <h1><span class="pin"></span>دفتر التدفقات النقدية</h1>
-      <p>إدارة المصروفات والإيرادات لكل مشروع على حدة — الرياض</p>
+      <p>إدارة التدفقات الداخلة والخارجة لكل مشروع على حدة — الرياض</p>
     </div>
     <div class="stamps" id="grandStamps"></div>
   </header>
@@ -233,7 +233,7 @@
   <div class="import-bar">
     <button class="icon-btn" id="btnImportExcel">⭱ استيراد من إكسل</button>
     <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display:none;">
-    <span class="hint">الأعمدة المطلوبة بالملف: التاريخ، النوع (إيراد/مصروف)، المشروع، البيان، ملاحظات، المبلغ، ونسبة الضريبة (اختياري، للإيرادات فقط) — نفس أعمدة تصدير CSV تماماً. العمليات المستوردة تُضاف لما هو موجود ولا تحذف أي شيء سابق.</span>
+    <span class="hint">الأعمدة المطلوبة بالملف: التاريخ، النوع (تدفق داخل/تدفق خارج)، المشروع، البيان، ملاحظات، المبلغ، و🧾 نسبة الضريبة (اختياري، للتدفقات الداخلة فقط) — نفس أعمدة تصدير CSV تماماً. العمليات المستوردة تُضاف لما هو موجود ولا تحذف أي شيء سابق.</span>
   </div>
 
   <div class="chips-row" id="chipsRow"></div>
@@ -451,13 +451,22 @@ function renderStamps(){
   const g = grandTotals();
   const el = document.getElementById('grandStamps');
   el.innerHTML = `
-    <div class="stamp exp"><span class="lbl">إجمالي المصروفات</span><span class="val tabular">${fmt(g.exp)}</span></div>
-    <div class="stamp rev"><span class="lbl">إجمالي الإيرادات</span><span class="val tabular">${fmt(g.revPre)}</span></div>
-    <div class="stamp net"><span class="lbl">صافي الربح</span><span class="val tabular">${fmt(g.net)}</span></div>
+    <div class="stamp exp"><span class="lbl">إجمالي التدفقات الخارجة</span><span class="val tabular">${fmt(g.exp)}</span></div>
+    <div class="stamp rev"><span class="lbl">إجمالي التدفقات الداخلة</span><span class="val tabular">${fmt(g.revPre)}</span></div>
+    <div class="stamp net"><span class="lbl">صافي التدفق النقدي</span><span class="val tabular">${fmt(g.net)}</span></div>
   `;
 }
 
 function isAllView(){ return state.activeId==='__all__'; }
+
+// A filter set while looking at one project/view (search text, date range,
+// type, or the combined-view's project dropdown) used to stay silently
+// applied after switching to a different project or to "كل الحركات" —
+// making it look like transactions had gone missing. Reset on every
+// deliberate navigation so the new view always starts showing everything.
+function resetLedgerFilters(){
+  ledgerFilters = { type:'all', q:'', from:'', to:'', project:'all', sort:'desc' };
+}
 
 function renderChips(){
   const row = document.getElementById('chipsRow');
@@ -467,7 +476,7 @@ function renderChips(){
     const allChip = document.createElement('div');
     allChip.className = 'chip chip-all' + (isAllView()?' active':'');
     allChip.innerHTML = `<span class="name">📒 كل الحركات</span><span class="net tabular">كل المشاريع مجتمعة</span>`;
-    allChip.onclick = ()=>{ state.activeId = '__all__'; render(); };
+    allChip.onclick = ()=>{ state.activeId = '__all__'; resetLedgerFilters(); render(); };
     row.appendChild(allChip);
   }
 
@@ -476,7 +485,7 @@ function renderChips(){
     const div = document.createElement('div');
     div.className = 'chip' + (p.id===state.activeId?' active':'');
     div.innerHTML = `<span class="name">${escapeHtml(p.name)}</span><span class="net tabular ${net>=0?'pos':'neg'}">${net>=0?'+':''}${fmt(net)} صافي</span>`;
-    div.onclick = ()=>{ state.activeId = p.id; render(); };
+    div.onclick = ()=>{ state.activeId = p.id; resetLedgerFilters(); render(); };
     row.appendChild(div);
   });
   const addChip = document.createElement('div');
@@ -518,7 +527,7 @@ function renderDetail(){
       </div>
     </div>
     ${tabsHtml}
-    ${p.name.includes('عامة') ? `<div class="assumption">ملاحظة: هذه المصروفات لم تكن مربوطة بمشروع محدد في الملف الأصلي. انقلها لمشروعها الصحيح كلما استطعت تمييزها.</div>` : ''}
+    ${p.name.includes('عامة') ? `<div class="assumption">ملاحظة: هذه التدفقات الخارجة لم تكن مربوطة بمشروع محدد في الملف الأصلي. انقلها لمشروعها الصحيح كلما استطعت تمييزها.</div>` : ''}
     <div id="viewBody"></div>
   `;
 
@@ -544,23 +553,23 @@ function renderEntryView(body, p){
   body.innerHTML = `
     <div class="ledgers">
       <div class="ledger exp">
-        <div class="lhead"><h3>المصروفات</h3><span class="total tabular">${fmt(expTotal)} ر.س</span></div>
+        <div class="lhead"><h3>التدفقات الخارجة</h3><span class="total tabular">${fmt(expTotal)} ر.س</span></div>
         ${renderExpenseTable(p)}
-        <div class="add-row"><button data-action="add-exp">+ إضافة مصروف</button></div>
+        <div class="add-row"><button data-action="add-exp">+ إضافة تدفق خارج</button></div>
       </div>
       <div class="ledger rev">
-        <div class="lhead"><h3>الإيرادات</h3><span class="total tabular">${fmt(rev.incl)} ر.س شامل الضريبة</span></div>
+        <div class="lhead"><h3>التدفقات الداخلة</h3><span class="total tabular">${fmt(rev.incl)} ر.س شامل 🧾 الضريبة</span></div>
         ${renderRevenueTable(p)}
-        <div class="add-row"><button data-action="add-rev">+ إضافة إيراد</button></div>
+        <div class="add-row"><button data-action="add-rev">+ إضافة تدفق داخل</button></div>
       </div>
     </div>
     <div class="summary-bar">
-      <div class="sum-item"><span class="lbl">المصروفات</span><span class="val tabular">${fmt(expTotal)}</span></div>
-      <div class="sum-item"><span class="lbl">الإيرادات (قبل الضريبة)</span><span class="val tabular">${fmt(rev.pre)}</span></div>
-      <div class="sum-item"><span class="lbl">ضريبة القيمة المضافة</span><span class="val tabular">${fmt(rev.tax)}</span></div>
-      <div class="sum-item"><span class="lbl">الإيرادات شاملة الضريبة</span><span class="val tabular">${fmt(rev.incl)}</span></div>
-      <div class="sum-item net"><span class="lbl">صافي الربح</span><span class="val tabular ${net>=0?'pos':'neg'}">${fmt(net)}</span></div>
-      <div class="sum-item"><span class="lbl">هامش الربح</span><span class="val tabular">${margin.toFixed(1)}%</span></div>
+      <div class="sum-item"><span class="lbl">التدفقات الخارجة</span><span class="val tabular">${fmt(expTotal)}</span></div>
+      <div class="sum-item"><span class="lbl">التدفقات الداخلة (قبل الضريبة)</span><span class="val tabular">${fmt(rev.pre)}</span></div>
+      <div class="sum-item"><span class="lbl">🧾 ضريبة القيمة المضافة</span><span class="val tabular">${fmt(rev.tax)}</span></div>
+      <div class="sum-item"><span class="lbl">التدفقات الداخلة شاملة الضريبة</span><span class="val tabular">${fmt(rev.incl)}</span></div>
+      <div class="sum-item net"><span class="lbl">صافي التدفق النقدي</span><span class="val tabular ${net>=0?'pos':'neg'}">${fmt(net)}</span></div>
+      <div class="sum-item"><span class="lbl">هامش التدفق النقدي</span><span class="val tabular">${margin.toFixed(1)}%</span></div>
     </div>
   `;
 
@@ -617,23 +626,31 @@ function applyLedgerFilters(rows){
   return out;
 }
 
-function filterBarHtml(scopeProjects, includeProjectFilter){
+function isLedgerFilterActive(){
+  return ledgerFilters.type!=='all' || ledgerFilters.q!=='' || ledgerFilters.from!=='' ||
+    ledgerFilters.to!=='' || ledgerFilters.project!=='all';
+}
+
+function filterBarHtml(scopeProjects, includeProjectFilter, shownCount, totalCount){
   const projectOptions = includeProjectFilter
     ? `<select id="lgProject"><option value="all">كل المشاريع</option>${scopeProjects.map(p=>`<option value="${p.id}" ${ledgerFilters.project===p.id?'selected':''}>${escapeHtml(p.name)}</option>`).join('')}</select>`
     : '';
+  const filterActive = isLedgerFilterActive();
   return `
     <div class="filter-bar">
       <input type="text" id="lgSearch" placeholder="ابحث في البيان أو الملاحظات…" value="${escapeAttr(ledgerFilters.q)}">
       <select id="lgType">
         <option value="all" ${ledgerFilters.type==='all'?'selected':''}>كل الحركات</option>
-        <option value="rev" ${ledgerFilters.type==='rev'?'selected':''}>إيرادات فقط</option>
-        <option value="exp" ${ledgerFilters.type==='exp'?'selected':''}>مصروفات فقط</option>
+        <option value="rev" ${ledgerFilters.type==='rev'?'selected':''}>تدفقات داخلة فقط</option>
+        <option value="exp" ${ledgerFilters.type==='exp'?'selected':''}>تدفقات خارجة فقط</option>
       </select>
       ${projectOptions}
       <input type="date" id="lgFrom" value="${ledgerFilters.from}">
       <span class="fb-sep">إلى</span>
       <input type="date" id="lgTo" value="${ledgerFilters.to}">
       <button class="icon-btn" id="lgSortToggle">${ledgerFilters.sort==='asc'?'↑ الأقدم أولاً':'↓ الأحدث أولاً'}</button>
+      ${filterActive ? `<button class="icon-btn" id="lgClearFilters" style="color:var(--expense);border-color:var(--expense);">✕ مسح الفلاتر</button>` : ''}
+      <span class="fb-sep" style="${filterActive?'color:var(--brass);font-weight:700;':''}">${filterActive ? `يعرض ${shownCount} من ${totalCount} حركة (فلتر مُفعّل)` : `${totalCount} حركة إجمالاً`}</span>
       <span class="spacer"></span>
       <button class="icon-btn" id="lgExport">⭳ تصدير CSV</button>
       <button class="icon-btn" id="lgPrint">🖶 طباعة</button>
@@ -646,7 +663,7 @@ function ledgerTableHtml(rows, balMap, includeProjectCol){
     const bal = balMap[r.id]||0;
     return `<tr>
       <td class="tabular">${r.date||'—'}</td>
-      <td><span class="tbadge ${r.type}">${r.type==='rev'?'إيراد':'مصروف'}</span></td>
+      <td><span class="tbadge ${r.type}">${r.type==='rev'?'تدفق داخل':'تدفق خارج'}</span></td>
       ${includeProjectCol ? `<td><span class="proj-tag">${escapeHtml(r.projName)}</span></td>` : ''}
       <td>${escapeHtml(r.desc)||'—'}</td>
       <td>${escapeHtml(r.note)||'—'}</td>
@@ -669,6 +686,7 @@ function bindFilterBarEvents(scopeProjects, rerender){
   $('lgFrom').onchange = e=>{ ledgerFilters.from = e.target.value; rerender(); };
   $('lgTo').onchange = e=>{ ledgerFilters.to = e.target.value; rerender(); };
   $('lgSortToggle').onclick = ()=>{ ledgerFilters.sort = ledgerFilters.sort==='asc'?'desc':'asc'; rerender(); };
+  if($('lgClearFilters')) $('lgClearFilters').onclick = ()=>{ resetLedgerFilters(); rerender(); };
   $('lgExport').onclick = ()=>exportLedgerCSV(applyLedgerFilters(buildLedgerRows(scopeProjects)), scopeProjects.length===1?scopeProjects[0].name:'كل-الحركات');
   $('lgPrint').onclick = ()=>printLedgerRows(
     applyLedgerFilters(buildLedgerRows(scopeProjects)),
@@ -679,24 +697,26 @@ function bindFilterBarEvents(scopeProjects, rerender){
 }
 
 function renderProjectLedger(body, p){
-  const rows = applyLedgerFilters(buildLedgerRows([p]));
-  const balMap = computeRunningBalances(buildLedgerRows([p]));
+  const allRows = buildLedgerRows([p]);
+  const rows = applyLedgerFilters(allRows);
+  const balMap = computeRunningBalances(allRows);
   body.innerHTML = `
-    ${filterBarHtml([p], false)}
+    ${filterBarHtml([p], false, rows.length, allRows.length)}
     <div class="ledger-panel">${ledgerTableHtml(rows, balMap, false)}</div>
   `;
   bindFilterBarEvents([p], ()=>renderProjectLedger(body, p));
 }
 
 function renderCombinedLedger(container){
-  const rows = applyLedgerFilters(buildLedgerRows(state.projects));
-  const balMap = computeRunningBalances(buildLedgerRows(state.projects));
+  const allRows = buildLedgerRows(state.projects);
+  const rows = applyLedgerFilters(allRows);
+  const balMap = computeRunningBalances(allRows);
   container.innerHTML = `
     <div class="proj-head">
       <h2 class="display">📒 كل الحركات — كل المشاريع</h2>
     </div>
     <div class="assumption">هذا سجل عرض فقط يجمع كل المشاريع مع رصيد تراكمي. للتعديل أو الإضافة، ادخل على المشروع المطلوب من الأعلى.</div>
-    ${filterBarHtml(state.projects, true)}
+    ${filterBarHtml(state.projects, true, rows.length, allRows.length)}
     <div class="ledger-panel">${ledgerTableHtml(rows, balMap, true)}</div>
   `;
   bindFilterBarEvents(state.projects, ()=>renderCombinedLedger(container));
@@ -707,7 +727,7 @@ function exportLedgerCSV(rows, label){
   const lines = [headers.join(',')];
   rows.forEach(r=>{
     const line = [
-      r.date||'', r.type==='rev'?'إيراد':'مصروف', r.projName,
+      r.date||'', r.type==='rev'?'تدفق داخل':'تدفق خارج', r.projName,
       '"'+(r.desc||'').replace(/"/g,'""')+'"',
       '"'+(r.note||'').replace(/"/g,'""')+'"',
       (r.type==='rev'?'':'-')+r.amount
@@ -726,7 +746,7 @@ function printLedgerRows(rows, balMap, title, includeProjectCol){
   const w = window.open('', '_blank');
   if(!w) return;
   const body = rows.map(r=>`<tr>
-    <td>${r.date||''}</td><td>${r.type==='rev'?'إيراد':'مصروف'}</td>
+    <td>${r.date||''}</td><td>${r.type==='rev'?'تدفق داخل':'تدفق خارج'}</td>
     ${includeProjectCol?`<td>${escapeHtml(r.projName)}</td>`:''}
     <td>${escapeHtml(r.desc)}</td><td>${escapeHtml(r.note)}</td>
     <td>${r.type==='rev'?'+':'-'}${fmt(r.amount)}</td>
@@ -750,7 +770,7 @@ function printLedgerRows(rows, balMap, title, includeProjectCol){
 }
 
 function renderExpenseTable(p){
-  if(!p.expenses.length) return `<div class="empty-note">لا توجد مصروفات مسجلة بعد</div>`;
+  if(!p.expenses.length) return `<div class="empty-note">لا توجد تدفقات خارجة مسجلة بعد</div>`;
   const rows = p.expenses.map((e,i)=>`
     <tr data-id="${e.id}">
       <td class="no">${i+1}</td>
@@ -766,7 +786,7 @@ function renderExpenseTable(p){
 }
 
 function renderRevenueTable(p){
-  if(!p.revenues.length) return `<div class="empty-note">لا توجد إيرادات مسجلة بعد</div>`;
+  if(!p.revenues.length) return `<div class="empty-note">لا توجد تدفقات داخلة مسجلة بعد</div>`;
   const rows = p.revenues.map((r,i)=>{
     const amt = Number(r.amount)||0, rate=Number(r.taxRate)||0;
     const tax = amt*rate, total = amt+tax;
@@ -775,14 +795,14 @@ function renderRevenueTable(p){
       <td class="no">${i+1}</td>
       <td style="width:100px"><input type="date" class="f-date" value="${r.date||''}"></td>
       <td style="width:90px"><input type="text" class="f-amount amount" value="${r.amount}" inputmode="decimal"></td>
-      <td class="derived tabular" data-derived>${fmt(total)}</td>
+      <td class="derived tabular" data-derived>${fmt(total)}<br><span style="font-size:.66rem;font-weight:400;color:#8b806a;">🧾 ${(rate*100).toFixed(0)}%</span></td>
       <td><input type="text" class="f-desc" value="${escapeAttr(r.desc)}" placeholder="البيان"></td>
       <td style="width:110px"><input type="text" class="f-note" value="${escapeAttr(r.note||'')}" placeholder="ملاحظات"></td>
       <td class="del-cell"><button class="del-btn" data-del="${r.id}">✕</button></td>
     </tr>`;
   }).join('');
   return `<table class="entries">
-    <thead><tr><th>م</th><th>التاريخ</th><th>المبلغ</th><th>شامل الضريبة</th><th>البيان</th><th>ملاحظات</th><th></th></tr></thead>
+    <thead><tr><th>م</th><th>التاريخ</th><th>المبلغ</th><th>🧾 شامل الضريبة</th><th>البيان</th><th>ملاحظات</th><th></th></tr></thead>
     <tbody>${rows}</tbody></table>`;
 }
 
@@ -815,8 +835,8 @@ function bindRevenueEvents(p){
     tr.querySelector('.f-date').onchange = e=>{ entry.date=e.target.value; touchTotals(p); scheduleSave(); };
     tr.querySelector('.f-amount').oninput = e=>{
       entry.amount=parseFloat(e.target.value)||0;
-      const amt=entry.amount, tax=amt*(entry.taxRate||0);
-      tr.querySelector('[data-derived]').textContent = fmt(amt+tax);
+      const amt=entry.amount, rate=entry.taxRate||0, tax=amt*rate;
+      tr.querySelector('[data-derived]').innerHTML = `${fmt(amt+tax)}<br><span style="font-size:.66rem;font-weight:400;color:#8b806a;">🧾 ${(rate*100).toFixed(0)}%</span>`;
       touchTotals(p);
     };
     tr.querySelector('.f-amount').onchange = ()=>scheduleSave();
@@ -839,7 +859,7 @@ function touchTotals(p){
   const margin = rev.pre>0 ? (net/rev.pre*100) : 0;
 
   document.querySelector('.ledger.exp .total').textContent = fmt(expTotal) + ' ر.س';
-  document.querySelector('.ledger.rev .total').textContent = fmt(rev.incl) + ' ر.س شامل الضريبة';
+  document.querySelector('.ledger.rev .total').textContent = fmt(rev.incl) + ' ر.س شامل 🧾 الضريبة';
 
   const sumVals = document.querySelectorAll('.summary-bar .sum-item .val');
   if(sumVals.length===6){
@@ -925,7 +945,7 @@ function openRenameModal(p){
 function openDeleteProjectModal(p){
   openModal(`
     <h4>حذف المشروع؟</h4>
-    <p>سيتم حذف "${escapeHtml(p.name)}" وكل ما يحتويه من مصروفات وإيرادات نهائيًا.</p>
+    <p>سيتم حذف "${escapeHtml(p.name)}" وكل ما يحتويه من تدفقات داخلة وخارجة نهائيًا.</p>
     <div class="modal-actions">
       <button class="btn ghost" id="mCancel">إلغاء</button>
       <button class="btn danger" id="mDel">حذف نهائي</button>
@@ -971,8 +991,10 @@ function importRowsIntoState(rows){
   let added = 0, skipped = 0;
   rows.forEach(row=>{
     const typeRaw = String(row['النوع']||'').trim();
-    const isRev = typeRaw==='إيراد' || /^rev/i.test(typeRaw);
-    const isExp = typeRaw==='مصروف' || /^exp/i.test(typeRaw);
+    // Accept both the current labels and the old "إيراد/مصروف" wording so a
+    // file exported before the rename (or typed from habit) still imports.
+    const isRev = typeRaw==='تدفق داخل' || typeRaw==='إيراد' || /^rev/i.test(typeRaw);
+    const isExp = typeRaw==='تدفق خارج' || typeRaw==='مصروف' || /^exp/i.test(typeRaw);
     const amount = Math.abs(parseFloat(row['المبلغ']));
     if((!isRev && !isExp) || !amount || isNaN(amount)){ skipped++; return; }
 
