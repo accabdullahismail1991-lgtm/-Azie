@@ -207,6 +207,17 @@
   .bal-cell.neg{ color:var(--expense-deep); }
   .proj-tag{ font-size:.72rem; color:#7a7050; background:var(--paper-dim); padding:2px 8px; border-radius:10px; }
   .ledger-empty{ padding:40px 16px; text-align:center; color:#8b806a; font-size:.85rem; }
+
+  .import-bar{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .import-bar .hint{ font-size:.74rem; color:var(--text-soft); }
+  .toast-wrap{ position:fixed; bottom:24px; right:24px; z-index:80; display:flex; flex-direction:column; gap:8px; }
+  .toast-msg{
+    background:var(--ink-panel-2); border:1px solid var(--brass-soft); color:var(--paper);
+    padding:10px 16px; border-radius:8px; font-size:.82rem; box-shadow:0 8px 24px rgba(0,0,0,0.4);
+    animation:toastIn .2s ease both;
+  }
+  .toast-msg.error{ border-color:var(--expense); }
+  @keyframes toastIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
 </style>
 </head>
 <body>
@@ -219,6 +230,12 @@
     <div class="stamps" id="grandStamps"></div>
   </header>
 
+  <div class="import-bar">
+    <button class="icon-btn" id="btnImportExcel">⭱ استيراد من إكسل</button>
+    <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display:none;">
+    <span class="hint">الأعمدة المطلوبة بالملف: التاريخ، النوع (إيراد/مصروف)، المشروع، البيان، ملاحظات، المبلغ، ونسبة الضريبة (اختياري، للإيرادات فقط) — نفس أعمدة تصدير CSV تماماً. العمليات المستوردة تُضاف لما هو موجود ولا تحذف أي شيء سابق.</span>
+  </div>
+
   <div class="chips-row" id="chipsRow"></div>
 
   <div id="projectDetail"></div>
@@ -230,6 +247,9 @@
   <div class="modal" id="modalBox"></div>
 </div>
 
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="/assets/azie-data.js"></script>
 <script src="/assets/azie-screens.js"></script>
 <script>
@@ -923,6 +943,92 @@ function openDeleteProjectModal(p){
 
 function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function escapeAttr(s){ return escapeHtml(s); }
+
+/* ---------------- toast ---------------- */
+function toast(msg, isError){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast-msg' + (isError ? ' error' : '');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(), 5000);
+}
+
+/* ---------------- excel import ---------------- */
+// Column layout mirrors exportLedgerCSV()'s headers exactly, so a file
+// exported from here re-imports cleanly, and users building their own file
+// from scratch only need to match those same column names.
+function normalizeImportDate(v){
+  if(v instanceof Date && !isNaN(v)) return v.toISOString().slice(0,10);
+  const s = String(v==null?'':v).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d = new Date(s);
+  if(!isNaN(d)) return d.toISOString().slice(0,10);
+  return new Date().toISOString().slice(0,10);
+}
+
+function importRowsIntoState(rows){
+  let added = 0, skipped = 0;
+  rows.forEach(row=>{
+    const typeRaw = String(row['النوع']||'').trim();
+    const isRev = typeRaw==='إيراد' || /^rev/i.test(typeRaw);
+    const isExp = typeRaw==='مصروف' || /^exp/i.test(typeRaw);
+    const amount = Math.abs(parseFloat(row['المبلغ']));
+    if((!isRev && !isExp) || !amount || isNaN(amount)){ skipped++; return; }
+
+    const projName = String(row['المشروع']||'').trim() || 'مستورد من إكسل';
+    let proj = state.projects.find(p=>p.name===projName);
+    if(!proj){
+      proj = {id:uid(), name:projName, expenses:[], revenues:[]};
+      state.projects.push(proj);
+    }
+    const date = normalizeImportDate(row['التاريخ']);
+    const desc = String(row['البيان']||'').trim();
+    const note = String(row['ملاحظات']||'').trim();
+
+    if(isExp){
+      proj.expenses.push({id:uid(), amount, date, desc, note});
+    }else{
+      const taxPct = parseFloat(row['نسبة الضريبة']);
+      const taxRate = isNaN(taxPct) ? 0.15 : taxPct/100;
+      proj.revenues.push({id:uid(), amount, taxRate, date, desc, note});
+    }
+    added++;
+  });
+  return {added, skipped};
+}
+
+async function handleExcelImport(file){
+  try{
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array', cellDates:true});
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, {defval:''});
+    if(!rows.length){ toast('الملف فارغ أو غير مقروء', true); return; }
+
+    const {added, skipped} = importRowsIntoState(rows);
+    if(!state.activeId && state.projects.length) state.activeId = state.projects[0].id;
+    render();
+    scheduleSave();
+    if(added){
+      toast(`تم استيراد ${added} عملية بنجاح${skipped ? ` (تم تجاهل ${skipped} صف غير صالح)` : ''}`);
+    }else{
+      toast('لم يتم استيراد أي عملية — تحقق من أعمدة الملف (النوع، المبلغ)', true);
+    }
+  }catch(e){
+    console.error('excel import error', e);
+    toast('تعذّر قراءة ملف الإكسل — تأكد من الصيغة (xlsx/xls/csv)', true);
+  }
+}
+
+document.getElementById('btnImportExcel').addEventListener('click', ()=>{
+  document.getElementById('excelFileInput').click();
+});
+document.getElementById('excelFileInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(file) handleExcelImport(file);
+  e.target.value = '';
+});
 
 /* ---------------- boot ---------------- */
 (async function init(){
