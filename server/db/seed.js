@@ -59,6 +59,14 @@ const APPS = [
     accent: 'var(--rose)',
     tags: ['استراتيجية', 'تفاعلي', 'تخطيط'],
   },
+  {
+    id: 'sales-pulse',
+    title: 'نبض المبيعات — المتوسط المتحرك 7 أيام',
+    description: 'استيراد بيانات المبيعات من أودو أو فودكس وتحليل المتوسط المتحرك لـ7 أيام مع مقارنة بين الفروع وتصدير تقارير PDF.',
+    icon: '📈',
+    accent: '#E39A3D',
+    tags: ['مبيعات', 'تحليلات', 'متوسط متحرك'],
+  },
 ];
 
 const SCREENS = {
@@ -133,6 +141,12 @@ const SCREENS = {
     ['restaurant', 'نموذج المطعم'],
     ['calculator', 'حاسبة الربحية'],
     ['assistant', 'المساعد الاستراتيجي'],
+  ],
+  // Single continuous dashboard page (import, filters, tables, charts) with
+  // no separate navigable sections, so it gets one screen covering the
+  // whole tool rather than a per-section breakdown like the other apps.
+  'sales-pulse': [
+    ['dashboard', 'لوحة نبض المبيعات'],
   ],
 };
 
