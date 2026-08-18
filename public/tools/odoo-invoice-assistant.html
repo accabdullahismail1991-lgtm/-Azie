@@ -2784,16 +2784,19 @@ function importPR(file){
       const data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
       let added=0;
       data.forEach(r=>{
-        const code=r['Internal Reference']||r['الكود الداخلي']||r['code']||'';
-        const name=r['Product Name']||r['اسم الصنف']||r['name']||'';
+        // يدعم أيضاً تصدير الأصناف (product.template) من أودو مباشرة —
+        // "التكلفة" هي سعر الشراء الفعلي (وليس "سعر البيع")، و"علامات
+        // التصنيف" أقرب بديل متاح للفئة في هذا التصدير.
+        const code=r['مرجع داخلي']||r['Internal Reference']||r['الكود الداخلي']||r['code']||'';
+        const name=r['الاسم']||r['Product Name']||r['اسم الصنف']||r['name']||'';
         if(!code&&!name)return;
         const fc=code||'AUTO-'+nxPR;
         if(!products.find(p=>p.code===fc)){
           products.push({id:nxPR++,code:fc,name:name||fc,
-            cat:r['Category']||r['الفئة']||r['categ_id']||'',
-            uom:r['Unit of Measure']||r['وحدة القياس']||r['uom_id']||'Pcs',
-            puom:r['Purchase UOM']||r['وحدة الشراء']||r['uom_po_id']||r['Unit of Measure']||'Pcs',
-            price:parseFloat(r['Purchase Price']||r['سعر الشراء']||r['standard_price']||0),
+            cat:r['Category']||r['الفئة']||r['categ_id']||r['علامات التصنيف']||'',
+            uom:r['وحدة القياس']||r['Unit of Measure']||r['uom_id']||'Pcs',
+            puom:r['Purchase UOM']||r['وحدة الشراء']||r['uom_po_id']||r['وحدة القياس']||r['Unit of Measure']||'Pcs',
+            price:parseFloat(r['التكلفة']||r['Purchase Price']||r['سعر الشراء']||r['standard_price']||0),
             tax:r['Tax']||'Purchase Tax 15%',
             alias:r['OCR Names']||r['أسماء OCR']||r['aliases']||name,
             bc:r['Barcode']||r['الباركود']||'',
@@ -3338,14 +3341,16 @@ function downloadCUTemplate(){
 
 function downloadPRTemplate(){
   if(!window.XLSX)return;
+  // نفس أعمدة تصدير الأصناف (product.template) من أودو — المخزون ← المنتجات
+  // ← تصدير، حتى يمكن رفع ملف التصدير مباشرة بدون إعادة تهيئة.
   const rows=[
-    ['Internal Reference','Product Name','Category','Unit of Measure','Purchase UOM','Purchase Price','Tax','OCR Names','Barcode','Active'],
-    ['RMF02026','حبة البركة','مواد غذائية','كجم','كجم',19.55,'Purchase Tax 15%','حبة البركة|nigella|black seed','','TRUE'],
-    ['RMF02012','جبنة شيدر','ألبان','Box-10.80 kg','Box-10.80 kg',166.75,'Purchase Tax 15%','جبنة شيدر|cheddar|شيدر','','TRUE'],
+    ['الاسم','التكلفة','الكمية المتوقعة','الكمية في اليد','المفضلة','زخرفة استثناء النشاط','سعر البيع','علامات التصنيف','مرجع داخلي','وحدة القياس'],
+    ['حبة البركة',19.55,0,0,'','',25,'مواد غذائية','RMF02026','كجم'],
+    ['جبنة شيدر',166.75,0,0,'','',220,'ألبان','RMF02012','Box-10.80 kg'],
   ];
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Products Template');
-  XLSX.writeFile(wb,'Template_Products.xlsx');toast('تم تحميل نموذج الأصناف ✓','ok');
+  XLSX.writeFile(wb,'Template_Products.xlsx');toast('تم تحميل نموذج الأصناف ✓ (بنفس أعمدة تصدير الأصناف من أودو)','ok');
 }
 
 // ═══════════════════════════════════════════
