@@ -4,7 +4,9 @@ const { requireAuth, requireAppAccess } = require('../auth');
 const router = express.Router();
 
 const RESEND_API_URL = 'https://api.resend.com/emails';
-const MAX_ATTACHMENT_BYTES = 8 * 1024 * 1024; // Resend's own limit is ~40MB combined; keep well under it.
+const MAX_ATTACHMENT_BYTES = 8 * 1024 * 1024; // per file
+const MAX_TOTAL_ATTACHMENT_BYTES = 20 * 1024 * 1024; // combined; Resend's own limit is ~40MB, keep well under it.
+const MAX_ATTACHMENTS = 5;
 
 // Sends a report (with an optional file attachment) by email through Resend.
 // Scoped to a specific app so the same per-app permission that gates the
@@ -26,8 +28,8 @@ router.post(
         });
       }
 
-      const { to, subject, text, attachment } = req.body || {};
-      if (!to || !subject || !text) {
+      const { to, subject, text, html, attachment, attachments } = req.body || {};
+      if (!to || !subject || (!text && !html)) {
         return res.status(400).json({ error: 'الحقول to وsubject وtext مطلوبة' });
       }
       const recipients = (Array.isArray(to) ? to : [to]).map((x) => String(x).trim()).filter(Boolean);
@@ -39,20 +41,32 @@ router.post(
         from: process.env.RESEND_FROM_EMAIL || 'المنصة الموحدة <onboarding@resend.dev>',
         to: recipients,
         subject: String(subject),
-        text: String(text),
       };
+      if (text) payload.text = String(text);
+      if (html) payload.html = String(html);
 
-      if (attachment && attachment.contentBase64) {
-        const sizeBytes = Math.ceil((attachment.contentBase64.length * 3) / 4);
+      // Accept either a single `attachment` (legacy) or an `attachments` array.
+      const files = Array.isArray(attachments) ? attachments : attachment ? [attachment] : [];
+      const validFiles = files.filter((f) => f && f.contentBase64);
+      if (validFiles.length > MAX_ATTACHMENTS) {
+        return res.status(400).json({ error: `عدد المرفقات أكبر من الحد المسموح (${MAX_ATTACHMENTS})` });
+      }
+      let totalBytes = 0;
+      for (const f of validFiles) {
+        const sizeBytes = Math.ceil((f.contentBase64.length * 3) / 4);
         if (sizeBytes > MAX_ATTACHMENT_BYTES) {
-          return res.status(400).json({ error: 'حجم المرفق أكبر من الحد المسموح' });
+          return res.status(400).json({ error: `حجم المرفق "${f.filename || ''}" أكبر من الحد المسموح` });
         }
-        payload.attachments = [
-          {
-            filename: attachment.filename || 'report.csv',
-            content: attachment.contentBase64,
-          },
-        ];
+        totalBytes += sizeBytes;
+      }
+      if (totalBytes > MAX_TOTAL_ATTACHMENT_BYTES) {
+        return res.status(400).json({ error: 'إجمالي حجم المرفقات أكبر من الحد المسموح' });
+      }
+      if (validFiles.length > 0) {
+        payload.attachments = validFiles.map((f) => ({
+          filename: f.filename || 'report.csv',
+          content: f.contentBase64,
+        }));
       }
 
       const resendRes = await fetch(RESEND_API_URL, {
