@@ -13,6 +13,7 @@ const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const toolsRoutes = require('./routes/tools');
 const dataRoutes = require('./routes/data');
+const emailRoutes = require('./routes/email');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +28,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/data', dataRoutes);
+app.use('/api/email', emailRoutes);
 app.use('/tools', toolsRoutes);
 
 // Static assets (css/js/images if any) are public; the HTML pages

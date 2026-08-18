@@ -153,10 +153,13 @@
   .overlay{ position:fixed; inset:0; background:rgba(6,12,17,0.6); display:none; align-items:center; justify-content:center; z-index:50; backdrop-filter:blur(2px);}
   .overlay.show{ display:flex; }
   .modal{ background:var(--paper); color:var(--ink); border-radius:14px; padding:22px; width:320px; box-shadow:0 20px 50px rgba(0,0,0,0.5); }
+  .modal.wide{ width:420px; max-width:92vw; }
   .modal h4{ margin:0 0 12px; font-family:'Cairo',sans-serif; }
   .modal p{ margin:0 0 14px; font-size:.86rem; color:#4a4534;}
-  .modal input{ width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--paper-dim); font-family:'Tajawal',sans-serif; font-size:.9rem; margin-bottom:14px;}
-  .modal input:focus{ outline:2px solid var(--brass); }
+  .modal label{ display:block; font-size:.78rem; font-weight:700; color:#4a4534; margin-bottom:5px; }
+  .modal input, .modal textarea{ width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--paper-dim); font-family:'Tajawal',sans-serif; font-size:.9rem; margin-bottom:14px; resize:vertical;}
+  .modal input:focus, .modal textarea:focus{ outline:2px solid var(--brass); }
+  .modal .summary-preview{ background:var(--paper-dim); border-radius:8px; padding:10px 12px; font-size:.78rem; margin-bottom:14px; line-height:1.8; }
   .modal-actions{ display:flex; gap:8px; justify-content:flex-end; }
   .btn{ padding:9px 16px; border-radius:8px; border:none; cursor:pointer; font-family:'Tajawal',sans-serif; font-weight:700; font-size:.84rem;}
   .btn.primary{ background:var(--ink); color:var(--paper); }
@@ -654,6 +657,7 @@ function filterBarHtml(scopeProjects, includeProjectFilter, shownCount, totalCou
       <span class="spacer"></span>
       <button class="icon-btn" id="lgExport">⭳ تصدير CSV</button>
       <button class="icon-btn" id="lgPrint">🖶 طباعة</button>
+      <button class="icon-btn" id="lgEmail">📧 إرسال بالإيميل</button>
     </div>`;
 }
 
@@ -694,6 +698,7 @@ function bindFilterBarEvents(scopeProjects, rerender){
     scopeProjects.length===1?scopeProjects[0].name:'كل المشاريع',
     scopeProjects.length>1
   );
+  $('lgEmail').onclick = ()=>openEmailReportModal(scopeProjects);
 }
 
 function renderProjectLedger(body, p){
@@ -730,7 +735,7 @@ function reportRows(scopeProjects){
   return [...rows].sort((a,b)=> (a.date||'') < (b.date||'') ? -1 : (a.date||'') > (b.date||'') ? 1 : 0);
 }
 
-function exportLedgerCSV(rows, label){
+function buildLedgerCSVString(rows){
   const headers = ['التاريخ','الحالة','المشروع','البيان','ملاحظات','المبلغ'];
   const lines = [headers.join(',')];
   rows.forEach(r=>{
@@ -742,7 +747,17 @@ function exportLedgerCSV(rows, label){
     ];
     lines.push(line.join(','));
   });
-  const csv = '\uFEFF' + lines.join('\n');
+  return '\uFEFF' + lines.join('\n');
+}
+
+function summarizeRows(rows){
+  let incoming = 0, outgoing = 0;
+  rows.forEach(r=>{ if(r.type==='rev') incoming += r.amount; else outgoing += r.amount; });
+  return { incoming, outgoing, net: incoming - outgoing, count: rows.length };
+}
+
+function exportLedgerCSV(rows, label){
+  const csv = buildLedgerCSVString(rows);
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -970,6 +985,88 @@ function openDeleteProjectModal(p){
       state.activeId = state.projects.length ? state.projects[0].id : null;
     }
     closeModal(); render(); scheduleSave();
+  };
+}
+
+function utf8ToBase64(str){
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  bytes.forEach(b => { binary += String.fromCharCode(b); });
+  return btoa(binary);
+}
+
+function openEmailReportModal(scopeProjects){
+  const rows = reportRows(scopeProjects);
+  const summary = summarizeRows(rows);
+  const label = scopeProjects.length===1 ? scopeProjects[0].name : 'كل المشاريع';
+
+  openModal(`
+    <h4>إرسال التقرير بالإيميل</h4>
+    <p>سيتم إرفاق تقرير الحركات (${summary.count} حركة) لـ"${escapeHtml(label)}" مع ملخص التدفقات بنص الرسالة.</p>
+    <div class="summary-preview">
+      🟢 إجمالي التدفقات الداخلة: ${fmt(summary.incoming)} ر.س<br>
+      🔴 إجمالي التدفقات الخارجة: ${fmt(summary.outgoing)} ر.س<br>
+      💰 صافي التدفق النقدي: ${fmt(summary.net)} ر.س
+    </div>
+    <label>البريد الإلكتروني للمستلم</label>
+    <input id="mEmailTo" type="email" placeholder="name@example.com">
+    <label>ملاحظة إضافية (اختياري)</label>
+    <textarea id="mEmailNote" rows="3" placeholder="أي تعليق يضاف لنص الرسالة..."></textarea>
+    <div class="modal-actions">
+      <button class="btn ghost" id="mCancel">إلغاء</button>
+      <button class="btn primary" id="mSend">📧 إرسال</button>
+    </div>
+  `);
+  document.getElementById('modalBox').classList.add('wide');
+  const toInput = document.getElementById('mEmailTo');
+  toInput.focus();
+
+  const closeEmailModal = ()=>{ document.getElementById('modalBox').classList.remove('wide'); closeModal(); };
+  document.getElementById('mCancel').onclick = closeEmailModal;
+
+  document.getElementById('mSend').onclick = async ()=>{
+    const to = toInput.value.trim();
+    if(!to || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)){ alert('أدخل بريد إلكتروني صحيح'); return; }
+    const note = document.getElementById('mEmailNote').value.trim();
+    const sendBtn = document.getElementById('mSend');
+    sendBtn.disabled = true; sendBtn.textContent = 'جارٍ الإرسال...';
+    try{
+      const csv = buildLedgerCSVString(rows);
+      const bodyLines = [
+        `تقرير التدفق النقدي — ${label}`,
+        '',
+        note ? note + '\n' : '',
+        'ملخص الفترة:',
+        `- إجمالي التدفقات الداخلة: ${fmt(summary.incoming)} ر.س`,
+        `- إجمالي التدفقات الخارجة: ${fmt(summary.outgoing)} ر.س`,
+        `- صافي التدفق النقدي: ${fmt(summary.net)} ر.س`,
+        `- عدد الحركات: ${summary.count}`,
+        '',
+        'التفاصيل الكاملة لكل حركة مرفقة بملف CSV.',
+      ];
+      const res = await fetch('/api/email/send', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          appId: 'cashflow-riyadh',
+          to,
+          subject: `تقرير التدفق النقدي — ${label}`,
+          text: bodyLines.join('\n'),
+          attachment: {
+            filename: 'تقرير-تدفقات-' + label.replace(/[^\w؀-ۿ]+/g,'-') + '.csv',
+            contentBase64: utf8ToBase64(csv),
+            mimeType: 'text/csv',
+          },
+        }),
+      });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok) throw new Error(data.error || 'تعذّر الإرسال');
+      closeEmailModal();
+      toast('✔ تم إرسال التقرير إلى ' + to);
+    }catch(e){
+      alert('تعذّر الإرسال: ' + e.message);
+      sendBtn.disabled = false; sendBtn.textContent = '📧 إرسال';
+    }
   };
 }
 
