@@ -3001,13 +3001,33 @@ function importCU(file){
   if(!file)return;const rd=new FileReader();
   rd.onload=ev=>{
     try{
-      const data=XLSX.utils.sheet_to_json(XLSX.read(ev.target.result,{type:'binary'}).Sheets[XLSX.read(ev.target.result,{type:'binary'}).SheetNames[0]]);
-      let added=0;
+      const wbk=XLSX.read(ev.target.result,{type:'binary'});
+      const data=XLSX.utils.sheet_to_json(wbk.Sheets[wbk.SheetNames[0]]);
+      let added=0,skipped=0;
       data.forEach(r=>{
+        // يدعم تصدير جهات الاتصال (res.partner) من أودو مباشرة — بدون أعمدة
+        // supplier_rank/customer_rank يُفترض أن كل صف مورد، وهو الاستخدام
+        // الأساسي لهذا التبويب. يدعم أيضاً الصيغة القديمة (name/ref/...) للتوافق.
+        const name=r['الاسم الكامل']||r['name']||r['الاسم']||'';
+        if(!name){skipped++;return;}
+        const hasRank=('supplier_rank' in r)||('customer_rank' in r);
         const sup=parseInt(r['supplier_rank']||0)>0,cus=parseInt(r['customer_rank']||0)>0;
-        customers.push({id:nxCU++,name:r['name']||r['الاسم']||'',ref:r['ref']||r['الكود']||'',type:sup&&cus?'both':sup?'supplier':'customer',vat:r['vat']||'',ph:r['phone']||r['الجوال']||'',email:r['email']||'',city:r['city']||r['المدينة']||'',pay:r['property_payment_term_id']||'فوري'});added++;
+        const type=hasRank?(sup&&cus?'both':sup?'supplier':'customer'):'supplier';
+        customers.push({
+          id:nxCU++,
+          name,
+          ref:r['ref']||r['الكود']||'',
+          type,
+          vat:r['vat']||r['الرقم الضريبي']||'',
+          ph:r['رقم الهاتف']||r['phone']||r['الجوال']||'',
+          email:r['البريد الإلكتروني']||r['email']||'',
+          city:r['المدينة']||r['city']||'',
+          pay:r['property_payment_term_id']||r['شروط الدفع']||'فوري',
+        });
+        added++;
       });
-      renderCU();renderLines();toast(`تم استيراد ${added} سجل ✓`,'ok');
+      renderCU();renderLines();
+      toast(skipped?`تم استيراد ${added} سجل ✓ (تم تجاوز ${skipped} بدون اسم)`:`تم استيراد ${added} سجل ✓`,'ok');
     }catch(e){toast('فشل: '+e.message,'er');}
   };rd.readAsBinaryString(file);
 }
@@ -3304,14 +3324,16 @@ function downloadWHTemplate(){
 
 function downloadCUTemplate(){
   if(!window.XLSX)return;
+  // نفس أعمدة تصدير جهات الاتصال (res.partner) من أودو — الإعدادات ← جهات
+  // الاتصال ← تصدير، حتى يمكن رفع ملف التصدير مباشرة بدون إعادة تهيئة.
   const rows=[
-    ['name','ref','supplier_rank','customer_rank','vat','phone','email','city','property_payment_term_id'],
-    ['شركة الافاق','SUPP-001',1,0,'300111222333','0512345678','info@co.sa','جدة','30 يوم'],
-    ['شركة المراعي','SUPP-002',1,0,'300999888777','0509876543','orders@co.sa','الرياض','45 يوم'],
+    ['الأنشطة','الاسم الكامل','البريد الإلكتروني','الدولة','الشركة','المدينة','رقم الهاتف','علامات التصنيف','مندوب المبيعات'],
+    ['','شركة الأفق للتجارة','info@example.com','المملكة العربية السعودية','','جدة','0512345678','',''],
+    ['','مؤسسة النخبة للمواد الغذائية','orders@example.com','المملكة العربية السعودية','','الرياض','0509876543','',''],
   ];
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Suppliers Template');
-  XLSX.writeFile(wb,'Template_Suppliers.xlsx');toast('تم تحميل نموذج الموردين ✓','ok');
+  XLSX.writeFile(wb,'Template_Suppliers.xlsx');toast('تم تحميل نموذج الموردين ✓ (بنفس أعمدة تصدير جهات الاتصال من أودو)','ok');
 }
 
 function downloadPRTemplate(){
