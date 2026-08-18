@@ -794,6 +794,23 @@ td input,td select{padding:5px 6px;font-size:12px;}
     </div>
   </div>
 
+  <div class="card mb14">
+    <div class="card-title">📊 تقرير مقارنة الأسعار عبر الأرشيف</div>
+    <p style="font-size:12px;color:var(--mu);line-height:1.8;margin-bottom:10px">
+      يقارن سعر شراء كل صنف عبر النسخ الأرشيفية المحفوظة (كل نسخة = لحظة زمنية) مع السعر الحالي، لتتبع ارتفاع أو انخفاض أسعار الموردين بمرور الوقت. احفظ نسخة أرشيفية بعد كل تحديث أسعار حتى يبني التقرير سلسلة زمنية مفيدة.
+    </p>
+    <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+      <input type="text" id="pcmp-srch" placeholder="🔍 بحث بالاسم أو الكود..." style="max-width:280px" oninput="debounce(renderPriceCompareReport,250)()">
+      <select id="pcmp-fcat" style="max-width:180px" onchange="renderPriceCompareReport()"><option value="">كل الفئات</option></select>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;">
+        <input type="checkbox" id="pcmp-showall" onchange="renderPriceCompareReport()">
+        أظهر كل الأصناف حتى بلا تغيّر سعر
+      </label>
+      <button class="btn btn-ok btn-sm" onclick="exportPriceCompareReport()">⬇ تصدير التقرير Excel</button>
+    </div>
+    <div id="pcmp-wrap"></div>
+  </div>
+
   <div class="card" style="background:#f8f9fa;">
     <div class="card-title">ℹ️ كيف يعمل الأرشيف؟</div>
     <ul style="font-size:12px;color:var(--mu);line-height:2;padding-right:18px;">
@@ -1510,6 +1527,7 @@ function importArchiveFile(file){
 
 // ── عرض سجل الأرشيف في الواجهة ──
 function renderArchiveHistory(){
+  renderPriceCompareReport();
   const tbody = document.getElementById('archive-history-body');
   if(!tbody) return;
   const history = getArchiveHistory();
@@ -1536,6 +1554,120 @@ function renderArchiveHistory(){
       <td><button class="btn-ic" onclick="deleteArchiveSnapshot(${s.id})">✕</button></td>
     </tr>`;
   }).join('');
+}
+
+// ═══════════════════════════════════════════
+// تقرير مقارنة الأسعار عبر الأرشيف
+// ═══════════════════════════════════════════
+// يبني سلسلة سعر كل صنف عبر النسخ الأرشيفية (الأقدم أولاً) وصولاً للسعر
+// الحالي، ليُظهر ارتفاع/انخفاض أسعار الموردين بمرور الوقت.
+function buildPriceCompareData(){
+  const history=[...getArchiveHistory()].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const snapCols=history.map(s=>({id:s.id,label:new Date(s.date).toLocaleDateString('ar-SA'),products:(s.data&&s.data.products)||[]}));
+  const codeMap=new Map();
+  snapCols.forEach((snap,si)=>{
+    snap.products.forEach(p=>{
+      if(!p||!p.code)return;
+      if(!codeMap.has(p.code))codeMap.set(p.code,{code:p.code,name:p.name,cat:p.cat,series:new Array(snapCols.length).fill(null),current:null});
+      const row=codeMap.get(p.code);
+      row.series[si]=Number(p.price)||0;
+      row.name=p.name;row.cat=p.cat;
+    });
+  });
+  products.forEach(p=>{
+    if(!p.code)return;
+    if(!codeMap.has(p.code))codeMap.set(p.code,{code:p.code,name:p.name,cat:p.cat,series:new Array(snapCols.length).fill(null),current:null});
+    const row=codeMap.get(p.code);
+    row.current=Number(p.price)||0;row.name=p.name;row.cat=p.cat;
+  });
+  return {snapCols,rows:[...codeMap.values()]};
+}
+
+function priceChangeInfo(row){
+  const known=row.series.filter(v=>v!=null&&v>0);
+  const first=known.length?known[0]:null;
+  const last=row.current!=null&&row.current>0?row.current:(known.length?known[known.length-1]:null);
+  if(first==null||last==null)return{pct:null,diff:null};
+  const diff=last-first;
+  return{pct:(diff/first)*100,diff,first,last};
+}
+
+function renderPriceCompareReport(){
+  const wrap=document.getElementById('pcmp-wrap');
+  if(!wrap)return;
+  const {snapCols,rows}=buildPriceCompareData();
+
+  const catSel=document.getElementById('pcmp-fcat');
+  if(catSel&&catSel.options.length<=1){
+    const cats=[...new Set(rows.map(r=>r.cat).filter(Boolean))].sort();
+    catSel.innerHTML='<option value="">كل الفئات</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  }
+
+  if(!snapCols.length){
+    wrap.innerHTML=`<div class="empty-note" style="padding:20px;text-align:center;color:var(--mu)">لا توجد نسخ أرشيفية بعد للمقارنة — احفظ نسخة الآن من الأعلى، وبعد أي تحديث لاحق للأسعار احفظ نسخة جديدة ليبني التقرير سلسلة زمنية.</div>`;
+    return;
+  }
+
+  const q=(document.getElementById('pcmp-srch')?.value||'').toLowerCase().trim();
+  const fcat=document.getElementById('pcmp-fcat')?.value||'';
+  const showAll=document.getElementById('pcmp-showall')?.checked;
+
+  let filtered=rows.map(r=>({...r,chg:priceChangeInfo(r)}));
+  if(q)filtered=filtered.filter(r=>(r.name||'').toLowerCase().includes(q)||(r.code||'').toLowerCase().includes(q));
+  if(fcat)filtered=filtered.filter(r=>r.cat===fcat);
+  if(!showAll)filtered=filtered.filter(r=>r.chg.diff!=null&&Math.abs(r.chg.diff)>0.0001);
+
+  filtered.sort((a,b)=>{
+    const pa=a.chg.pct==null?-1:Math.abs(a.chg.pct);
+    const pb=b.chg.pct==null?-1:Math.abs(b.chg.pct);
+    return pb-pa;
+  });
+
+  if(!filtered.length){
+    wrap.innerHTML=`<div class="empty-note" style="padding:20px;text-align:center;color:var(--mu)">${showAll?'لا توجد أصناف مطابقة':'لا توجد فروق أسعار مسجّلة — جرّب تفعيل "أظهر كل الأصناف حتى بلا تغيّر سعر"'}</div>`;
+    return;
+  }
+
+  const headCols=snapCols.map(s=>`<th style="font-size:10px;white-space:nowrap">${esc(s.label)}</th>`).join('');
+  const bodyRows=filtered.map(r=>{
+    const cells=r.series.map(v=>`<td class="tabular" style="font-size:11px;color:var(--mu)">${v!=null?v.toFixed(2):'—'}</td>`).join('');
+    const cur=r.current!=null?r.current.toFixed(2):'—';
+    let chgHtml='—';
+    if(r.chg.pct!=null){
+      const up=r.chg.diff>0;
+      chgHtml=`<span style="color:${up?'#dc3545':'#198754'};font-weight:700">${up?'▲':'▼'} ${Math.abs(r.chg.pct).toFixed(1)}%</span>`;
+    }
+    return`<tr>
+      <td style="min-width:70px"><code style="font-size:11px;color:var(--pr)">${esc(r.code)}</code></td>
+      <td style="min-width:180px;font-weight:600">${esc(r.name)}</td>
+      ${cells}
+      <td class="tabular" style="font-weight:700">${cur}</td>
+      <td style="white-space:nowrap">${chgHtml}</td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML=`<div class="tbl-wrap"><table>
+    <thead><tr><th>الكود</th><th>الصنف</th>${headCols}<th>الحالي</th><th>التغيّر</th></tr></thead>
+    <tbody>${bodyRows}</tbody>
+  </table></div>
+  <div class="hint" style="margin-top:8px">عدد الأصناف المعروضة: ${filtered.length} من ${rows.length} — الأعمدة الزمنية من الأقدم إلى الأحدث، مرتّبة حسب حجم التغيّر</div>`;
+}
+
+function exportPriceCompareReport(){
+  if(!window.XLSX){toast('مكتبة التصدير غير محملة','er');return;}
+  const {snapCols,rows}=buildPriceCompareData();
+  if(!snapCols.length){toast('لا توجد نسخ أرشيفية للتصدير','wn');return;}
+  const header=['الكود','الصنف','الفئة',...snapCols.map(s=>s.label),'الحالي','نسبة التغيّر %'];
+  const data=[header];
+  rows.forEach(r=>{
+    const chg=priceChangeInfo(r);
+    data.push([r.code,r.name,r.cat||'',...r.series.map(v=>v!=null?v:''),r.current!=null?r.current:'',chg.pct!=null?Number(chg.pct.toFixed(2)):'']);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'مقارنة الأسعار');
+  XLSX.writeFile(wb,'تقرير_مقارنة_الأسعار.xlsx');
+  toast('تم تصدير تقرير مقارنة الأسعار ✓','ok');
 }
 
 // ── حفظ تلقائي دوري (كل 5 دقائق) كنسخة أرشيفية صامتة ──
