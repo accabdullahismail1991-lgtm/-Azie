@@ -1976,6 +1976,10 @@ function renderInvTabs(){
 // LINES
 // ═══════════════════════════════════════════
 function getActiveLines(){const inv=invoices.find(x=>x.id===activeId);return inv?inv.lines:[];}
+// الفواتير النشطة بيانات مؤقتة بالذاكرة فقط (لا تُحفظ محلياً كالأصناف/الموردين) —
+// هذا الاستدعاء موجود بعدة أماكن كخطوة "حفظ الحالة" لكنه بلا مقابل فعلي حالياً،
+// عرّفناه هنا كدالة فارغة لمنع خطأ "غير معرّف" الذي كان يوقف باقي الكود بعده.
+function saveActiveInv(){}
 function getActiveInvPicking(){const inv=invoices.find(x=>x.id===activeId);return inv?inv.hdr.picking:'';}
 
 function lineStatus(l){
@@ -2058,7 +2062,10 @@ function renderLines(){
       </td>
       <td style="font-weight:600;white-space:nowrap;color:var(--mu)">${lSubtotal(l).toFixed(2)} ر.س</td>
       <td style="font-weight:700;white-space:nowrap;color:var(--pr)">${lTotal(l).toFixed(2)} ر.س</td>
-      <td><span class="badge ${ST_CFG[st]?.c||'b-wn'}">${ST_CFG[st]?.l||st}</span></td>
+      <td>
+        <span class="badge ${ST_CFG[st]?.c||'b-wn'}">${ST_CFG[st]?.l||st}</span>
+        ${st!=='ok'?`<button class="btn-ic" style="color:var(--ac)" onclick="recheckLine(${l.id})" title="إعادة فحص هذا الصنف">🔄</button>`:''}
+      </td>
       <td><button class="btn-ic" onclick="rmLine(${l.id})">✕</button></td>
     </tr>`;
   }).join('');
@@ -2078,8 +2085,17 @@ function updL(id,f,val){
     if(subtotalCell) subtotalCell.textContent=lSubtotal(l).toFixed(2)+' ر.س';
     const totalCell=tr.querySelector('td:nth-child(10)');
     if(totalCell) totalCell.textContent=lTotal(l).toFixed(2)+' ر.س';
-    const badgeCell=tr.querySelector('td:nth-child(11) .badge');
+    const statusCell=tr.querySelector('td:nth-child(11)');
+    const badgeCell=statusCell?.querySelector('.badge');
     if(badgeCell){badgeCell.className='badge '+(ST_CFG[st]?.c||'b-wn');badgeCell.textContent=ST_CFG[st]?.l||st;}
+    if(statusCell){
+      let recheckBtn=statusCell.querySelector('.btn-ic');
+      if(st!=='ok'&&!recheckBtn){
+        statusCell.insertAdjacentHTML('beforeend',`<button class="btn-ic" style="color:var(--ac)" onclick="recheckLine(${id})" title="إعادة فحص هذا الصنف">🔄</button>`);
+      }else if(st==='ok'&&recheckBtn){
+        recheckBtn.remove();
+      }
+    }
     tr.className=st==='missing'||st==='missing_uom'?'r-er':st!=='ok'?'r-wn':'r-ok';
     saveActiveInv();
     refreshMetrics();
@@ -2113,6 +2129,50 @@ function addLine(){
   renderLines();
 }
 function revalidate(){renderLines();toast('تمت إعادة الفحص ✓','ok');}
+
+// إعادة فحص سطر واحد فقط — مفيدة بعد إضافة صنف ناقص أو تصحيح بياناته بتبويب
+// الأصناف، بدل الرجوع لإعادة فحص كل الفاتورة يدوياً.
+function recheckLine(id){
+  const lines=getActiveLines();
+  const l=lines.find(x=>x.id===id);
+  if(!l)return;
+  // نعتمد على وجود كود صنف صالح فعلياً، لا على تسمية الحالة فقط — سطر بلا
+  // كود يُصنَّف أحياناً "وحدة مفقودة" أيضاً لأن فحص الوحدة يسبق فحص الكود.
+  const matched=l.code?products.find(x=>x.code===l.code):null;
+  if(!matched){
+    const q=(l.pid||l.notes||'').toLowerCase().trim();
+    if(!q){toast('لا يوجد نص كافٍ بهذا السطر للبحث عنه','wn');return;}
+    let best=null,bestScore=Infinity;
+    for(const p of products){
+      const targets=[p.name||'',p.code||'',...(p.alias||'').split('|').map(s=>s.trim())];
+      for(const t of targets){
+        const tl=t.toLowerCase();if(!tl)continue;
+        let sc=Infinity;
+        if(tl===q)sc=0;
+        else if(tl.includes(q)||q.includes(tl))sc=1;
+        else{const d=lev(q,tl);if(d<=3)sc=2+d*0.5;}
+        if(sc<bestScore){bestScore=sc;best=p;}
+      }
+    }
+    if(best&&bestScore<=1){
+      l.code=best.code;l.pid=formatPid(best.code,best.name);
+      if(!l.uom)l.uom=best.uom;
+      if(!l.pu||l.pu===0)l.pu=best.price;
+      renderLines();
+      toast(`✓ تمت المطابقة: [${best.code}] ${best.name}`,'ok');
+    }else{
+      renderLines();
+      document.getElementById('psi-'+id)?.focus();
+      prodSearch(id,l.pid||'');
+      toast(best?'وجدنا تطابقاً محتملاً غير مؤكد — راجع القائمة':'لا يوجد تطابق — ابحث يدوياً أو أضف الصنف للقاعدة','wn');
+    }
+  }else{
+    l.uom=matched.uom;
+    if(!l.pu||l.pu===0)l.pu=matched.price;
+    renderLines();
+    toast('✓ تم تحديث بيانات الصنف من القاعدة الحالية','ok');
+  }
+}
 
 function refreshMetrics(){
   const all=invoices.flatMap(inv=>inv.lines);
