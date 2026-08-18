@@ -75,6 +75,14 @@ const APPS = [
     accent: '#3D8361',
     tags: ['تدفقات نقدية', 'مشاريع', 'مصروفات وإيرادات'],
   },
+  {
+    id: 'odoo-invoice-assistant',
+    title: 'مساعد أودو الذكي',
+    description: 'استخراج فواتير المشتريات من PDF أو صور بالذكاء الاصطناعي، ومطابقتها مع قاعدة الأصناف والمستودعات والموردين، وتصديرها لأودو.',
+    icon: '🤖',
+    accent: '#714B67',
+    tags: ['أودو', 'فواتير', 'مشتريات', 'OCR'],
+  },
 ];
 
 const SCREENS = {
@@ -160,6 +168,16 @@ const SCREENS = {
   // one tool, not separate functional areas — one screen, same as sales-pulse.
   'cashflow-riyadh': [
     ['dashboard', 'دفتر التدفقات النقدية'],
+  ],
+  'odoo-invoice-assistant': [
+    ['po', 'الفواتير'],
+    ['wh', 'المستودعات'],
+    ['cu', 'الموردون'],
+    ['pr', 'الأصناف'],
+    ['cfg', 'الإعدادات'],
+    ['uom', 'الوحدات'],
+    ['archive', 'الأرشيف'],
+    ['guide', 'الدليل'],
   ],
 };
 
