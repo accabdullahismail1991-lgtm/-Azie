@@ -1734,19 +1734,13 @@ function computerTotalForShift(date, branch, cashierName, shift){
   return round2(rows.reduce((s,e)=>s+computeTotals(e).totalSales, 0));
 }
 function finalizedTotalsForEntry(e){
+  // مبيعات كل التقارير الإجمالية (لوحة المؤشرات، الخريطة الذهنية، الجدول الزمني...) تُبنى دائمًا من
+  // مدخل الكاشير نفسه — سجلات مصادقة الأنظمة الخارجية (تطبيقات التوصيل) لا تحلّ محلها هنا أبداً؛
+  // هي مخصّصة فقط لحساب الانحراف (الفرق) في التقرير اليومي، راجع computerTotalForShift.
   const t = computeTotals(e);
-  const extRows = state.externalSales.filter(x=>x.date===e.date && x.branch===e.branch && x.cashierName===e.cashierName && x.shift===e.shift);
-  if(extRows.length===0){
-    const platformVals = {}; DELIVERY_PLATFORMS.forEach(p=> platformVals[p.key]=num(e[p.key]));
-    return {cash:num(e.cash), totalSpan:t.totalSpan, totalCredit:t.totalCredit, totalSales:t.totalSales, totalExpenses:t.totalExpenses, platformVals, hasComputer:false};
-  }
-  const agg = extRows.reduce((a,x)=>{
-    const xt = computeTotals(x);
-    a.cash+=num(x.cash); a.totalSpan+=xt.totalSpan; a.totalCredit+=xt.totalCredit; a.totalSales+=xt.totalSales; a.totalExpenses+=num(x.expenses);
-    DELIVERY_PLATFORMS.forEach(p=>{ a.platformVals[p.key]=(a.platformVals[p.key]||0)+num(x[p.key]); });
-    return a;
-  }, {cash:0,totalSpan:0,totalCredit:0,totalSales:0,totalExpenses:0,platformVals:{}});
-  return Object.assign(agg, {hasComputer:true});
+  const platformVals = {}; DELIVERY_PLATFORMS.forEach(p=> platformVals[p.key]=num(e[p.key]));
+  const hasComputer = state.externalSales.some(x=>x.date===e.date && x.branch===e.branch && x.cashierName===e.cashierName && x.shift===e.shift);
+  return {cash:num(e.cash), totalSpan:t.totalSpan, totalCredit:t.totalCredit, totalSales:t.totalSales, totalExpenses:t.totalExpenses, platformVals, hasComputer};
 }
 function renderDailySingleBody(df){
   const {date, branch} = df;
@@ -1772,7 +1766,9 @@ function renderDailySingleBody(df){
     const autoDiff = compTotal!==null ? round2(t.totalSales - compTotal) : null;
     const isManual = (typeof e.exShortage === 'number');
     const exsh = round2(isManual ? e.exShortage : (autoDiff!==null ? autoDiff : 0));
-    const final = compTotal!==null ? compTotal : t.totalSales;
+    // الإجمالي النهائي المعتمد بالتقرير هو مدخل الكاشير دائمًا — رقم الأنظمة الخارجية (كمبيوتر)
+    // يبقى ظاهرًا للمقارنة فقط عبر عمود "الفرق"، ولا يستبدل رقم المبيعات.
+    const final = t.totalSales;
     return {e, t, compTotal, autoDiff, exsh, isManual, final};
   });
   const shiftG = shiftRows.reduce((acc,r)=>{ acc.exsh+=r.exsh; acc.final+=r.final; acc.comp += (r.compTotal!==null? r.compTotal : 0); acc.hasComp = acc.hasComp || r.compTotal!==null; return acc; }, {exsh:0, final:0, comp:0, hasComp:false});
@@ -1910,11 +1906,9 @@ function renderDailySingleBody(df){
   `;
 }
 function finalizedDayTotalFor(date, branch){
-  return state.entries.filter(e=>e.date===date && e.branch===branch).reduce((sum,e)=>{
-    const t = computeTotals(e);
-    const compTotal = computerTotalForShift(e.date, e.branch, e.cashierName, e.shift);
-    return sum + (compTotal!==null ? compTotal : t.totalSales);
-  }, 0);
+  // مبيعات اليوم المعتمدة تُبنى من مدخلات الكاشير دائمًا — أرقام الأنظمة الخارجية (تطبيقات
+  // التوصيل) لا تستبدلها، وتُستخدم فقط لحساب الفرق/الانحراف في نفس هذا التقرير.
+  return state.entries.filter(e=>e.date===date && e.branch===branch).reduce((sum,e)=> sum + computeTotals(e).totalSales, 0);
 }
 function renderDailyRangeBody(df){
   const branch = df.branch;
@@ -1943,7 +1937,7 @@ function renderDailyRangeBody(df){
   return `
   <div class="panel">
     <div class="panel-title">مطابقة يومية عبر النطاق المحدد (${rows.length} يوم له بيانات)</div>
-    <div class="notice">اسحب بيانات فترة كاملة (شهر مثلًا) وطابقها يومًا بيوم دفعة واحدة. اضغط «عرض التفاصيل» على أي يوم للانتقال لتقريره المفصّل. عمود «المعتمد النهائي» يأخذ رقم النظام الخارجي (الكمبيوتر) حيث توفّر، وإلا الفعلي.</div>
+    <div class="notice">اسحب بيانات فترة كاملة (شهر مثلًا) وطابقها يومًا بيوم دفعة واحدة. اضغط «عرض التفاصيل» على أي يوم للانتقال لتقريره المفصّل. عمود «المعتمد النهائي» مبني دائمًا على مبيعات الكاشير الفعلية؛ رقم الأنظمة الخارجية (تطبيقات التوصيل) يظهر بعمود «الأنظمة الخارجية» وعمود «الفرق» للمقارنة فقط، ولا يُستبدل به إجمالي المبيعات.</div>
     <div class="table-wrap"><table style="min-width:960px">
       <thead><tr><th>التاريخ</th><th>اليوم</th><th>الفعلي</th><th>المعتمد النهائي</th><th>الأنظمة الخارجية</th><th>الأنظمة المصدر</th><th>الفرق</th><th>الحالة</th><th>—</th></tr></thead>
       <tbody>
@@ -2320,7 +2314,7 @@ function attachDailyReportEvents(){
         const compTotal = computerTotalForShift(e.date, e.branch, e.cashierName, e.shift);
         const autoDiff = compTotal!==null ? (t.totalSales - compTotal) : null;
         const exsh = (typeof e.exShortage === 'number') ? e.exShortage : (autoDiff!==null ? autoDiff : 0);
-        const final = compTotal!==null ? compTotal : t.totalSales;
+        const final = t.totalSales;
         return [e.shift==='morning'?'صباح':'مساء', e.cashierName, num(e.cash), num(e.span), num(e.visa), num(e.mastercard), t.totalCredit, num(e.discountReturn), num(e.expenses), t.totalSales, exsh, final];
       });
       downloadCSV(`تقرير-يومي-${branch}-${date}.csv`, headers, rows);
