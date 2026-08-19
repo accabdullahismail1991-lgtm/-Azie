@@ -319,7 +319,7 @@ let state = {
   externalSales:[], bankSettlements:[], dailyFilter:null, platformReports:[], recWizard:null,
   branchSheets:{}, importLog:[], bulkImport:null, quickBatch:null, reportArchive:[], archiveSelection:[], archiveExpanded:[],
   systemName:'نظام الكاشير', systemSubtitle:'النسيم', systemLogo:{type:'text', value:'ن'},
-  mindMap:{zoom:100, compact:false, hidden:[], custom:[], positions:{}},
+  mindMap:{zoom:100, compact:false, shape:'radial', hidden:[], custom:[], positions:{}},
   currentUser:null, view:null, loginError:'', modal:null,
   filters:{branch:'', from:'', to:'', cashier:''},
   importPreview:null, extImportPreview:null, extImpWizard:null
@@ -408,7 +408,8 @@ async function loadAll(){
   state.systemName = await sget('ns_system_name', 'نظام الكاشير');
   state.systemSubtitle = await sget('ns_system_subtitle', 'النسيم');
   state.systemLogo = await sget('ns_system_logo', {type:'text', value:'ن'});
-  state.mindMap = await sget('ns_mindmap_settings', {zoom:100, compact:false, hidden:[], custom:[], positions:{}});
+  state.mindMap = await sget('ns_mindmap_settings', {zoom:100, compact:false, shape:'radial', hidden:[], custom:[], positions:{}});
+  if(!state.mindMap.shape) state.mindMap.shape = 'radial';
   if(!state.mindMap.positions) state.mindMap.positions = {};
   document.title = state.systemName + ' | ' + state.systemSubtitle;
   updateFavicon();
@@ -973,6 +974,10 @@ const MINDMAP_PALETTE = ['#2E6B4C','#B8862E','#A6402F','#1F4A8A','#7A3FA3','#0E7
 const MINDMAP_DEFAULT_CATEGORIES = ['نقدي','شبكات','توصيل (آجل)','مصروفات','صافي المبيعات'];
 function slugify(s){ return String(s||'').replace(/[^a-zA-Z0-9\u0600-\u06FF]+/g,'_'); }
 function buildMindMapSVG(root, width, height){
+  const shape = (state.mindMap && state.mindMap.shape) || 'radial';
+  return shape==='tree' ? buildTreeMindMapSVG(root, width, height) : buildRadialMindMapSVG(root, width, height);
+}
+function buildRadialMindMapSVG(root, width, height){
   width = width || 960; height = height || 620;
   const cx = width/2, cy = height/2 - 18;
   const cats = (root.children||[]).filter(c=>c.value>0 || (c.children&&c.children.length));
@@ -1020,7 +1025,9 @@ function buildMindMapSVG(root, width, height){
     const color = cat.color || MINDMAP_PALETTE[i%MINDMAP_PALETTE.length];
     legend.push({label:cat.label, color});
     parts.push(`<line id="mmline-${key}" x1="${cx}" y1="${cy}" x2="${x1}" y2="${y1}" stroke="${color}" stroke-width="4" opacity="0.75" stroke-linecap="round"/>`);
-    const children = (cat.children||[]).slice(0,5);
+    // نعرض 4 فروع كحد أقصى بالشكل الشعاعي (بدل 5) — يعطي كل فقاعة مساحة أكبر ونصًا أوضح؛
+    // الشكل الشجري (buildTreeMindMapSVG) لا يحتاج هذا التقييد لأن كل فرع له سطر مستقل.
+    const children = (cat.children||[]).slice(0,4);
     const m = children.length;
     if(m>0){
       // فروع كل فئة تنحصر داخل قطاعها الزاوي الخاص فقط (لا تتعدى على الفئة المجاورة)،
@@ -1083,8 +1090,105 @@ function buildMindMapSVG(root, width, height){
     parts.push(`<text x="${lx-32}" y="${legendY+4}" text-anchor="start" font-size="10" font-weight="700" font-family="Cairo,sans-serif" fill="#1E2420">${svgEscape(truncateLabel(l.label,legendTrunc))}</text>`);
   });
 
-  return `<svg id="mindMapSvg" viewBox="0 0 ${width} ${height}" width="100%" style="max-width:${width}px;display:block;margin:0 auto;border-radius:14px;">${parts.join('')}</svg>`;
+  return `<svg id="mindMapSvg" viewBox="0 0 ${width} ${height}" width="100%" style="max-width:${width}px;display:block;margin:0 auto;border-radius:14px;direction:ltr;">${parts.join('')}</svg>`;
 }
+
+// شكل شجري (تنظيمي) بديل عن الشكل الشعاعي — كل فرع يأخذ سطرًا أفقيًا مستقلًا بدل فقاعة
+// دائرية مزدحمة، فيبقى نصه واضحًا ومقروءًا كاملاً مهما زاد عدد الفروع داخل الفئة.
+function buildTreeMindMapSVG(root, width, height){
+  width = width || 960; height = height || 620;
+  const cats = (root.children||[]).filter(c=>c.value>0 || (c.children&&c.children.length));
+  let parts = [];
+  parts.push(`<defs>
+    <filter id="mmShadow2" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#173C2A" flood-opacity="0.22"/>
+    </filter>
+    <radialGradient id="mmBg2" cx="50%" cy="42%" r="75%">
+      <stop offset="0%" stop-color="#FBF9F4"/>
+      <stop offset="100%" stop-color="#F3F1EA"/>
+    </radialGradient>
+    <radialGradient id="mmRoot2" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#2E6B4C"/>
+      <stop offset="100%" stop-color="#173C2A"/>
+    </radialGradient>
+  </defs>
+  <style>
+    .mm-row{ cursor: default; transition: opacity .15s; }
+    .mm-row:hover{ opacity: .8; }
+    .mm-row:hover circle{ stroke-width: 3; }
+  </style>
+  <rect x="0" y="0" width="${width}" height="${height}" fill="url(#mmBg2)" rx="14"/>`);
+
+  const padY = 34, padBottom = 44;
+  const usableH = Math.max(60, height - padY - padBottom);
+  const rootX = width - 66, rootY = padY + usableH/2;
+  const catX = width*0.58;
+  const childX = width*0.20;
+  const childTrunc = Math.max(8, Math.min(22, Math.floor((childX-16)/7)));
+  const legend = [];
+
+  // توزيع مرجّح رأسيًا: كل فئة تأخذ من الارتفاع بمقدار عدد فروعها (أو 1 إن لم يكن لها فروع)،
+  // فيحصل كل فرع — أيًا كان عدد إخوته — على نفس المساحة الرأسية تقريبًا ونفس وضوح النص.
+  const weights = cats.map(c => Math.max(1, Math.min((c.children||[]).length, 6)));
+  const totalWeight = weights.reduce((a,b)=>a+b,0) || 1;
+  let cumY = padY;
+  const rows = cats.map((cat,i)=>{
+    const rowH = usableH*weights[i]/totalWeight;
+    const catY = cumY + rowH/2;
+    cumY += rowH;
+    return {cat, catY, rowH};
+  });
+
+  rows.forEach(({cat, catY, rowH}, i)=>{
+    const color = cat.color || MINDMAP_PALETTE[i%MINDMAP_PALETTE.length];
+    legend.push({label:cat.label, color});
+    parts.push(`<line x1="${rootX}" y1="${rootY}" x2="${catX}" y2="${catY}" stroke="${color}" stroke-width="3" opacity="0.55" stroke-linecap="round"/>`);
+
+    const children = (cat.children||[]).slice(0,6);
+    const m = children.length;
+    if(m>0){
+      const childRowH = rowH/m;
+      children.forEach((child,j)=>{
+        const childY = catY - rowH/2 + childRowH*j + childRowH/2;
+        parts.push(`<line x1="${catX}" y1="${catY}" x2="${childX}" y2="${childY}" stroke="${color}" stroke-width="1.5" opacity="0.4"/>`);
+        parts.push(`<g class="mm-row">
+          <title>${svgEscape(child.label)}: ${money(child.value)}</title>
+          <circle cx="${childX}" cy="${childY}" r="6.5" fill="#FFFFFF" stroke="${color}" stroke-width="2" filter="url(#mmShadow2)"/>
+          <text x="${childX-13}" y="${childY-2.5}" text-anchor="end" font-size="10.5" font-weight="700" font-family="Cairo,sans-serif" fill="#1E2420">${svgEscape(truncateLabel(child.label,childTrunc))}</text>
+          <text x="${childX-13}" y="${childY+11}" text-anchor="end" font-size="9.5" font-family="IBM Plex Mono,monospace" font-weight="700" fill="${color}">${money(child.value)}</text>
+        </g>`);
+      });
+    }
+
+    parts.push(`<g class="mm-row">
+      <title>${svgEscape(cat.label)}: ${money(cat.value)}${cat.pct!==undefined?' ('+cat.pct.toFixed(1)+'%)':''}</title>
+      <circle cx="${catX}" cy="${catY}" r="15" fill="${color}" filter="url(#mmShadow2)"/>
+      <circle cx="${catX}" cy="${catY}" r="15" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.5"/>
+      <text x="${catX-24}" y="${catY-3}" text-anchor="end" font-size="13" font-weight="800" font-family="Cairo,sans-serif" fill="#1E2420">${svgEscape(truncateLabel(cat.label,22))}</text>
+      <text x="${catX-24}" y="${catY+14}" text-anchor="end" font-size="12" font-family="IBM Plex Mono,monospace" font-weight="700" fill="${color}">${money(cat.value)}${cat.pct!==undefined?'  ·  '+cat.pct.toFixed(1)+'%':''}</text>
+    </g>`);
+  });
+
+  parts.push(`<g>
+    <title>${svgEscape(root.label)}: ${money(root.value)}</title>
+    <circle cx="${rootX}" cy="${rootY}" r="32" fill="url(#mmRoot2)" filter="url(#mmShadow2)"/>
+    <circle cx="${rootX}" cy="${rootY}" r="32" fill="none" stroke="#F3D48A" stroke-width="2"/>
+    <text x="${rootX-46}" y="${rootY-4}" text-anchor="end" font-size="13" font-weight="800" font-family="Cairo,sans-serif" fill="#1E2420">${svgEscape(truncateLabel(root.label,18))}</text>
+    <text x="${rootX-46}" y="${rootY+14}" text-anchor="end" font-size="13.5" font-family="IBM Plex Mono,monospace" font-weight="800" fill="#173C2A">${money(root.value)}</text>
+  </g>`);
+
+  const legendY = height-24;
+  const legendItemW = width/Math.max(1,legend.length);
+  const legendTrunc = Math.max(4, Math.floor((legendItemW-34)/7.2));
+  legend.forEach((l,i)=>{
+    const lx = legendItemW*i + legendItemW/2;
+    parts.push(`<circle cx="${lx-42}" cy="${legendY}" r="5.5" fill="${l.color}"/>`);
+    parts.push(`<text x="${lx-32}" y="${legendY+4}" text-anchor="start" font-size="10" font-weight="700" font-family="Cairo,sans-serif" fill="#1E2420">${svgEscape(truncateLabel(l.label,legendTrunc))}</text>`);
+  });
+
+  return `<svg id="mindMapSvg" viewBox="0 0 ${width} ${height}" width="100%" style="max-width:${width}px;display:block;margin:0 auto;border-radius:14px;direction:ltr;">${parts.join('')}</svg>`;
+}
+
 function buildTimelineChartSVG(points, width, height){
   width = width || 900; height = height || 300;
   const padL=55, padR=20, padT=20, padB=36;
@@ -1268,12 +1372,13 @@ function renderDashboard(){
   </div>
   <div class="panel" style="border:2px solid var(--gold);box-shadow:0 8px 24px -12px rgba(184,134,46,.45);">
     <div class="panel-title" style="font-size:17px;">🧠 تقرير خريطة ذهنية للمبيعات ${toolbarHtml('printMindBtn','exportMindBtn')}</div>
-    <div class="notice">خريطة تفاعلية بارزة توضّح توزيع إجمالي المبيعات على فروعه الرئيسية (نقدي، شبكات، توصيل، مصروفات، صافي) بألوان مميزة لكل فرع، وكل فرع يتفرّع لأهم عناصره (طرق الدفع، أفضل تطبيقات التوصيل، أفضل الكاشيرين) — مع مفتاح ألوان أسفل الخريطة. 🖱 يمكنك سحب أي عقدة رئيسية وإفلاتها في مكان جديد لإعادة ترتيب الخريطة كما تفضّل.</div>
+    <div class="notice">خريطة تفاعلية بارزة توضّح توزيع إجمالي المبيعات على فروعه الرئيسية (نقدي، شبكات، توصيل، مصروفات، صافي) بألوان مميزة لكل فرع، وكل فرع يتفرّع لأهم عناصره (طرق الدفع، أفضل تطبيقات التوصيل، أفضل الكاشيرين) — مع مفتاح ألوان أسفل الخريطة. 🖱 مرّر الفأرة على أي عقدة لرؤية بياناتها كاملة. بالشكل الشعاعي يمكنك سحب أي عقدة رئيسية وإفلاتها في مكان جديد؛ جرّب الشكل الشجري لو الفروع كثيرة وتحتاج نصًا أوضح لكل فرع.</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
       <button type="button" class="btn btn-ghost btn-sm" id="mmZoomOut">➖ تصغير</button>
       <span class="mono" style="font-size:12px;min-width:44px;text-align:center;">${state.mindMap.zoom}%</span>
       <button type="button" class="btn btn-ghost btn-sm" id="mmZoomIn">➕ تكبير</button>
       <button type="button" class="btn ${state.mindMap.compact?'btn-gold':'btn-ghost'} btn-sm" id="mmCompactToggle">${state.mindMap.compact?'🔍 عرض كامل':'🔎 عرض مصغّر'}</button>
+      <button type="button" class="btn ${state.mindMap.shape==='tree'?'btn-gold':'btn-ghost'} btn-sm" id="mmShapeToggle" title="بدّل بين الشكل الشعاعي والشجري">${state.mindMap.shape==='tree'?'🌳 شكل شجري':'🔀 شكل شعاعي'}</button>
       <button type="button" class="btn btn-ghost btn-sm" id="mmResetBtn">↺ إعادة الضبط</button>
     </div>
     <div style="overflow:auto;padding:6px 0;">
@@ -1445,8 +1550,10 @@ function attachDashboardEvents(){
   if(zoomInBtn) zoomInBtn.addEventListener('click', async ()=>{ state.mindMap.zoom = Math.min(200, state.mindMap.zoom+15); await saveMindMap(); render(); });
   const compactBtn = document.getElementById('mmCompactToggle');
   if(compactBtn) compactBtn.addEventListener('click', async ()=>{ state.mindMap.compact = !state.mindMap.compact; await saveMindMap(); render(); });
+  const shapeBtn = document.getElementById('mmShapeToggle');
+  if(shapeBtn) shapeBtn.addEventListener('click', async ()=>{ state.mindMap.shape = state.mindMap.shape==='tree' ? 'radial' : 'tree'; await saveMindMap(); render(); });
   const resetBtn = document.getElementById('mmResetBtn');
-  if(resetBtn) resetBtn.addEventListener('click', async ()=>{ state.mindMap = {zoom:100, compact:false, hidden:[], custom:[], positions:{}}; await saveMindMap(); render(); });
+  if(resetBtn) resetBtn.addEventListener('click', async ()=>{ state.mindMap = {zoom:100, compact:false, shape:'radial', hidden:[], custom:[], positions:{}}; await saveMindMap(); render(); });
   document.querySelectorAll('[data-mmhide]').forEach(chk=>chk.addEventListener('change', async ()=>{
     const label = chk.dataset.mmhide;
     if(chk.checked){ state.mindMap.hidden = state.mindMap.hidden.filter(l=>l!==label); }
