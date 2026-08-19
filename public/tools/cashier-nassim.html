@@ -977,7 +977,13 @@ function buildMindMapSVG(root, width, height){
   const cx = width/2, cy = height/2 - 18;
   const cats = (root.children||[]).filter(c=>c.value>0 || (c.children&&c.children.length));
   const n = Math.max(cats.length,1);
-  const R1 = Math.min(width,height)*0.30 + n*10;
+  // أقصى مسافة آمنة من المركز لأي اتجاه (حتى لا تخرج فقاعة فئة أو فرع عن حدود الرسم)،
+  // مبنية على أضيق هامش فعلي بين المركز وأي حافة من حواف اللوحة الأربع.
+  const maxReach = Math.min(cy, height-cy, cx, width-cx) - 14;
+  const R1 = Math.min(Math.min(width,height)*0.30 + n*10, Math.max(70, maxReach*0.62));
+  // نصف قطر فقاعة الفئة نفسه يُحدَّد بما يكفل عدم تلامس الفئات المتجاورة حول المركز
+  // (المسافة الوترية بينها) وبقاءها ضمن حدود اللوحة معًا — بدل قيمة ثابتة قد تتصادم عند ضيق المساحة.
+  const catR = Math.max(26, Math.min(46, R1*(n>1?Math.sin(Math.PI/n):1) - 4, maxReach - R1));
   const positions = (state.mindMap && state.mindMap.positions) || {};
   let parts = [];
   parts.push(`<defs>
@@ -993,8 +999,17 @@ function buildMindMapSVG(root, width, height){
       <stop offset="100%" stop-color="#173C2A"/>
     </radialGradient>
   </defs>
+  <style>
+    .mm-draggable circle:first-of-type{ transition: filter .15s; }
+    .mm-draggable:hover circle:first-of-type{ filter: brightness(1.15) drop-shadow(0 0 6px rgba(0,0,0,.25)); }
+    .mm-child{ cursor: default; }
+    .mm-child circle{ transition: stroke-width .15s, filter .15s; }
+    .mm-child:hover circle{ stroke-width: 3.6; filter: brightness(1.06); }
+  </style>
   <rect x="0" y="0" width="${width}" height="${height}" fill="url(#mmBg)" rx="14"/>`);
 
+  const sectorWidth = 2*Math.PI/n;
+  const minDim = Math.min(width,height);
   const legend = [];
   cats.forEach((cat, i)=>{
     const key = slugify(cat.customId || cat.label);
@@ -1005,22 +1020,43 @@ function buildMindMapSVG(root, width, height){
     const color = cat.color || MINDMAP_PALETTE[i%MINDMAP_PALETTE.length];
     legend.push({label:cat.label, color});
     parts.push(`<line id="mmline-${key}" x1="${cx}" y1="${cy}" x2="${x1}" y2="${y1}" stroke="${color}" stroke-width="4" opacity="0.75" stroke-linecap="round"/>`);
-    const catR = 46;
     const children = (cat.children||[]).slice(0,5);
     const m = children.length;
     if(m>0){
-      const spread = Math.min(Math.PI/1.5, (2*Math.PI/n)*0.98);
+      // فروع كل فئة تنحصر داخل قطاعها الزاوي الخاص فقط (لا تتعدى على الفئة المجاورة)،
+      // وتُحسب المسافة (R2) والحجم بما يضمن مسافة كافية بين الفقاعات المتجاورة فلا تتلامس،
+      // وبما لا يتجاوز الميزانية المتبقية من maxReach حتى لا تخرج الفروع عن حدود اللوحة.
+      // كذلك تُرسم كل الفروع بالنسبة لموضع الفئة الفعلي (بعد أي سحب يدوي) وليس مركز الخريطة،
+      // حتى تبقى الخطوط متصلة بشكل صحيح عند تحريك الفئة.
+      const spread = Math.min(sectorWidth*0.82, Math.PI/2.2);
+      let childR = m<=2?28:m===3?26:m===4?23:20;
+      const remainingBudget = Math.max(60, maxReach - R1 - childR);
+      const neededGap = childR*2+6;
+      const idealR2 = m>1 ? Math.max(minDim*0.20, neededGap*(m-1)/spread) : minDim*0.20;
+      const R2 = Math.min(remainingBudget, idealR2);
+      // إن ضاقت الميزانية عن احتواء الفجوة اللازمة بين الفروع بهذا الحجم، صغّر حجم الفقاعات
+      // بدل ما نسمح لها تتلامس أو تخرج عن اللوحة.
+      if(m>1){
+        const fitR = (R2*spread)/(m-1)/2 - 3;
+        childR = Math.min(childR, Math.max(6, fitR));
+      }
+      const fLabel = childR>=26?9.5:childR>=23?8.8:8;
+      const fValue = childR>=26?9:childR>=23?8.3:7.5;
+      const trunc = childR>=26?11:childR>=23?9:7;
       children.forEach((child,j)=>{
-        const childAngle = angle - spread/2 + (m>1? (j/(m-1))*spread : spread/2);
-        const R2 = R1 + 150 + m*6;
-        const x2 = cx + R2*Math.cos(childAngle), y2 = cy + R2*Math.sin(childAngle);
+        const childAngle = angle - spread/2 + (m>1? (j/(m-1))*spread : 0);
+        const x2 = x1 + R2*Math.cos(childAngle), y2 = y1 + R2*Math.sin(childAngle);
         parts.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="1.8" opacity="0.45"/>`);
-        parts.push(`<circle cx="${x2}" cy="${y2}" r="28" fill="#FFFFFF" stroke="${color}" stroke-width="2.2" filter="url(#mmShadow)"/>`);
-        parts.push(`<text x="${x2}" y="${y2-4}" text-anchor="middle" font-size="9.5" font-weight="700" font-family="Cairo,sans-serif" fill="#1E2420">${svgEscape(truncateLabel(child.label,11))}</text>`);
-        parts.push(`<text x="${x2}" y="${y2+11}" text-anchor="middle" font-size="9" font-family="IBM Plex Mono,monospace" font-weight="700" fill="${color}">${money(child.value)}</text>`);
+        parts.push(`<g class="mm-child">
+          <title>${svgEscape(child.label)}: ${money(child.value)}</title>
+          <circle cx="${x2}" cy="${y2}" r="${childR}" fill="#FFFFFF" stroke="${color}" stroke-width="2.2" filter="url(#mmShadow)"/>
+          <text x="${x2}" y="${y2-4}" text-anchor="middle" font-size="${fLabel}" font-weight="700" font-family="Cairo,sans-serif" fill="#1E2420">${svgEscape(truncateLabel(child.label,trunc))}</text>
+          <text x="${x2}" y="${y2+11}" text-anchor="middle" font-size="${fValue}" font-family="IBM Plex Mono,monospace" font-weight="700" fill="${color}">${money(child.value)}</text>
+        </g>`);
       });
     }
     parts.push(`<g class="mm-draggable" data-mmnode="${key}" transform="translate(${x1},${y1})" style="cursor:grab;">
+      <title>${svgEscape(cat.label)}: ${money(cat.value)}${cat.pct!==undefined?' ('+cat.pct.toFixed(1)+'%)':''}</title>
       <circle cx="0" cy="0" r="${catR}" fill="${color}" filter="url(#mmShadow)"/>
       <circle cx="0" cy="0" r="${catR}" fill="none" stroke="#FFFFFF" stroke-width="2.5" opacity="0.55"/>
       <text x="0" y="-8" text-anchor="middle" font-size="12.5" font-weight="800" fill="#FFFFFF" font-family="Cairo,sans-serif">${svgEscape(truncateLabel(cat.label,14))}</text>
@@ -1028,17 +1064,23 @@ function buildMindMapSVG(root, width, height){
       ${cat.pct!==undefined? `<text x="0" y="27" text-anchor="middle" font-size="10" font-family="IBM Plex Mono,monospace" font-weight="700" fill="#F3D48A">${cat.pct.toFixed(1)}%</text>` : ''}
     </g>`);
   });
-  parts.push(`<circle cx="${cx}" cy="${cy}" r="60" fill="url(#mmRoot)" filter="url(#mmShadow)"/>`);
-  parts.push(`<circle cx="${cx}" cy="${cy}" r="60" fill="none" stroke="#F3D48A" stroke-width="2"/>`);
-  parts.push(`<text x="${cx}" y="${cy-10}" text-anchor="middle" font-size="12.5" fill="#FFFFFF" font-weight="800" font-family="Cairo,sans-serif">${svgEscape(truncateLabel(root.label,16))}</text>`);
-  parts.push(`<text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="15" fill="#F3D48A" font-family="IBM Plex Mono,monospace" font-weight="800">${money(root.value)}</text>`);
+  parts.push(`<g>
+    <title>${svgEscape(root.label)}: ${money(root.value)}</title>
+    <circle cx="${cx}" cy="${cy}" r="60" fill="url(#mmRoot)" filter="url(#mmShadow)"/>
+    <circle cx="${cx}" cy="${cy}" r="60" fill="none" stroke="#F3D48A" stroke-width="2"/>
+    <text x="${cx}" y="${cy-10}" text-anchor="middle" font-size="12.5" fill="#FFFFFF" font-weight="800" font-family="Cairo,sans-serif">${svgEscape(truncateLabel(root.label,16))}</text>
+    <text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="15" fill="#F3D48A" font-family="IBM Plex Mono,monospace" font-weight="800">${money(root.value)}</text>
+  </g>`);
 
-  const legendY = height-26;
+  const legendY = height-24;
   const legendItemW = width/legend.length;
+  // طول التسمية يُحسب بما يناسب عرض خانتها الفعلي حتى لا يتلاصق مع الخانة المجاورة
+  // في الخرائط الضيقة (العرض المصغّر) أو عند وجود عدة فئات.
+  const legendTrunc = Math.max(4, Math.floor((legendItemW-34)/7.2));
   legend.forEach((l,i)=>{
     const lx = legendItemW*i + legendItemW/2;
-    parts.push(`<circle cx="${lx-42}" cy="${legendY}" r="6" fill="${l.color}"/>`);
-    parts.push(`<text x="${lx-30}" y="${legendY+4}" text-anchor="start" font-size="10" font-weight="700" font-family="Cairo,sans-serif" fill="#1E2420">${svgEscape(truncateLabel(l.label,14))}</text>`);
+    parts.push(`<circle cx="${lx-42}" cy="${legendY}" r="5.5" fill="${l.color}"/>`);
+    parts.push(`<text x="${lx-32}" y="${legendY+4}" text-anchor="start" font-size="10" font-weight="700" font-family="Cairo,sans-serif" fill="#1E2420">${svgEscape(truncateLabel(l.label,legendTrunc))}</text>`);
   });
 
   return `<svg id="mindMapSvg" viewBox="0 0 ${width} ${height}" width="100%" style="max-width:${width}px;display:block;margin:0 auto;border-radius:14px;">${parts.join('')}</svg>`;
