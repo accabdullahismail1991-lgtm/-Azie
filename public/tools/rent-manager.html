@@ -217,13 +217,15 @@ canvas.donut{width:100px!important;height:100px!important}
           <div class="field"><label>إجمالي قيمة الإيجار (ر.س)</label><input type="number" id="f-total" placeholder="100000"></div>
           <div class="field"><label>المبلغ المقدم (ر.س)</label><input type="number" id="f-adv" value="0"></div>
           <div class="field"><label>دورية الدفع</label>
-            <select id="f-paymode">
+            <select id="f-paymode" onchange="toggleCustomPayMode('f')">
               <option value="monthly">شهري</option>
               <option value="quarterly">ربع سنوي</option>
               <option value="biannual">نصف سنوي</option>
               <option value="annual" selected>سنوي</option>
+              <option value="custom">مخصّص (كل عدد أشهر)</option>
             </select>
           </div>
+          <div class="field" id="f-custommonths-wrap" style="display:none"><label>كل كم شهر؟</label><input type="number" id="f-custommonths" value="4" min="1" max="60"></div>
           <div class="field" style="grid-column:1/-1"><label>ملاحظات</label><textarea id="f-notes" placeholder="أي ملاحظات إضافية..."></textarea></div>
         </div>
         <div class="actions">
@@ -363,11 +365,13 @@ canvas.donut{width:100px!important;height:100px!important}
       <div class="field"><label>إجمالي إيجار التجديد (ر.س)</label><input type="number" id="r-total" placeholder="100000"></div>
       <div class="field"><label>مقدم التجديد (ر.س)</label><input type="number" id="r-adv" value="0"></div>
       <div class="field"><label>دورية الدفع</label>
-        <select id="r-paymode">
+        <select id="r-paymode" onchange="toggleCustomPayMode('r')">
           <option value="monthly">شهري</option><option value="quarterly">ربع سنوي</option>
           <option value="biannual">نصف سنوي</option><option value="annual" selected>سنوي</option>
+          <option value="custom">مخصّص (كل عدد أشهر)</option>
         </select>
       </div>
+      <div class="field" id="r-custommonths-wrap" style="display:none"><label>كل كم شهر؟</label><input type="number" id="r-custommonths" value="4" min="1" max="60"></div>
     </div>
     <div id="r-carry-info" style="background:var(--amber-l);border:1px solid #EFD080;border-radius:8px;padding:10px 14px;margin-top:12px;font-size:13px;color:var(--amber)"></div>
     <div class="actions">
@@ -398,13 +402,30 @@ const toDate = s => new Date(s);
 
 function daysInMonth(y,m){ return new Date(y,m+1,0).getDate(); }
 
+// دورية الدفع بعدد الأشهر بين كل استحقاق والتالي — تدعم "مخصّص" لأي عدد أشهر
+// (مثال: كل 4 أشهر) بجانب الخيارات الجاهزة (شهري/ربع سنوي/نصف سنوي/سنوي).
+const PAY_MODE_MONTHS = {monthly:1,quarterly:3,biannual:6,annual:12};
+function payModeMonths(c){
+  if(c.payMode==='custom') return Math.max(1,parseInt(c.payCustomMonths)||1);
+  return PAY_MODE_MONTHS[c.payMode]||12;
+}
+const PAY_MODE_LABELS = {monthly:'شهري',quarterly:'ربع سنوي',biannual:'نصف سنوي',annual:'سنوي'};
+function payModeLabel(c){
+  if(c.payMode==='custom') return `مخصّص (كل ${payModeMonths(c)} ${payModeMonths(c)===1?'شهر':'أشهر'})`;
+  return PAY_MODE_LABELS[c.payMode]||c.payMode;
+}
+function toggleCustomPayMode(prefix){
+  const isCustom = document.getElementById(prefix+'-paymode').value==='custom';
+  document.getElementById(prefix+'-custommonths-wrap').style.display = isCustom?'':'none';
+}
+
 // ======================== COMPUTE ========================
 function computeContract(c){
   // c = one segment (original or renewal)
   const sd = toDate(c.startDate);
   const totalM = c.durUnit==='year' ? c.dur*12 : c.dur;
   const ed = new Date(sd); ed.setMonth(ed.getMonth()+totalM);
-  const inv = {monthly:1,quarterly:3,biannual:6,annual:12}[c.payMode];
+  const inv = payModeMonths(c);
   const numP = Math.ceil(totalM/inv);
   const net = c.total - c.advance;
   const eachP = net / numP;
@@ -654,10 +675,15 @@ function clearForm(){
   document.getElementById('f-durunit').value='year';
   document.getElementById('f-adv').value='0';
   document.getElementById('f-paymode').value='annual';
+  document.getElementById('f-custommonths').value='4';
+  toggleCustomPayMode('f');
 }
 function editContract(){
   const c=DB.contracts.find(x=>x.id===activeId);
   if(!c) return;
+  // showPage('new') يستدعي clearForm() (يفرّغ الحقول ويصفّر editingId) — لازم يُنفَّذ أولاً،
+  // ثم نعبّئ بيانات العقد فوق النموذج الفارغ، وإلا كانت تعبئتنا تُمحى فور فتح الصفحة.
+  showPage('new');
   editingId=activeId;
   document.getElementById('form-title-lbl').textContent='تعديل بيانات العقد';
   document.getElementById('f-tenant').value=c.tenant;
@@ -671,7 +697,8 @@ function editContract(){
   document.getElementById('f-total').value=c.total;
   document.getElementById('f-adv').value=c.advance||0;
   document.getElementById('f-paymode').value=c.payMode;
-  showPage('new');
+  document.getElementById('f-custommonths').value=c.payCustomMonths||4;
+  toggleCustomPayMode('f');
 }
 function saveContract(){
   const tenant=document.getElementById('f-tenant').value.trim();
@@ -686,7 +713,8 @@ function saveContract(){
     startDate:start,dur:parseInt(document.getElementById('f-dur').value)||1,
     durUnit:document.getElementById('f-durunit').value,
     total,advance:parseFloat(document.getElementById('f-adv').value)||0,
-    payMode:document.getElementById('f-paymode').value
+    payMode:document.getElementById('f-paymode').value,
+    payCustomMonths:parseInt(document.getElementById('f-custommonths').value)||4
   };
   if(editingId){
     const c=DB.contracts.find(x=>x.id===editingId);
@@ -759,7 +787,7 @@ function renderContractPage(){
     <div>النشاط: <span>${c.activity||'—'}</span></div>
     <div>بداية: <span>${fmtS(seg.startDate)}</span></div>
     <div>نهاية: <span>${fmtS(r.ed)}</span></div>
-    <div>دورية: <span>${{monthly:'شهري',quarterly:'ربع سنوي',biannual:'نصف سنوي',annual:'سنوي'}[seg.payMode]}</span></div>
+    <div>دورية: <span>${payModeLabel(seg)}</span></div>
     <div>يومي: <span>${fmt(r.dailyR)}</span></div>
     ${c.renewals&&c.renewals.length>0?`<div><span class="tag-renewed">مجدَّد ${c.renewals.length} مرة</span></div>`:''}
   `;
@@ -943,6 +971,9 @@ function openRenewModal(){
   document.getElementById('r-durunit').value='year';
   document.getElementById('r-total').value='';
   document.getElementById('r-adv').value='0';
+  document.getElementById('r-paymode').value=lastSeg.payMode||'annual';
+  document.getElementById('r-custommonths').value=lastSeg.payCustomMonths||4;
+  toggleCustomPayMode('r');
   document.getElementById('r-carry-info').innerHTML=totalBalance>0
     ?`💡 يوجد رصيد غير مسدَّد من العقد السابق: <b>${fmt(totalBalance)}</b> — سيُرحَّل تلقائياً للعقد الجديد.`
     :'✅ لا يوجد رصيد متبقي من العقد السابق.';
@@ -964,6 +995,7 @@ function confirmRenew(){
     durUnit:document.getElementById('r-durunit').value,
     total,advance:parseFloat(document.getElementById('r-adv').value)||0,
     payMode:document.getElementById('r-paymode').value,
+    payCustomMonths:parseInt(document.getElementById('r-custommonths').value)||4,
     payments:[],carryover:Math.max(carryover,0)
   });
   save(); closeModal(); activeSub=getAllSegments(c).length-1; renderContractPage(); renderSidebar();
