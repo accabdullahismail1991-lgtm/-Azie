@@ -2397,7 +2397,34 @@ function saveSession(){
   toast(t('save-success')+` — v${version} "${co.name}"`);
 }
 function loadSessions(){try{return JSON.parse(localStorage.getItem(SESSIONS_KEY)||'[]');}catch(e){return[];}}
-// loadSession and renderHistory → overridden in SAVE VERSION SYSTEM below
+// renderHistory → overridden in SAVE VERSION SYSTEM below
+function loadSession(id){
+  const sess=loadSessions().find(x=>x.id===id);
+  if(!sess){toast('❌ Session not found');return;}
+  setCo(sess.co);
+  setPr(sess.pr);
+  const st=sess.settings||{};
+  s('period', st.period!=null?String(st.period):'');
+  s('target_profit', st.targetProfit!=null?String(st.targetProfit):'');
+  s('vat_rate', st.vatRate!=null?String(st.vatRate):'');
+  s('currency', st.currency||'SAR');
+  s('price_vat_mode', st.priceMode||'ex');
+  s('scen_driver', st.costDriver!=null?String(st.costDriver):'');
+  menuItems=(sess.menuItems||[]).map(i=>({...i}));
+  menuIdCtr=Math.max(0,...menuItems.map(i=>+i.id||0))+1;
+  fcItems=(sess.fcItems||[]).map(f=>({...f}));
+  fcIdCtr=sess.fcIdCtr||(Math.max(0,...fcItems.map(f=>+f.id||0))+1);
+  scenarios=(sess.scenarios||[]).map(sc=>({...sc,vcItems:[...(sc.vcItems||[])]}));
+  scenCtr=sess.scenCtr||0;
+  renderMenu();
+  renderFCTable();
+  renderScenarios();
+  recalc();
+  buildPnl();
+  renderResults();
+  updateTaxSummary();
+  toast('✅ '+(sess.co?.name||'')+' — v'+sess.version+' '+(LANG==='ar'?'تم التحميل':'loaded'));
+}
 function deleteSession(id){
   const arr=loadSessions().filter(x=>x.id!==id);
   try{localStorage.setItem(SESSIONS_KEY,JSON.stringify(arr));}catch(e){}
@@ -3002,7 +3029,7 @@ function renderHistory(){
 
 // Track current loaded session
 const _origLoadSession=loadSession;
-function loadSession(id){
+loadSession=function(id){
   _origLoadSession(id);
   _curSessionId=id;
   const sess=loadSessions().find(x=>x.id===id);
@@ -3014,7 +3041,7 @@ function loadSession(id){
     const nameEl=document.getElementById('versionClientName');
     if(nameEl) nameEl.textContent=(sess.co?.name||'—').slice(0,14);
   }
-}
+};
 
 // ══════════════════════════════════════════════
 // ══════════════════════════════════════════════
