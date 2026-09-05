@@ -62,9 +62,14 @@ body{
 }
 .hdr-inner{
   max-width:1400px; margin:0 auto;
-  display:flex; align-items:center; gap:.75rem;
-  flex-wrap:wrap; min-height:56px;
+  display:flex; flex-direction:column;
 }
+.hdr-row{display:flex; align-items:center; gap:.75rem; flex-wrap:wrap;}
+.hdr-row-top{min-height:54px;}
+.hdr-row-tools{min-height:42px; padding:.35rem 0 .5rem; border-top:1px solid var(--border);}
+.tool-group{display:flex; align-items:center; gap:.35rem; flex-wrap:wrap;}
+.tool-divider{width:1px; height:20px; background:var(--border); flex-shrink:0;}
+.lang-group{display:flex; align-items:center; gap:.3rem; margin-inline-start:auto;}
 /* logo area */
 .logo-area{display:flex;align-items:center;gap:.6rem;cursor:pointer;padding:.4rem 0;}
 .sys-logo{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--border);display:none;}
@@ -106,8 +111,6 @@ body{
 .nb .nbadge{background:var(--gold);color:#fff;border-radius:10px;padding:0 5px;font-size:.6rem;font-weight:800;}
 
 /* export buttons */
-.hdr-actions{display:flex;gap:.35rem;align-items:center;margin-right:auto;}
-[dir="ltr"] .hdr-actions{margin-left:auto;margin-right:0;}
 .xbtn{
   display:flex;align-items:center;gap:.3rem;
   padding:.38rem .9rem; border-radius:6px;
@@ -495,12 +498,12 @@ tbody td input:focus{border-color:var(--accent);background:var(--bg);}
   .tl-hd,.tl-row{grid-template-columns:2rem 1fr 60px 70px 60px;}
   .tl-hd>*:nth-child(n+6),.tl-row>*:nth-child(n+6){display:none;}
   .nb span:not(.ns){display:none;}
-  .hdr-actions .xbtn span:last-child{display:none;}
+  .hdr-row-tools .xbtn span:last-child{display:none;}
 }
 @media print{
   @page{size:A4 portrait;margin:12mm 14mm 14mm 14mm;}
   /* hide UI */
-  .hdr,.btn,.dz,.ov,.toast,.nb,.hdr-actions,.step-btn,.fc-import-btn,
+  .hdr,.btn,.dz,.ov,.toast,.nb,.hdr-row-tools,.step-btn,.fc-import-btn,
   .br button,.edit-name-btn,.logo-up,.logo-area button,
   #refreshBtn,#versionBadge{display:none!important;}
   /* show all tabs */
@@ -688,55 +691,65 @@ tbody td input:focus{border-color:var(--accent);background:var(--bg);}
 ══════════════════════════════ -->
 <div class="hdr">
   <div class="hdr-inner">
-    <!-- Logo + System Name -->
-    <div class="logo-area" onclick="openNameModal()">
-      <img id="sysLogoImg" class="sys-logo" src="" alt="logo">
-      <div>
-        <div class="sys-name" id="sysNameDisplay">⚙ MENU RE-ENGINEERING</div>
-        <div class="sys-sub" id="sysSubDisplay">الهندسة العكسية للمنيو</div>
+    <!-- ROW 1: Logo + System Name + Navigation -->
+    <div class="hdr-row hdr-row-top">
+      <div class="logo-area" onclick="openNameModal()">
+        <img id="sysLogoImg" class="sys-logo" src="" alt="logo">
+        <div>
+          <div class="sys-name" id="sysNameDisplay">⚙ MENU RE-ENGINEERING</div>
+          <div class="sys-sub" id="sysSubDisplay">الهندسة العكسية للمنيو</div>
+        </div>
+        <button class="edit-name-btn" title="تعديل اسم النظام">✏</button>
       </div>
-      <button class="edit-name-btn" title="تعديل اسم النظام">✏</button>
+
+      <nav class="nav" id="mainNav">
+        <button class="nb" onclick="goTab('company')"><span class="ns">00</span> <span data-t="tab-company">الشركة</span></button>
+        <button class="nb active" onclick="goTab('menu')"><span class="ns">01</span> <span data-t="tab-menu">المنيو</span></button>
+        <button class="nb" onclick="goTab('costs')"><span class="ns">02</span> <span data-t="tab-costs">التكاليف</span></button>
+        <button class="nb" onclick="goTab('scenarios')"><span class="ns">03</span> <span data-t="tab-scenarios">السيناريوهات</span></button>
+        <button class="nb" onclick="goTab('pnl')"><span class="ns">04</span> <span data-t="tab-pnl">قائمة الدخل</span></button>
+        <button class="nb" onclick="goTab('results')"><span class="ns">05</span> <span data-t="tab-results">النتائج</span></button>
+        <button class="nb" id="histTabBtn" onclick="goTab('history')"><span class="ns">📁</span> <span data-t="tab-history">السجل</span></button>
+      </nav>
     </div>
 
-    <!-- NAV -->
-    <nav class="nav" id="mainNav">
-      <button class="nb" onclick="goTab('company')"><span class="ns">00</span> <span data-t="tab-company">الشركة</span></button>
-      <button class="nb active" onclick="goTab('menu')"><span class="ns">01</span> <span data-t="tab-menu">المنيو</span></button>
-      <button class="nb" onclick="goTab('costs')"><span class="ns">02</span> <span data-t="tab-costs">التكاليف</span></button>
-      <button class="nb" onclick="goTab('scenarios')"><span class="ns">03</span> <span data-t="tab-scenarios">السيناريوهات</span></button>
-      <button class="nb" onclick="goTab('pnl')"><span class="ns">04</span> <span data-t="tab-pnl">قائمة الدخل</span></button>
-      <button class="nb" onclick="goTab('results')"><span class="ns">05</span> <span data-t="tab-results">النتائج</span></button>
-      <button class="nb" id="histTabBtn" onclick="goTab('history')"><span class="ns">📁</span> <span data-t="tab-history">السجل</span></button>
-    </nav>
-
-    <!-- ACTION BUTTONS -->
-    <div class="hdr-actions">
-      <!-- Version badge + Save -->
-      <div id="versionBadge" onclick="openSaveModal()" title="حفظ إصدار جديد"
-        style="display:flex;align-items:center;gap:.3rem;background:var(--card);border:1.5px solid var(--border);
-               border-radius:20px;padding:.22rem .65rem;cursor:pointer;font-size:.68rem;transition:all .18s;"
-        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-        <span id="versionDot" style="width:7px;height:7px;border-radius:50%;background:var(--amber);animation:vbpulse .9s infinite alternate;flex-shrink:0;"></span>
-        <span id="versionClientName" style="font-weight:700;color:var(--ink);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
-        <span id="versionNum" style="font-weight:800;color:var(--accent);font-size:.72rem;">new</span>
+    <!-- ROW 2: Toolbar — grouped: (الجلسة/الإصدار) · (تصدير) · تحديث ……… (اللغة) -->
+    <div class="hdr-row hdr-row-tools">
+      <div class="tool-group">
+        <div id="versionBadge" onclick="openSaveModal()" title="حفظ إصدار جديد"
+          style="display:flex;align-items:center;gap:.3rem;background:var(--card);border:1.5px solid var(--border);
+                 border-radius:20px;padding:.22rem .65rem;cursor:pointer;font-size:.68rem;transition:all .18s;"
+          onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span id="versionDot" style="width:7px;height:7px;border-radius:50%;background:var(--amber);animation:vbpulse .9s infinite alternate;flex-shrink:0;"></span>
+          <span id="versionClientName" style="font-weight:700;color:var(--ink);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
+          <span id="versionNum" style="font-weight:800;color:var(--accent);font-size:.72rem;">new</span>
+        </div>
+        <button class="xbtn" onclick="openSaveModal()"
+          style="background:var(--accent-l);color:var(--accent);font-weight:800;border:1.5px solid var(--accent);">
+          💾 <span data-t="btn-saveVersion">حفظ إصدار</span>
+        </button>
       </div>
-      <button class="xbtn" onclick="openSaveModal()"
-        style="background:var(--accent-l);color:var(--accent);font-weight:800;border:1.5px solid var(--accent);">
-        💾 <span data-t="btn-saveVersion">حفظ إصدار</span>
-      </button>
-      <div style="width:1px;height:20px;background:var(--border);margin:0 .15rem;"></div>
-      <!-- Language -->
-      <button class="lang-btn" id="langAR" onclick="setLang('ar')" title="العربية">🇸🇦 AR</button>
-      <button class="lang-btn" id="langEN" onclick="setLang('en')" title="English">🇺🇸 EN</button>
-      <div style="width:1px;height:20px;background:var(--border);margin:0 .15rem;"></div>
-      <button class="xbtn xbtn-green" onclick="exportExcel()">⬇ <span data-t="btn-excel">Excel</span></button>
-      <button class="xbtn xbtn-amber" onclick="exportPDF()">📄 <span data-t="btn-pdf">PDF / طباعة</span></button>
+
+      <div class="tool-divider"></div>
+
+      <div class="tool-group">
+        <button class="xbtn xbtn-green" onclick="exportExcel()">⬇ <span data-t="btn-excel">Excel</span></button>
+        <button class="xbtn xbtn-amber" onclick="exportPDF()">📄 <span data-t="btn-pdf">PDF / طباعة</span></button>
+        <button class="xbtn xbtn-red" onclick="exportPptxData()">📊 <span data-t="btn-pptx">PowerPoint</span></button>
+      </div>
+
+      <div class="tool-divider"></div>
+
       <button class="xbtn" id="refreshBtn" onclick="refreshAll()"
         style="background:#FFF3E0;color:#E65100;position:relative;" title="تحديث كل التقارير">
         <span id="refreshIcon">🔄</span> <span data-t="btn-refresh">تحديث</span>
         <span id="refreshDot" style="display:none;position:absolute;top:2px;right:2px;width:7px;height:7px;background:#E65100;border-radius:50%;"></span>
       </button>
-      <button class="xbtn xbtn-red" onclick="exportPptxData()">📊 <span data-t="btn-pptx">PowerPoint</span></button>
+
+      <div class="lang-group">
+        <button class="lang-btn" id="langAR" onclick="setLang('ar')" title="العربية">🇸🇦 AR</button>
+        <button class="lang-btn" id="langEN" onclick="setLang('en')" title="English">🇺🇸 EN</button>
+      </div>
     </div>
   </div>
 </div>
