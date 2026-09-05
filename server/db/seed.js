@@ -203,6 +203,7 @@ const SCREENS = {
     ['pnl', 'قائمة الدخل'],
     ['results', 'النتائج'],
     ['history', 'السجل'],
+    ['benchmark', 'الأداء'],
   ],
   'restaurant-os': [
     ['dash', 'لوحة التحكم'],
