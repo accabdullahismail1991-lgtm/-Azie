@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لوحة الإدارة — المنصة الموحدة</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/theme.css">
+<style>
+.panel{
+  background:linear-gradient(180deg, var(--card), rgba(20,28,46,.6));
+  border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:28px;
+}
+.panel h3{font-size:16px; font-weight:800; margin-bottom:16px;}
+table{width:100%; border-collapse:collapse; font-size:13px;}
+th, td{padding:10px 8px; text-align:right; border-bottom:1px solid var(--border);}
+th{color:var(--muted); font-weight:700; font-size:12px;}
+.perm-grid{display:flex; flex-wrap:wrap; gap:6px;}
+.perm-chip{
+  font-size:11px; padding:4px 10px; border-radius:20px; cursor:pointer; user-select:none;
+  border:1px solid var(--border); background:rgba(255,255,255,.04); color:var(--muted);
+}
+.perm-chip.on{background:rgba(200,147,58,.18); border-color:var(--gold); color:var(--gold-lt); font-weight:700;}
+.form-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:14px;}
+.form-row label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px; font-weight:700;}
+.form-row input, .form-row select{
+  width:100%; padding:10px 12px; border-radius:8px;
+  background:rgba(255,255,255,.04); border:1px solid var(--border); color:var(--text); font-family:inherit; font-size:13.5px;
+}
+.matrix-table th, .matrix-table td{ text-align:center; white-space:nowrap; }
+.matrix-table th:first-child, .matrix-table td:first-child{ text-align:right; white-space:normal; }
+.matrix-table th{ font-size:11px; }
+.form-check{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted);}
+.badge{font-size:11px; padding:2px 8px; border-radius:20px; font-weight:700;}
+.badge.admin{background:rgba(200,147,58,.18); color:var(--gold-lt);}
+.badge.inactive{background:rgba(184,67,58,.18); color:#ffb4ac;}
+.badge.active{background:rgba(29,122,78,.18); color:#7be3ab;}
+.row-actions{display:flex; gap:8px; flex-wrap:wrap;}
+.row-actions .btn{padding:6px 10px; font-size:12px;}
+.msg{font-size:13px; margin-bottom:14px; padding:10px 14px; border-radius:10px; display:none;}
+.msg.show{display:block;}
+.msg.ok{background:rgba(29,122,78,.12); border:1px solid rgba(29,122,78,.4); color:#7be3ab;}
+.msg.err{background:rgba(184,67,58,.12); border:1px solid rgba(184,67,58,.4); color:#ffb4ac;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">M</div>
+    <div class="brand-text">
+      <h1>لوحة الإدارة</h1>
+      <span>إدارة المستخدمين وصلاحيات التطبيقات</span>
+    </div>
+  </div>
+  <div class="topbar-meta">
+    <span id="userLabel"></span>
+    <a class="btn" href="/">لوحة الأدوات</a>
+    <button class="btn btn-danger" id="logoutBtn">تسجيل الخروج</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="msg" id="msgBox"></div>
+
+  <div class="panel">
+    <h3>إضافة مستخدم جديد</h3>
+    <form id="createForm">
+      <div class="form-row">
+        <div>
+          <label>اسم المستخدم</label>
+          <input name="username" required>
+        </div>
+        <div>
+          <label>الاسم الكامل</label>
+          <input name="full_name" required>
+        </div>
+        <div>
+          <label>كلمة المرور (8 أحرف فأكثر)</label>
+          <input name="password" type="password" minlength="8" required>
+        </div>
+      </div>
+      <div class="form-row" style="align-items:center;">
+        <label class="form-check"><input type="checkbox" name="is_super_admin"> مدير منصة (صلاحية كاملة على كل شيء)</label>
+      </div>
+      <div id="createPerms" class="perm-grid" style="margin-bottom:14px;"></div>
+      <button class="btn btn-gold" type="submit">إنشاء المستخدم</button>
+    </form>
+  </div>
+
+  <div class="panel">
+    <h3>المستخدمون والصلاحيات</h3>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>المستخدم</th>
+            <th>الحالة</th>
+            <th>صلاحيات التطبيقات</th>
+            <th>إجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="usersBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>مصفوفة صلاحيات الشاشات</h3>
+    <p style="color:var(--muted); font-size:12.5px; margin-bottom:14px; line-height:1.8;">
+      كل تطبيق فيه شاشات/أقسام داخلية. صلاحية التطبيق (بالجدول اللي فوق) تتحكم هل يقدر المستخدم يفتح التطبيق أصلاً،
+      وهاي المصفوفة تتحكم بأي شاشات داخل التطبيق يقدر يشوفها. منح شاشة لمستخدم بيمنحه صلاحية فتح التطبيق تلقائياً.
+    </p>
+    <div class="form-row" style="margin-bottom:14px; max-width:360px;">
+      <div>
+        <label>اختر التطبيق</label>
+        <select id="matrixAppSelect"></select>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="matrix-table">
+        <thead>
+          <tr id="matrixHead"></tr>
+        </thead>
+        <tbody id="matrixBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="copyright-note">جميع الحقوق محفوظة © عبدالله إسماعيل — للاستفسار والتواصل: <a href="tel:0509726204">0509726204</a></div>
+</div>
+
+<script>
+let apps = [];
+let users = [];
+let screens = [];
+let currentMatrixApp = null;
+
+function showMsg(text, ok) {
+  const box = document.getElementById('msgBox');
+  box.textContent = text;
+  box.className = 'msg show ' + (ok ? 'ok' : 'err');
+  setTimeout(() => box.classList.remove('show'), 4000);
+}
+
+async function api(path, opts) {
+  const res = await fetch(path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'حدث خطأ غير متوقع');
+  return data;
+}
+
+async function boot() {
+  let me;
+  try {
+    me = await api('/api/auth/me');
+  } catch {
+    window.location.href = '/login.html';
+    return;
+  }
+  if (!me.user.is_super_admin) {
+    document.body.innerHTML = '<div style="padding:60px;text-align:center;color:#93A0B4;">هذه الصفحة متاحة لمدير المنصة فقط.</div>';
+    return;
+  }
+  document.getElementById('userLabel').textContent = `مرحباً، ${me.user.full_name}`;
+
+  [apps, users, screens] = await Promise.all([
+    api('/api/admin/apps'),
+    api('/api/admin/users'),
+    api('/api/admin/screens'),
+  ]);
+  renderCreatePerms();
+  renderUsers();
+  renderMatrixAppSelect();
+}
+
+function renderMatrixAppSelect() {
+  const select = document.getElementById('matrixAppSelect');
+  select.innerHTML = apps.map((a) => `<option value="${a.id}">${a.icon} ${a.title}</option>`).join('');
+  currentMatrixApp = apps[0] ? apps[0].id : null;
+  if (currentMatrixApp) select.value = currentMatrixApp;
+  select.addEventListener('change', () => {
+    currentMatrixApp = select.value;
+    renderMatrix();
+  });
+  renderMatrix();
+}
+
+function renderMatrix() {
+  const head = document.getElementById('matrixHead');
+  const body = document.getElementById('matrixBody');
+  if (!currentMatrixApp) {
+    head.innerHTML = '';
+    body.innerHTML = '';
+    return;
+  }
+  const appScreens = screens.filter((s) => s.app_id === currentMatrixApp);
+
+  head.innerHTML =
+    '<th>المستخدم</th>' + appScreens.map((s) => `<th>${s.title}</th>`).join('');
+
+  body.innerHTML = users
+    .map((u) => {
+      const grantedScreens = (u.screens && u.screens[currentMatrixApp]) || [];
+      const cells = appScreens
+        .map((s) => {
+          const on = u.is_super_admin || grantedScreens.includes(s.screen_key);
+          const lockedAttr = u.is_super_admin ? 'style="pointer-events:none;opacity:.7;"' : '';
+          return `<td><span class="perm-chip ${on ? 'on' : ''}" data-user="${u.id}" data-screen="${s.screen_key}" ${lockedAttr}>${on ? '✓' : '—'}</span></td>`;
+        })
+        .join('');
+      return `<tr><td><b>${u.full_name}</b><br><span style="color:var(--muted);font-size:11.5px;">@${u.username}</span></td>${cells}</tr>`;
+    })
+    .join('');
+
+  body.querySelectorAll('.perm-chip[data-user]').forEach((chip) => {
+    chip.addEventListener('click', async () => {
+      const userId = Number(chip.dataset.user);
+      const screenKey = chip.dataset.screen;
+      const isOn = chip.classList.contains('on');
+      try {
+        if (isOn) {
+          await api(`/api/admin/screen-permissions/${userId}/${currentMatrixApp}/${screenKey}`, {
+            method: 'DELETE',
+          });
+        } else {
+          await api('/api/admin/screen-permissions', {
+            method: 'POST',
+            body: JSON.stringify({ user_id: userId, app_id: currentMatrixApp, screen_key: screenKey }),
+          });
+        }
+        users = await api('/api/admin/users');
+        renderUsers();
+        renderMatrix();
+      } catch (err) {
+        showMsg(err.message, false);
+      }
+    });
+  });
+}
+
+function renderCreatePerms() {
+  const box = document.getElementById('createPerms');
+  box.innerHTML = apps
+    .map((a) => `<span class="perm-chip" data-app="${a.id}">${a.icon} ${a.title}</span>`)
+    .join('');
+  box.querySelectorAll('.perm-chip').forEach((chip) => {
+    chip.addEventListener('click', () => chip.classList.toggle('on'));
+  });
+}
+
+function renderUsers() {
+  const body = document.getElementById('usersBody');
+  body.innerHTML = users
+    .map((u) => {
+      const badges = [
+        u.is_super_admin ? '<span class="badge admin">مدير منصة</span>' : '',
+        u.is_active ? '<span class="badge active">مفعّل</span>' : '<span class="badge inactive">معطّل</span>',
+      ].join(' ');
+      const permsHtml = apps
+        .map((a) => {
+          const on = u.is_super_admin || u.apps.includes(a.id);
+          return `<span class="perm-chip ${on ? 'on' : ''}" data-user="${u.id}" data-app="${a.id}" ${u.is_super_admin ? 'style="pointer-events:none;opacity:.7;"' : ''}>${a.icon}</span>`;
+        })
+        .join('');
+      return `
+        <tr>
+          <td><b>${u.full_name}</b><br><span style="color:var(--muted);font-size:11.5px;">@${u.username}</span></td>
+          <td>${badges}</td>
+          <td><div class="perm-grid">${permsHtml}</div></td>
+          <td>
+            <div class="row-actions">
+              <button class="btn" data-action="toggle-active" data-id="${u.id}" data-value="${!u.is_active}">${u.is_active ? 'تعطيل' : 'تفعيل'}</button>
+              <button class="btn" data-action="reset-pw" data-id="${u.id}">إعادة كلمة المرور</button>
+              <button class="btn btn-danger" data-action="delete" data-id="${u.id}">حذف</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    })
+    .join('');
+
+  body.querySelectorAll('.perm-chip[data-user]').forEach((chip) => {
+    chip.addEventListener('click', async () => {
+      const userId = Number(chip.dataset.user);
+      const appId = chip.dataset.app;
+      const isOn = chip.classList.contains('on');
+      try {
+        if (isOn) {
+          await api(`/api/admin/permissions/${userId}/${appId}`, { method: 'DELETE' });
+        } else {
+          await api('/api/admin/permissions', {
+            method: 'POST',
+            body: JSON.stringify({ user_id: userId, app_id: appId }),
+          });
+        }
+        chip.classList.toggle('on');
+        const u = users.find((x) => x.id === userId);
+        if (isOn) u.apps = u.apps.filter((a) => a !== appId);
+        else u.apps.push(appId);
+      } catch (err) {
+        showMsg(err.message, false);
+      }
+    });
+  });
+
+  body.querySelectorAll('[data-action="toggle-active"]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      try {
+        await api(`/api/admin/users/${btn.dataset.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ is_active: btn.dataset.value === 'true' }),
+        });
+        users = await api('/api/admin/users');
+        renderUsers();
+      } catch (err) {
+        showMsg(err.message, false);
+      }
+    });
+  });
+
+  body.querySelectorAll('[data-action="reset-pw"]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const newPw = prompt('أدخل كلمة مرور جديدة (8 أحرف فأكثر):');
+      if (!newPw) return;
+      try {
+        await api(`/api/admin/users/${btn.dataset.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ password: newPw }),
+        });
+        showMsg('تم تحديث كلمة المرور بنجاح', true);
+      } catch (err) {
+        showMsg(err.message, false);
+      }
+    });
+  });
+
+  body.querySelectorAll('[data-action="delete"]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('هل أنت متأكد من حذف هذا المستخدم؟')) return;
+      try {
+        await api(`/api/admin/users/${btn.dataset.id}`, { method: 'DELETE' });
+        users = await api('/api/admin/users');
+        renderUsers();
+      } catch (err) {
+        showMsg(err.message, false);
+      }
+    });
+  });
+}
+
+document.getElementById('createForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const selectedApps = Array.from(document.querySelectorAll('#createPerms .perm-chip.on')).map(
+    (c) => c.dataset.app
+  );
+  try {
+    await api('/api/admin/users', {
+      method: 'POST',
+      body: JSON.stringify({
+        username: form.username.value,
+        full_name: form.full_name.value,
+        password: form.password.value,
+        is_super_admin: form.is_super_admin.checked,
+        apps: selectedApps,
+      }),
+    });
+    showMsg('تم إنشاء المستخدم بنجاح', true);
+    form.reset();
+    document.querySelectorAll('#createPerms .perm-chip.on').forEach((c) => c.classList.remove('on'));
+    users = await api('/api/admin/users');
+    renderUsers();
+  } catch (err) {
+    showMsg(err.message, false);
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.href = '/login.html';
+});
+
+boot();
+</script>
+
+</body>
+</html>

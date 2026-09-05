@@ -1,0 +1,2303 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CFO Assistant · Restaurant Finance</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="/assets/azie-data.js"></script>
+<script src="/assets/azie-screens.js"></script>
+<style>
+  :root{
+    /* Ink & Brass palette — warm charcoal ledger with brass gold, teal and rust accents */
+    --bg:#13120E; --panel:#1C1A14; --panel-2:#17150F; --panel-3:#272319;
+    --border:#3A3527; --border-soft:#25211A;
+    --text:#F3EEE2; --text-dim:#B7AC92; --text-dimmer:#8A7F65;
+    --accent:#C9A227; --accent-strong:#A8850F; --accent-soft:rgba(201,162,39,.15); --accent-ink:#171410;
+    --good:#4FA88A; --good-text:#63C79E;
+    --bad:#C1503F; --bad-text:#E1795F;
+    --warn:#D9A441; --warn-text:#E8BE6E;
+    --radius:12px;
+    --font-en: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-ar: "Tahoma", "Segoe UI", "Noto Kufi Arabic", "Geeza Pro", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--font-en);}
+  body[data-lang="ar"]{font-family:var(--font-ar);}
+  a{color:inherit;text-decoration:none;}
+  button,select,input{font-family:inherit;}
+  .ltr-num{unicode-bidi:isolate;direction:ltr;font-family:var(--mono);font-variant-numeric:tabular-nums;}
+
+  .app{display:flex;min-height:100vh;width:100%;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:270px; flex-shrink:0; background:var(--panel-2);
+    border-inline-end:1px solid var(--border-soft);
+    display:flex; flex-direction:column;
+    position:fixed; inset-inline-start:0; top:0; bottom:0; z-index:30;
+    transform:translateX(-102%); transition:transform .2s ease;
+  }
+  html[dir="rtl"] .sidebar{transform:translateX(102%);}
+  .sidebar.open{transform:translateX(0);}
+  @media(min-width:1024px){ .sidebar{position:static; transform:none !important;} }
+  .sidebar-head{height:64px;display:flex;align-items:center;gap:10px;padding:0 18px;border-bottom:1px solid var(--border-soft);}
+  .logo{height:32px;width:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-strong));
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;color:var(--accent-ink);}
+  .brand-name{font-size:13.5px;font-weight:600;line-height:1.2;}
+  .brand-sub{font-size:10.5px;color:var(--text-dimmer);line-height:1.3;}
+  .sidebar-close{margin-inline-start:auto;background:none;border:none;color:var(--text-dim);cursor:pointer;display:none;}
+  @media(max-width:1023px){.sidebar-close{display:block;}}
+
+  .nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:3px;overflow-y:auto;}
+  .nav-group-label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dimmer);padding:12px 10px 4px;}
+  .nav-btn{
+    display:flex;align-items:center;gap:10px;width:100%;text-align:start;
+    padding:9px 11px;border-radius:9px;border:1px solid transparent;background:none;
+    color:var(--text-dim);font-size:12.8px;cursor:pointer;line-height:1.35;
+  }
+  .nav-btn:hover{background:var(--panel-3);color:var(--text);}
+  .nav-btn.active{background:var(--accent-soft);color:var(--accent);border-color:rgba(201,162,39,.3);}
+  .nav-btn svg{flex-shrink:0;width:15px;height:15px;}
+
+  .sidebar-foot{padding:14px;border-top:1px solid var(--border-soft);}
+  .std-box{background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:10px 12px;}
+  .std-label{font-size:11px;color:var(--text-dim);}
+  .std-value{font-size:12.5px;font-weight:500;margin-top:2px;}
+
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20;display:none;}
+  .overlay.show{display:block;}
+  @media(min-width:1024px){.overlay{display:none !important;}}
+
+  /* ---------- Main ---------- */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  @media(min-width:1024px){.main{margin-inline-start:270px;}}
+
+  header.topbar{
+    height:64px;border-bottom:1px solid var(--border-soft);background:rgba(19,18,14,.95);
+    backdrop-filter:blur(6px); display:flex;align-items:center;gap:10px;
+    padding:0 16px; position:sticky; top:0; z-index:10;
+  }
+  .icon-btn{height:34px;width:34px;border-radius:9px;border:1px solid var(--border);background:var(--panel);
+    color:var(--text-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;}
+  .icon-btn:hover{color:var(--text);}
+  .menu-toggle{display:flex;}
+  @media(min-width:1024px){.menu-toggle{display:none;}}
+  .crumb{font-size:13px;color:var(--text-dimmer);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  @media(max-width:767px){.crumb{display:none;}}
+  .spacer{flex:1;}
+
+  .select-wrap{position:relative;}
+  select.field{
+    appearance:none;background:var(--panel);border:1px solid var(--border);border-radius:9px;
+    padding:8px 30px 8px 12px; font-size:12.5px;color:var(--text);cursor:pointer;max-width:190px;
+  }
+  html[dir="rtl"] select.field{padding:8px 12px 8px 30px;}
+  .select-wrap svg{position:absolute;inset-inline-end:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-dimmer);width:13px;height:13px;}
+  .field-range{display:none;}
+  @media(min-width:640px){.field-range{display:block;}}
+
+  .badge-dot{position:absolute;top:-3px;inset-inline-end:-3px;height:16px;min-width:16px;padding:0 3px;border-radius:999px;
+    background:var(--bad);font-size:9.5px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;}
+
+  .lang-toggle{display:flex;border:1px solid var(--border);border-radius:9px;overflow:hidden;}
+  .lang-toggle button{padding:7px 11px;font-size:11.5px;font-weight:700;background:var(--panel);color:var(--text-dimmer);border:none;cursor:pointer;}
+  .lang-toggle button.active{background:var(--accent);color:var(--accent-ink);}
+
+  .btn-brass{display:flex;align-items:center;gap:6px;height:34px;border-radius:9px;background:var(--accent);
+    border:none;color:var(--accent-ink);padding:0 14px;font-size:12.5px;font-weight:700;cursor:pointer;}
+  .btn-brass:hover{background:var(--accent-strong);}
+  .btn-ghost{display:flex;align-items:center;gap:6px;height:34px;border-radius:9px;background:var(--panel);
+    border:1px solid var(--border);color:var(--text-dim);padding:0 14px;font-size:12.5px;font-weight:600;cursor:pointer;}
+  .btn-ghost:hover{color:var(--text);border-color:var(--text-dimmer);}
+  @media(max-width:639px){.export-btn span{display:none;}}
+
+  main.content{flex:1;padding:20px 16px 40px;}
+  @media(min-width:1024px){main.content{padding:24px;}}
+  .page-title-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+  .page-title{font-size:18px;font-weight:600;margin:0;}
+  .page-sub{font-size:12.5px;color:var(--text-dimmer);margin:2px 0 0;}
+
+  .tab-section{display:none;}
+  .tab-section.active{display:block;}
+
+  /* ---------- Cards / grid ---------- */
+  .grid{display:grid;gap:16px;}
+  .grid-kpi{grid-template-columns:repeat(1,1fr);}
+  @media(min-width:640px){.grid-kpi{grid-template-columns:repeat(2,1fr);}}
+  @media(min-width:1200px){.grid-kpi{grid-template-columns:repeat(5,1fr);}}
+  .grid-kpi3{grid-template-columns:repeat(1,1fr);}
+  @media(min-width:768px){.grid-kpi3{grid-template-columns:repeat(3,1fr);}}
+  .grid-kpi4{grid-template-columns:repeat(1,1fr);}
+  @media(min-width:640px){.grid-kpi4{grid-template-columns:repeat(2,1fr);}}
+  @media(min-width:1024px){.grid-kpi4{grid-template-columns:repeat(4,1fr);}}
+  .grid-2col{grid-template-columns:1fr;}
+  @media(min-width:1200px){.grid-2col{grid-template-columns:2fr 1fr;}}
+  .grid-chart2{grid-template-columns:1fr;}
+  @media(min-width:1024px){.grid-chart2{grid-template-columns:1fr 1fr;}}
+
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
+  .card-soft{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:14px;}
+
+  .kpi{position:relative;border-radius:var(--radius);border:1px solid var(--border);background:var(--panel);
+    padding:16px;display:flex;flex-direction:column;gap:10px;}
+  .kpi.alert{border-color:rgba(193,80,63,.45);background:rgba(193,80,63,.06);}
+  .kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--text-dim);font-weight:500;}
+  .kpi-value-row{display:flex;align-items:baseline;gap:5px;}
+  .kpi-value{font-size:24px;font-weight:600;}
+  .kpi-suffix{font-size:13px;color:var(--text-dim);}
+  .kpi-bottom{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text-dimmer);}
+  .ping{position:absolute;top:12px;inset-inline-end:12px;height:8px;width:8px;border-radius:50%;background:var(--bad);}
+
+  .trend{display:inline-flex;align-items:center;gap:2px;font-size:12px;font-weight:600;}
+  .trend.up{color:var(--good-text);} .trend.down{color:var(--bad-text);}
+
+  .pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 10px;font-size:11px;font-weight:500;border:1px solid;white-space:nowrap;}
+  .pill-neutral{background:var(--panel-3);color:var(--text-dim);border-color:var(--border);}
+  .pill-good{background:rgba(79,168,138,.12);color:var(--good-text);border-color:rgba(79,168,138,.32);}
+  .pill-bad{background:rgba(193,80,63,.12);color:var(--bad-text);border-color:rgba(193,80,63,.32);}
+  .pill-warn{background:rgba(217,164,65,.12);color:var(--warn-text);border-color:rgba(217,164,65,.32);}
+
+  /* ---------- Insights panel ---------- */
+  .insights-head{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .insights-icon{height:32px;width:32px;border-radius:9px;background:var(--accent-soft);border:1px solid rgba(201,162,39,.3);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .insight-item{border:1px solid var(--border);background:var(--panel-2);border-radius:9px;padding:14px;margin-bottom:10px;}
+  .insight-item:last-child{margin-bottom:0;}
+  .insight-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .insight-left{display:flex;align-items:flex-start;gap:9px;}
+  .insight-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .insight-title{font-size:13.5px;font-weight:500;}
+  .insight-body{font-size:12.5px;color:var(--text-dim);margin:6px 0 0;line-height:1.55;}
+  .insight-action{font-size:12px;color:var(--accent);margin-top:6px;}
+  .approve-btn{flex-shrink:0;font-size:12px;font-weight:700;border-radius:8px;padding:7px 13px;border:1px solid var(--accent);
+    background:var(--accent);color:var(--accent-ink);cursor:pointer;white-space:nowrap;}
+  .approve-btn.applied{background:rgba(79,168,138,.15);border-color:rgba(79,168,138,.4);color:var(--good-text);}
+
+  /* ---------- Tables ---------- */
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;min-width:560px;}
+  thead tr{border-bottom:1px solid var(--border);}
+  th{text-align:start;font-size:11px;font-weight:500;color:var(--text-dimmer);padding-bottom:8px;padding-inline-end:14px;}
+  th.num, td.num{text-align:end;}
+  tbody tr{border-bottom:1px solid var(--border-soft);}
+  tbody tr:hover{background:rgba(39,35,25,.5);}
+  td{padding:9px 0;padding-inline-end:14px;font-size:13px;}
+  .section-row td{padding-top:16px;padding-bottom:5px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:var(--text-dimmer);cursor:pointer;user-select:none;}
+  .section-row .chev{display:inline-block;transition:transform .15s;margin-inline-end:5px;}
+  .section-row.collapsed .chev{transform:rotate(-90deg);}
+  html[dir="rtl"] .section-row.collapsed .chev{transform:rotate(90deg);}
+  tr.pnl-child{display:table-row;}
+  tr.pnl-child.hidden{display:none;}
+  .row-strong td{font-weight:600;background:rgba(39,35,25,.45);}
+  .ebitda-row td{border-top:2px solid rgba(201,162,39,.35);padding-top:12px;font-weight:700;font-size:13.5px;}
+
+  /* ---------- Charts ---------- */
+  .chart-box{height:190px;position:relative;}
+  .chart-box.tall{height:240px;}
+  .chart-title{font-size:11px;font-weight:500;color:var(--text-dim);margin-bottom:8px;}
+
+  .legend-list{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+  .legend-item{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text-dim);}
+  .legend-item .dot{display:inline-block;height:8px;width:8px;border-radius:50%;margin-inline-end:6px;}
+  .legend-name{display:flex;align-items:center;}
+
+  .rule-item{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--border);background:var(--panel-2);
+    border-radius:9px;padding:13px;margin-bottom:10px;}
+  .rule-item:last-child{margin-bottom:0;}
+  .rule-name{font-size:13px;font-weight:500;}
+  .rule-detail{font-size:12px;color:var(--text-dim);margin-top:3px;line-height:1.5;}
+
+  .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .card-title{font-size:14px;font-weight:600;}
+  .card-desc{font-size:11px;color:var(--text-dim);margin-top:2px;}
+
+  .stack{display:flex;flex-direction:column;gap:20px;}
+
+  /* ---------- Upload tab ---------- */
+  .template-card{border:1px solid var(--border);background:var(--panel-2);border-radius:10px;padding:16px;}
+  .template-head{display:flex;align-items:center;justify-content:between;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+  .template-title{font-size:13.5px;font-weight:600;}
+  .template-desc{font-size:12px;color:var(--text-dim);margin:2px 0 12px;line-height:1.5;}
+  .template-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .file-btn{position:relative;overflow:hidden;display:inline-flex;}
+  .file-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+  .status-msg{font-size:12px;margin-top:10px;padding:9px 12px;border-radius:8px;border:1px solid;}
+  .status-ok{background:rgba(79,168,138,.1);border-color:rgba(79,168,138,.3);color:var(--good-text);}
+  .status-err{background:rgba(193,80,63,.1);border-color:rgba(193,80,63,.3);color:var(--bad-text);}
+  .cols-hint{font-size:11px;color:var(--text-dimmer);margin-top:8px;line-height:1.6;word-break:break-word;}
+  .cols-hint code{background:var(--panel-3);padding:1px 5px;border-radius:4px;font-family:var(--mono);color:var(--text-dim);}
+
+  /* ---------- Manual tab ---------- */
+  .manual-section{border-bottom:1px solid var(--border-soft);padding:16px 0;}
+  .manual-section:first-child{padding-top:0;}
+  .manual-section:last-child{border-bottom:none;padding-bottom:0;}
+  .manual-num{display:inline-flex;align-items:center;justify-content:center;height:22px;width:22px;border-radius:6px;
+    background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:700;margin-inline-end:8px;}
+  .manual-title{font-size:14px;font-weight:600;display:flex;align-items:center;}
+  .manual-body{font-size:12.8px;color:var(--text-dim);line-height:1.7;margin-top:8px;}
+  .manual-body ul{margin:6px 0;padding-inline-start:20px;}
+  .manual-body li{margin-bottom:4px;}
+  .swatch-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;}
+  .swatch{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim);background:var(--panel-2);
+    border:1px solid var(--border);border-radius:8px;padding:6px 10px;}
+  .swatch .dot{height:12px;width:12px;border-radius:4px;flex-shrink:0;}
+
+  /* ---------- Analytics tab ---------- */
+  .heatmap-wrap{overflow-x:auto;}
+  .heatmap{display:grid;gap:3px;min-width:640px;}
+  .heatmap-hourlabel, .heatmap-daylabel{font-size:9.5px;color:var(--text-dimmer);display:flex;align-items:center;justify-content:center;}
+  .heatmap-cell{border-radius:4px;aspect-ratio:1;min-height:18px;cursor:default;}
+  .analytics-legend{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:var(--text-dimmer);}
+  .analytics-legend .grad{height:8px;width:120px;border-radius:4px;background:linear-gradient(90deg,rgba(201,162,39,.08),#C9A227);}
+  .forecast-note{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-dimmer);margin-top:8px;}
+  .forecast-note .dash{width:14px;height:0;border-top:1.5px dashed var(--text-dimmer);}
+
+  /* ---------- Master data ---------- */
+  .pill-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+  .pill-tab{padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:var(--panel-2);
+    color:var(--text-dim);font-size:12.5px;font-weight:600;cursor:pointer;}
+  .pill-tab.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+  .template-group-label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-dimmer);margin:4px 0 -4px;}
+
+  /* ---------- Smart Assistant chat widget ---------- */
+  .chat-fab{position:fixed;inset-inline-end:22px;bottom:22px;z-index:40;height:52px;width:52px;border-radius:50%;
+    background:var(--accent);border:none;color:var(--accent-ink);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4);}
+  .chat-fab:hover{background:var(--accent-strong);}
+  .chat-fab .dot-new{position:absolute;top:-2px;inset-inline-end:-2px;height:12px;width:12px;border-radius:50%;background:var(--bad);border:2px solid var(--bg);}
+  .chat-panel{position:fixed;inset-inline-end:22px;bottom:86px;z-index:40;width:360px;max-width:92vw;height:500px;max-height:75vh;
+    background:var(--panel);border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.5);
+    display:none;flex-direction:column;overflow:hidden;}
+  .chat-panel.open{display:flex;}
+  .chat-header{padding:14px 16px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:9px;background:var(--panel-2);}
+  .chat-header-icon{height:28px;width:28px;border-radius:8px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .chat-header-title{font-size:13px;font-weight:600;}
+  .chat-header-sub{font-size:10.5px;color:var(--text-dimmer);}
+  .chat-close{margin-inline-start:auto;background:none;border:none;color:var(--text-dim);cursor:pointer;}
+  .chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+  .chat-msg{max-width:86%;font-size:12.5px;line-height:1.55;padding:9px 12px;border-radius:10px;white-space:pre-wrap;}
+  .chat-msg.user{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border-bottom-right-radius:3px;}
+  html[dir="rtl"] .chat-msg.user{border-bottom-right-radius:10px;border-bottom-left-radius:3px;}
+  .chat-msg.bot{align-self:flex-start;background:var(--panel-3);color:var(--text);border-bottom-left-radius:3px;}
+  html[dir="rtl"] .chat-msg.bot{border-bottom-left-radius:10px;border-bottom-right-radius:3px;}
+  .chat-msg.typing{color:var(--text-dimmer);font-style:italic;}
+  .chat-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 10px;}
+  .chat-chip{font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel-2);
+    color:var(--text-dim);cursor:pointer;}
+  .chat-chip:hover{color:var(--text);border-color:var(--text-dimmer);}
+  .chat-input-row{display:flex;gap:8px;padding:12px;border-top:1px solid var(--border-soft);background:var(--panel-2);}
+  .chat-input{flex:1;resize:none;background:var(--panel);border:1px solid var(--border);border-radius:9px;color:var(--text);
+    padding:9px 11px;font-size:12.5px;font-family:inherit;height:38px;max-height:80px;}
+  .chat-input:focus{outline:none;border-color:var(--accent);}
+  .chat-send{height:38px;width:38px;border-radius:9px;background:var(--accent);border:none;color:var(--accent-ink);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+  .chat-send:disabled{opacity:.5;cursor:default;}
+</style>
+</head>
+<body data-lang="en">
+<div class="app">
+  <div class="overlay" id="overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <div class="logo">₪</div>
+      <div>
+        <div class="brand-name" data-i18n="appName">CFO Assistant</div>
+        <div class="brand-sub" data-i18n="appTagline">Multi-branch F&amp;B finance</div>
+      </div>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Close">✕</button>
+    </div>
+    <nav class="nav" id="navList"></nav>
+    <div class="sidebar-foot">
+      <div class="std-box">
+        <div class="std-label" data-i18n="reportingStandard">Reporting standard</div>
+        <div class="std-value" data-i18n="standardValue">USALI · IFRS 15/16 · IAS 2</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="crumb" id="crumbText"></div>
+      <div class="spacer"></div>
+
+      <div class="select-wrap">
+        <select class="field" id="branchSelect"></select>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+
+      <div class="select-wrap field-range">
+        <select class="field" id="rangeSelect"></select>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+
+      <div class="lang-toggle">
+        <button id="langEnBtn" class="active">EN</button>
+        <button id="langArBtn">عربي</button>
+      </div>
+
+      <button class="icon-btn" aria-label="Notifications">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="badge-dot" id="alertCount">1</span>
+      </button>
+
+      <button class="btn-brass export-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span data-i18n="export">Export</span>
+      </button>
+    </header>
+
+    <main class="content">
+      <div class="page-title-row">
+        <div>
+          <h1 class="page-title" id="pageTitle"></h1>
+          <p class="page-sub" id="pageSub"></p>
+        </div>
+      </div>
+
+      <section class="tab-section active" id="tab-exec"></section>
+      <section class="tab-section" id="tab-pnl"></section>
+      <section class="tab-section" id="tab-cashflow"></section>
+      <section class="tab-section" id="tab-trend"></section>
+      <section class="tab-section" id="tab-branches"></section>
+      <section class="tab-section" id="tab-cost"></section>
+      <section class="tab-section" id="tab-waste"></section>
+      <section class="tab-section" id="tab-staff"></section>
+      <section class="tab-section" id="tab-aggregators"></section>
+      <section class="tab-section" id="tab-analytics"></section>
+      <section class="tab-section" id="tab-masterdata"></section>
+      <section class="tab-section" id="tab-upload"></section>
+      <section class="tab-section" id="tab-manual"></section>
+      <section class="tab-section" id="tab-settings"></section>
+    </main>
+  </div>
+</div>
+
+<button class="chat-fab" id="chatFab" aria-label="Smart Assistant">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+  <span class="dot-new" id="chatFabDot"></span>
+</button>
+
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-header">
+    <div class="chat-header-icon">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.9L12 3z"/><path d="M5 19l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/></svg>
+    </div>
+    <div>
+      <div class="chat-header-title" data-i18n="chatTitle">Smart Assistant</div>
+      <div class="chat-header-sub" data-i18n="chatSub">Ask about your numbers</div>
+    </div>
+    <button class="chat-close" id="chatClose" aria-label="Close">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-chips" id="chatChips"></div>
+  <div class="chat-input-row">
+    <textarea class="chat-input" id="chatInput" rows="1" data-i18n-placeholder="chatPlaceholder" placeholder="Ask a question…"></textarea>
+    <button class="chat-send" id="chatSend" aria-label="Send">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   I18N DICTIONARY
+============================================================ */
+const I18N = {
+  en: {
+    appName:"CFO Assistant", appTagline:"Multi-branch F&B finance",
+    reportingStandard:"Reporting standard", standardValue:"USALI · IFRS 15/16 · IAS 2",
+    export:"Export",
+    navExec:"Executive Summary & AI Insights",
+    navPnl:"Financial Statements",
+    navCashflow:"Cash Flow Statement",
+    navTrend:"Budget vs Actual — Full Year",
+    navBranches:"Branch Performance Matrix",
+    navCost:"Cost Control",
+    navWaste:"Waste & Shrinkage",
+    navStaff:"Staff Productivity",
+    navAgg:"Aggregator & Channel Profitability",
+    navUpload:"Data Upload & Templates",
+    navManual:"User Manual",
+    navSettings:"System Settings & IFRS Rules",
+    navGroupReports:"Reports", navGroupData:"Data", navGroupSystem:"System",
+    netSales:"Net Sales", cogsPct:"COGS %", laborPct:"Labor Cost %", primePct:"Prime Cost %", ebitdaMargin:"EBITDA Margin",
+    vsLastYear:"vs. last year", targetCogs:"Target < 30%", targetLabor:"Target < 25%", ceiling60:"Ceiling 60%", targetEbitda:"Target ≥ 16%",
+    aiPanelTitle:"AI CFO Insights",
+    aiPanelSub:"Top signals detected this period, ranked by financial impact",
+    revenueMix:"Revenue Mix",
+    dineIn:"Dine-in", takeaway:"Takeaway", aggregators:"Aggregators",
+    branchMatrixTitle:"Branch Performance Matrix",
+    branchMatrixSub:"EBITDA margin, prime cost & aggregator drag by store",
+    colBranch:"Branch", colNetSales:"Net Sales", colVsBudget:"vs Budget", colEbitdaPct:"EBITDA %", colPrimePct:"Prime Cost %", colAggComm:"Agg. Commission",
+    ebitdaChartTitle:"Store EBITDA margin",
+    primeTrendTitle:"Prime cost trend vs. 60% ceiling (consolidated)",
+    pnlTitle:"USALI Statement of Operations",
+    pnlSub:"Consolidated · Current period · IFRS 15 / IFRS 16 / IAS 2 aligned",
+    actualVsBudget:"Actual vs. Budget",
+    colLineItem:"Line item", colActual:"Actual", colBudget:"Budget", colVariance:"Variance",
+    secRevenue:"Revenue", secCos:"Cost of Sales", secLabor:"Controllable Expenses (Labor)", secOccupancy:"Occupancy & Fixed Costs",
+    totalRevenue:"Total Net Revenue", totalCos:"Total Cost of Sales", grossProfit:"Gross Profit",
+    totalLabor:"Total Labor Cost", primeCostRow:"Prime Cost (COGS + Labor)", totalOccupancy:"Total Occupancy Cost", storeEbitda:"Store EBITDA",
+    primeTrend6w:"Prime cost trend, 6-week rolling",
+    aggTitle:"Aggregator & Channel Profitability",
+    aggSub:"Order volume, commission take-rate, and net proceeds after commission",
+    colPlatform:"Platform", colOrders:"Orders", colGmv:"GMV", colCommPct:"Commission %", colNetAfter:"Net After Commission",
+    settingsTitle:"System Settings & IFRS Rules",
+    settingsSub:"Accounting framework currently enforced across all branch reporting",
+    recommended:"Recommended",
+    sevCritical:"Red flag", sevWarning:"Watch", sevPositive:"On track",
+    approve:"Approve", applied:"Applied ✓",
+    consolidated:"Consolidated (All Branches)",
+    ranges:["This Week","This Month","Month over Month","Year over Year"],
+    branches:{b1:"Jeddah — Corniche", b2:"Riyadh — Olaya", b3:"Jeddah — Rawdah", b4:"Khobar — Corniche"},
+    /* Cash flow */
+    cashflowTitle:"Consolidated Statement of Cash Flows", cashflowSub:"Current period · Actual vs. Budget",
+    secOperating:"Operating Activities", secInvesting:"Investing Activities", secFinancing:"Financing Activities",
+    totalOperating:"Net Cash from Operating", totalInvesting:"Net Cash from Investing", totalFinancing:"Net Cash from Financing",
+    netChangeCash:"Net Change in Cash", openingCash:"Opening Cash Balance", closingCash:"Closing Cash Balance",
+    monthlyNetCash:"Monthly net cash flow",
+    /* Trend */
+    trendTitle:"Budget vs. Actual — Full Year", trendSub:"Monthly net sales and EBITDA margin, actual vs. budget",
+    salesTrendTitle:"Net Sales — Actual vs. Budget (SAR)",
+    ebitdaTrendTitle:"EBITDA Margin — Actual vs. Budget (%)",
+    ytdActual:"YTD Actual Sales", ytdBudget:"YTD Budget Sales", ytdVariance:"YTD Variance", avgEbitda:"Avg. EBITDA Margin",
+    /* Waste */
+    wasteTitle:"Waste & Shrinkage Report", wasteSub:"Food, beverage & packaging waste by category, current period",
+    totalWasteValue:"Total Waste Value", wastePctCogs:"Waste % of COGS", momChange:"Month-over-Month",
+    colCategory:"Category", colWasteValue:"Waste Value", colPctCogs:"% of COGS", colMomChange:"MoM Change",
+    wasteByCategory:"Waste value by category",
+    /* Staff */
+    staffTitle:"Staff Productivity", staffSub:"Sales per labor hour, covers, and labor efficiency by branch",
+    colLaborHours:"Labor Hours", colCovers:"Covers", colSplh:"Sales / Labor Hr", colSalesPerCover:"Sales / Cover",
+    splhChartTitle:"Sales per labor hour by branch",
+    /* Upload */
+    uploadTitle:"Data Upload & Templates", uploadSub:"Download a template, fill it in, then upload to refresh this dashboard with your own figures.",
+    downloadCsv:"Download CSV", downloadXlsx:"Download Excel", uploadFile:"Upload File", resetSample:"Reset to sample data",
+    requiredColumns:"Required columns", uploadSuccess:"rows loaded successfully.", uploadError:"Upload failed:",
+    missingCols:"Missing required column(s):", emptyFile:"The file has no data rows.",
+    pnlTplTitle:"Branch P&L Data", pnlTplDesc:"Revenue, cost and labor lines per branch — feeds the Executive Summary, Financial Statements, Branch Matrix and Cost Control tabs.",
+    cashTplTitle:"Cash Flow Data", cashTplDesc:"Operating, investing and financing line items — feeds the Cash Flow Statement tab.",
+    trendTplTitle:"Monthly Budget Trend Data", trendTplDesc:"12 months of sales & EBITDA, actual vs. budget — feeds the Budget vs Actual Full-Year tab.",
+    wasteTplTitle:"Waste & Shrinkage Data", wasteTplDesc:"Waste value by category — feeds the Waste & Shrinkage tab.",
+    staffTplTitle:"Staff Productivity Data", staffTplDesc:"Labor hours, covers and sales per branch — feeds the Staff Productivity tab.",
+    /* Manual */
+    manualTitle:"User Manual", manualSub:"A quick guide to navigating and operating the CFO Assistant dashboard",
+    manualTocOverview:"Overview", manualTocFilters:"Filters & Navigation", manualTocKpi:"Reading the KPI Cards",
+    manualTocInsights:"AI Insights & Approvals", manualTocReports:"Available Reports", manualTocUpload:"Uploading Your Own Data",
+    manualTocColors:"Color Legend", manualTocReset:"Resetting Data", manualTocExport:"Exporting & Printing",
+    /* Analytics */
+    navAnalytics:"Advanced Analytics",
+    analyticsTitle:"Advanced Analytics", analyticsSub:"Deeper cuts of the same underlying data — activity concentration, branch comparison, correlation and forecast",
+    heatmapTitle:"Sales Activity Heatmap", heatmapSub:"Relative order concentration by day and hour, current period",
+    heatmapLow:"Low", heatmapHigh:"High",
+    radarTitle:"Branch Comparison", radarSub:"Key ratios side by side — larger is better for EBITDA, smaller is better for cost lines",
+    scatterTitle:"Correlation — Waste % vs. Prime Cost %", scatterSub:"Each point is one branch; branches in the upper-right combine high waste with high prime cost",
+    forecastTitle:"3-Month Sales Forecast", forecastSub:"Simple linear projection based on the trailing 6 months of actuals",
+    forecastLegend:"Projected (not yet actual)",
+    /* Master data */
+    navMasterData:"Master Data",
+    masterDataTitle:"Master Data", masterDataSub:"Reference data behind the reports — menu, staff, suppliers and branch details. Manage it from Data Upload & Templates.",
+    goToUpload:"Manage in Data Upload",
+    tabMenu:"Menu Items", tabEmployees:"Employees", tabSuppliers:"Suppliers", tabBranchInfo:"Branch Details",
+    colItemName:"Item", colCategory2:"Category", colPrice:"Price", colFoodCostItem:"Food Cost", colUnitsSold:"Units Sold/Month", colMargin:"Margin %",
+    colEmployeeName:"Employee", colRole:"Role", colHireDate:"Hire Date", colWage:"Hourly Wage", colMonthlyHours:"Monthly Hours",
+    colSupplierName:"Supplier", colMonthlySpend:"Monthly Spend", colLeadTime:"Lead Time (days)", colContact:"Contact",
+    colAddress:"Address", colSize:"Size (sqm)", colSeating:"Seating Capacity", colOpeningDate:"Opening Date", colManager:"Manager",
+    menuTplTitle:"Menu Items Data", menuTplDesc:"Product-level pricing, food cost and volume — feeds the Master Data → Menu Items view.",
+    employeesTplTitle:"Employee Roster Data", employeesTplDesc:"Staff roster with role, wage and hours — feeds the Master Data → Employees view.",
+    suppliersTplTitle:"Supplier Data", suppliersTplDesc:"Supplier spend and terms — feeds the Master Data → Suppliers view.",
+    branchInfoTplTitle:"Branch Details Data", branchInfoTplDesc:"Address, size, capacity and manager per branch — feeds the Master Data → Branch Details view.",
+    tplGroupFinancial:"Financial Data", tplGroupMaster:"Master Data",
+    /* Chat / smart assistant */
+    chatTitle:"Smart Assistant", chatSub:"Ask about your numbers",
+    chatPlaceholder:"Ask a question…",
+    chatGreeting:"Hi — I'm your CFO Assistant. Ask me anything about the numbers currently on screen, e.g. which branch needs attention, or how to reduce waste.",
+    chatTyping:"Thinking…",
+    chatError:"I couldn't reach the assistant service. Please try again.",
+    chatNoResponse:"Sorry, I didn't get a usable response — please try rephrasing.",
+    chatChip1:"Which branch needs attention?", chatChip2:"Summarize this period", chatChip3:"How can we reduce waste?", chatChip4:"Is our cash flow healthy?",
+  },
+  ar: {
+    appName:"مساعد المدير المالي", appTagline:"إدارة مالية لسلسلة مطاعم متعددة الفروع",
+    reportingStandard:"معيار التقارير", standardValue:"USALI · IFRS 15/16 · IAS 2",
+    export:"تصدير",
+    navExec:"الملخص التنفيذي ورؤى الذكاء الاصطناعي",
+    navPnl:"القوائم المالية",
+    navCashflow:"قائمة التدفقات النقدية",
+    navTrend:"الموازنة مقابل الفعلي — كامل السنة",
+    navBranches:"مصفوفة أداء الفروع",
+    navCost:"ضبط التكاليف",
+    navWaste:"تقرير الهدر والفاقد",
+    navStaff:"إنتاجية الموظفين",
+    navAgg:"ربحية تطبيقات التوصيل والقنوات",
+    navUpload:"رفع البيانات والنماذج",
+    navManual:"دليل الاستخدام",
+    navSettings:"إعدادات النظام ومعايير IFRS",
+    navGroupReports:"التقارير", navGroupData:"البيانات", navGroupSystem:"النظام",
+    netSales:"صافي المبيعات", cogsPct:"نسبة تكلفة البضاعة", laborPct:"نسبة تكلفة العمالة", primePct:"نسبة التكلفة الأساسية", ebitdaMargin:"هامش الأرباح قبل الفوائد",
+    vsLastYear:"مقارنة بالعام الماضي", targetCogs:"الهدف أقل من 30%", targetLabor:"الهدف أقل من 25%", ceiling60:"الحد الأقصى 60%", targetEbitda:"الهدف 16% فأكثر",
+    aiPanelTitle:"رؤى الذكاء الاصطناعي للمدير المالي",
+    aiPanelSub:"أبرز الإشارات المرصودة هذه الفترة، مرتبة حسب الأثر المالي",
+    revenueMix:"مزيج الإيرادات",
+    dineIn:"تناول داخل المطعم", takeaway:"طلبات خارجية", aggregators:"تطبيقات التوصيل",
+    branchMatrixTitle:"مصفوفة أداء الفروع",
+    branchMatrixSub:"هامش الأرباح، التكلفة الأساسية، وعمولات تطبيقات التوصيل لكل فرع",
+    colBranch:"الفرع", colNetSales:"صافي المبيعات", colVsBudget:"مقابل الموازنة", colEbitdaPct:"هامش الأرباح %", colPrimePct:"التكلفة الأساسية %", colAggComm:"عمولة التوصيل",
+    ebitdaChartTitle:"هامش الأرباح لكل فرع",
+    primeTrendTitle:"اتجاه التكلفة الأساسية مقابل سقف 60% (على مستوى الشركة)",
+    pnlTitle:"قائمة الدخل وفق نظام USALI",
+    pnlSub:"موحّدة · الفترة الحالية · متوافقة مع IFRS 15 / IFRS 16 / IAS 2",
+    actualVsBudget:"الفعلي مقابل الموازنة",
+    colLineItem:"البند", colActual:"الفعلي", colBudget:"الموازنة", colVariance:"الانحراف",
+    secRevenue:"الإيرادات", secCos:"تكلفة المبيعات", secLabor:"المصاريف القابلة للتحكم (العمالة)", secOccupancy:"تكاليف الإشغال والتكاليف الثابتة",
+    totalRevenue:"إجمالي صافي الإيرادات", totalCos:"إجمالي تكلفة المبيعات", grossProfit:"إجمالي الربح",
+    totalLabor:"إجمالي تكلفة العمالة", primeCostRow:"التكلفة الأساسية (البضاعة + العمالة)", totalOccupancy:"إجمالي تكاليف الإشغال", storeEbitda:"الأرباح قبل الفوائد والضرائب (EBITDA)",
+    primeTrend6w:"اتجاه التكلفة الأساسية خلال 6 أسابيع",
+    aggTitle:"ربحية تطبيقات التوصيل والقنوات",
+    aggSub:"حجم الطلبات، نسبة العمولة، وصافي العائد بعد خصم العمولة",
+    colPlatform:"المنصة", colOrders:"الطلبات", colGmv:"إجمالي قيمة المبيعات", colCommPct:"نسبة العمولة", colNetAfter:"الصافي بعد العمولة",
+    settingsTitle:"إعدادات النظام ومعايير IFRS",
+    settingsSub:"الإطار المحاسبي المطبق حاليًا على تقارير جميع الفروع",
+    recommended:"التوصية",
+    sevCritical:"إنذار", sevWarning:"مراقبة", sevPositive:"ضمن المستهدف",
+    approve:"اعتماد", applied:"تم الاعتماد ✓",
+    consolidated:"موحّد (جميع الفروع)",
+    ranges:["هذا الأسبوع","هذا الشهر","مقارنة شهرية","مقارنة سنوية"],
+    branches:{b1:"جدة — الكورنيش", b2:"الرياض — العليا", b3:"جدة — الروضة", b4:"الخبر — الكورنيش"},
+    cashflowTitle:"قائمة التدفقات النقدية الموحّدة", cashflowSub:"الفترة الحالية · الفعلي مقابل الموازنة",
+    secOperating:"الأنشطة التشغيلية", secInvesting:"الأنشطة الاستثمارية", secFinancing:"الأنشطة التمويلية",
+    totalOperating:"صافي النقد من التشغيل", totalInvesting:"صافي النقد من الاستثمار", totalFinancing:"صافي النقد من التمويل",
+    netChangeCash:"صافي التغير في النقدية", openingCash:"رصيد النقدية الافتتاحي", closingCash:"رصيد النقدية الختامي",
+    monthlyNetCash:"صافي التدفق النقدي الشهري",
+    trendTitle:"الموازنة مقابل الفعلي — كامل السنة", trendSub:"صافي المبيعات وهامش الأرباح الشهري، الفعلي مقابل الموازنة",
+    salesTrendTitle:"صافي المبيعات — الفعلي مقابل الموازنة (ريال)",
+    ebitdaTrendTitle:"هامش الأرباح — الفعلي مقابل الموازنة (%)",
+    ytdActual:"المبيعات الفعلية منذ بداية العام", ytdBudget:"مبيعات الموازنة منذ بداية العام", ytdVariance:"الانحراف منذ بداية العام", avgEbitda:"متوسط هامش الأرباح",
+    wasteTitle:"تقرير الهدر والفاقد", wasteSub:"هدر الأغذية والمشروبات والتغليف حسب الفئة، الفترة الحالية",
+    totalWasteValue:"إجمالي قيمة الهدر", wastePctCogs:"نسبة الهدر من تكلفة البضاعة", momChange:"التغير الشهري",
+    colCategory:"الفئة", colWasteValue:"قيمة الهدر", colPctCogs:"% من تكلفة البضاعة", colMomChange:"التغير الشهري",
+    wasteByCategory:"قيمة الهدر حسب الفئة",
+    staffTitle:"إنتاجية الموظفين", staffSub:"المبيعات لكل ساعة عمل، عدد الزبائن، وكفاءة العمالة لكل فرع",
+    colLaborHours:"ساعات العمل", colCovers:"عدد الزبائن", colSplh:"المبيعات/ساعة العمل", colSalesPerCover:"المبيعات/الزبون",
+    splhChartTitle:"المبيعات لكل ساعة عمل حسب الفرع",
+    uploadTitle:"رفع البيانات والنماذج", uploadSub:"حمّل نموذجًا، عبّئه ببياناتك، ثم ارفعه لتحديث لوحة التحكم بأرقامك الخاصة.",
+    downloadCsv:"تحميل CSV", downloadXlsx:"تحميل إكسل", uploadFile:"رفع ملف", resetSample:"إعادة البيانات التجريبية",
+    requiredColumns:"الأعمدة المطلوبة", uploadSuccess:"تم تحميل الصفوف بنجاح.", uploadError:"فشل الرفع:",
+    missingCols:"أعمدة مطلوبة مفقودة:", emptyFile:"الملف لا يحتوي على صفوف بيانات.",
+    pnlTplTitle:"بيانات قائمة الدخل لكل فرع", pnlTplDesc:"بنود الإيرادات والتكاليف والعمالة لكل فرع — تغذي تبويبات الملخص التنفيذي والقوائم المالية ومصفوفة الفروع وضبط التكاليف.",
+    cashTplTitle:"بيانات التدفقات النقدية", cashTplDesc:"بنود الأنشطة التشغيلية والاستثمارية والتمويلية — تغذي تبويب قائمة التدفقات النقدية.",
+    trendTplTitle:"بيانات الاتجاه الشهري للموازنة", trendTplDesc:"12 شهرًا من المبيعات وهامش الأرباح، الفعلي مقابل الموازنة — تغذي تبويب الموازنة مقابل الفعلي.",
+    wasteTplTitle:"بيانات الهدر والفاقد", wasteTplDesc:"قيمة الهدر حسب الفئة — تغذي تبويب الهدر والفاقد.",
+    staffTplTitle:"بيانات إنتاجية الموظفين", staffTplDesc:"ساعات العمل وعدد الزبائن والمبيعات لكل فرع — تغذي تبويب إنتاجية الموظفين.",
+    manualTitle:"دليل الاستخدام", manualSub:"دليل سريع للتنقل في لوحة تحكم مساعد المدير المالي وتشغيلها",
+    manualTocOverview:"نظرة عامة", manualTocFilters:"التصفية والتنقل", manualTocKpi:"قراءة بطاقات المؤشرات",
+    manualTocInsights:"رؤى الذكاء الاصطناعي والاعتماد", manualTocReports:"التقارير المتاحة", manualTocUpload:"رفع بياناتك الخاصة",
+    manualTocColors:"دليل الألوان", manualTocReset:"إعادة ضبط البيانات", manualTocExport:"التصدير والطباعة",
+    navAnalytics:"تحليلات متقدمة",
+    analyticsTitle:"تحليلات متقدمة", analyticsSub:"قراءات أعمق لنفس البيانات — تركّز النشاط، مقارنة الفروع، الارتباط، والتوقع",
+    heatmapTitle:"خريطة حرارية لنشاط المبيعات", heatmapSub:"تركّز الطلبات النسبي حسب اليوم والساعة، الفترة الحالية",
+    heatmapLow:"منخفض", heatmapHigh:"مرتفع",
+    radarTitle:"مقارنة الفروع", radarSub:"أهم النسب جنبًا إلى جنب — الأكبر أفضل لهامش الأرباح، والأصغر أفضل لبنود التكلفة",
+    scatterTitle:"الارتباط — نسبة الهدر مقابل التكلفة الأساسية", scatterSub:"كل نقطة تمثل فرعًا؛ الفروع في أعلى اليمين تجمع بين هدر مرتفع وتكلفة أساسية مرتفعة",
+    forecastTitle:"توقع المبيعات لـ3 أشهر", forecastSub:"توقع خطي مبسط استنادًا إلى آخر 6 أشهر فعلية",
+    forecastLegend:"متوقع (ليس فعليًا بعد)",
+    navMasterData:"البيانات الأساسية",
+    masterDataTitle:"البيانات الأساسية", masterDataSub:"البيانات المرجعية خلف التقارير — القائمة، الموظفون، الموردون، وتفاصيل الفروع. يمكن إدارتها من رفع البيانات والنماذج.",
+    goToUpload:"إدارتها من رفع البيانات",
+    tabMenu:"أصناف القائمة", tabEmployees:"الموظفون", tabSuppliers:"الموردون", tabBranchInfo:"تفاصيل الفروع",
+    colItemName:"الصنف", colCategory2:"الفئة", colPrice:"السعر", colFoodCostItem:"تكلفة الطعام", colUnitsSold:"الوحدات المباعة/شهريًا", colMargin:"الهامش %",
+    colEmployeeName:"الموظف", colRole:"الوظيفة", colHireDate:"تاريخ التعيين", colWage:"الأجر بالساعة", colMonthlyHours:"الساعات الشهرية",
+    colSupplierName:"المورد", colMonthlySpend:"الإنفاق الشهري", colLeadTime:"مهلة التوريد (أيام)", colContact:"جهة الاتصال",
+    colAddress:"العنوان", colSize:"المساحة (م²)", colSeating:"سعة الجلوس", colOpeningDate:"تاريخ الافتتاح", colManager:"المدير",
+    menuTplTitle:"بيانات أصناف القائمة", menuTplDesc:"تسعير المنتجات وتكلفتها وحجم المبيعات — تغذي عرض البيانات الأساسية ← أصناف القائمة.",
+    employeesTplTitle:"بيانات جدول الموظفين", employeesTplDesc:"جدول الموظفين مع الوظيفة والأجر والساعات — يغذي عرض البيانات الأساسية ← الموظفون.",
+    suppliersTplTitle:"بيانات الموردين", suppliersTplDesc:"إنفاق الموردين وشروط التعامل — تغذي عرض البيانات الأساسية ← الموردون.",
+    branchInfoTplTitle:"بيانات تفاصيل الفروع", branchInfoTplDesc:"العنوان والمساحة والسعة والمدير لكل فرع — تغذي عرض البيانات الأساسية ← تفاصيل الفروع.",
+    tplGroupFinancial:"البيانات المالية", tplGroupMaster:"البيانات الأساسية",
+    chatTitle:"المساعد الذكي", chatSub:"اسأل عن أرقامك",
+    chatPlaceholder:"اكتب سؤالك…",
+    chatGreeting:"مرحبًا، أنا مساعدك المالي. اسألني أي شيء عن الأرقام المعروضة حاليًا، مثل أي فرع يحتاج اهتمامًا أو كيفية تقليل الهدر.",
+    chatTyping:"جارٍ التفكير…",
+    chatError:"تعذّر الوصول إلى خدمة المساعد. حاول مرة أخرى.",
+    chatNoResponse:"عذرًا، لم أحصل على رد مفيد — حاول إعادة صياغة السؤال.",
+    chatChip1:"أي فرع يحتاج اهتمامًا؟", chatChip2:"لخّص هذه الفترة", chatChip3:"كيف يمكننا تقليل الهدر؟", chatChip4:"هل التدفق النقدي صحي؟",
+  }
+};
+
+let LANG = "en";
+let TAB = "exec";
+let BRANCH = "all";
+let RANGE_IDX = 1;
+const applied = {};
+const sectionOpen = { revenue:true, cos:true, labor:true, occupancy:true, operating:true, investing:true, financing:true };
+let charts = {};
+
+/* ============================================================
+   ICONS
+============================================================ */
+const ICONS = {
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h8"/>',
+  cash:'<circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M9.3 9.6c.3-1 1.3-1.6 2.7-1.6 1.6 0 2.7.8 2.7 1.9s-1.1 1.6-2.7 1.9c-1.6.3-2.7.9-2.7 2s1.1 1.9 2.7 1.9c1.4 0 2.4-.6 2.7-1.6"/>',
+  bar:'<path d="M3 3v18h18"/><path d="M7 15l3.5-4 3 2.5L19 7"/>',
+  store:'<path d="M3 9l1-5h16l1 5"/><path d="M3 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9"/>',
+  gauge:'<path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M12 3a9 9 0 0 0-9 9c0 2.4.94 4.58 2.47 6.2"/><path d="M18.53 18.2A9 9 0 0 0 21 12"/><line x1="12" y1="12" x2="15" y2="8"/>',
+  trash:'<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>',
+  users:'<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M22.5 21v-2a4 4 0 0 0-3-3.87"/><path d="M15.5 3.13a4 4 0 0 1 0 7.75"/>',
+  truck:'<rect x="1" y="6" width="14" height="11" rx="1"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="2"/><circle cx="17.5" cy="19" r="2"/>',
+  upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+  radar:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="2"/><path d="M12 3v18M3 12h18M5.5 5.5l13 13M18.5 5.5l-13 13"/>',
+  database:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+  book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5v-17z"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+};
+
+const NAV = [
+  {id:"exec", key:"navExec", icon:"grid", group:"navGroupReports"},
+  {id:"pnl", key:"navPnl", icon:"file", group:"navGroupReports"},
+  {id:"cashflow", key:"navCashflow", icon:"cash", group:"navGroupReports"},
+  {id:"trend", key:"navTrend", icon:"bar", group:"navGroupReports"},
+  {id:"branches", key:"navBranches", icon:"store", group:"navGroupReports"},
+  {id:"cost", key:"navCost", icon:"gauge", group:"navGroupReports"},
+  {id:"waste", key:"navWaste", icon:"trash", group:"navGroupReports"},
+  {id:"staff", key:"navStaff", icon:"users", group:"navGroupReports"},
+  {id:"aggregators", key:"navAgg", icon:"truck", group:"navGroupReports"},
+  {id:"analytics", key:"navAnalytics", icon:"radar", group:"navGroupReports"},
+  {id:"masterdata", key:"navMasterData", icon:"database", group:"navGroupData"},
+  {id:"upload", key:"navUpload", icon:"upload", group:"navGroupData"},
+  {id:"manual", key:"navManual", icon:"book", group:"navGroupSystem"},
+  {id:"settings", key:"navSettings", icon:"settings", group:"navGroupSystem"},
+];
+
+/* ============================================================
+   DATA (numeric — language independent) — mutable, uploadable
+============================================================ */
+let BRANCH_IDS = ["all","b1","b2","b3","b4"];
+let DYNAMIC_BRANCH_NAMES = {}; // id -> name string, set when P&L data is uploaded
+
+let branchKpis = {
+  all:{netSales:4820600, netSalesLY:4390300, cogs:29.8, cogsB:30, labor:24.6, laborB:25, ebitda:17.4, ebitdaB:16},
+  b1:{netSales:1520000, netSalesLY:1410000, cogs:28.1, cogsB:30, labor:23.4, laborB:25, ebitda:19.8, ebitdaB:16},
+  b2:{netSales:1680400, netSalesLY:1390500, cogs:27.5, cogsB:30, labor:22.9, laborB:25, ebitda:21.2, ebitdaB:16},
+  b3:{netSales:890200, netSalesLY:902000, cogs:33.6, cogsB:30, labor:28.8, laborB:25, ebitda:9.1, ebitdaB:16},
+  b4:{netSales:730000, netSalesLY:687800, cogs:31.0, cogsB:30, labor:24.0, laborB:25, ebitda:15.6, ebitdaB:16},
+};
+
+let revenueBreakdown = {
+  all:[2530000,902000,1388600], b1:[890000,280000,350000], b2:[1010000,300400,370000],
+  b3:[380200,180000,330000], b4:[420000,141600,168400],
+};
+
+const PIE_COLORS = ["#C9A227","#4FA88A","#C1503F"];
+
+let trendData = { weeks:["W1","W2","W3","W4","W5","W6"], primeCost:[55.2,56.8,58.1,61.4,59.0,54.4], target:[60,60,60,60,60,60] };
+
+let branchMatrix = [
+  {id:"b1", ebitda:19.8, prime:51.5, aggCommission:6.1, sales:1520000, variance:7.8},
+  {id:"b2", ebitda:21.2, prime:50.4, aggCommission:5.4, sales:1680400, variance:20.9},
+  {id:"b3", ebitda:9.1, prime:62.4, aggCommission:8.9, sales:890200, variance:-1.3},
+  {id:"b4", ebitda:15.6, prime:55.0, aggCommission:7.0, sales:730000, variance:6.1},
+];
+
+const aggregatorData = [
+  {name:"Jahez", orders:8420, gmv:612000, commissionPct:22, netAfterComm:477360},
+  {name:"HungerStation", orders:9870, gmv:706400, commissionPct:23, netAfterComm:543928},
+  {name:"The Chefz", orders:2140, gmv:70200, commissionPct:25, netAfterComm:52650},
+];
+
+/* aiInsights is now computed live from current data — see generateInsights() below renderStaffTab */
+
+let pnl = {
+  revenue:[ {key:"dineIn", actual:2530000, budget:2400000}, {key:"takeaway", actual:902000, budget:860000}, {key:"aggregators", actual:1388600, budget:1300000} ],
+  cos:[ {en:"Food Cost", ar:"تكلفة الأغذية", actual:1122000, budget:1080000}, {en:"Beverage Cost", ar:"تكلفة المشروبات", actual:158400, budget:150000}, {en:"Packaging Cost", ar:"تكلفة التغليف", actual:156200, budget:140000} ],
+  controllable:[ {en:"Direct Labor (Service)", ar:"عمالة الخدمة المباشرة", actual:612000, budget:590000}, {en:"Kitchen Staff Wages", ar:"أجور طاقم المطبخ", actual:588400, budget:570000}, {en:"Management Allocation", ar:"حصة الإدارة", actual:186000, budget:180000} ],
+  occupancy:[ {en:"Rent — IFRS 16 ROU Depreciation", ar:"الإيجار — استهلاك حق الاستخدام IFRS 16", actual:340000, budget:340000}, {en:"Utilities", ar:"المرافق", actual:128600, budget:118000}, {en:"Maintenance & Repairs", ar:"الصيانة والإصلاحات", actual:64200, budget:58000} ],
+};
+
+let cashFlow = {
+  operating:[ {en:"Cash received from customers", ar:"النقد المحصل من العملاء", actual:4820600, budget:4650000},
+    {en:"Cash paid to suppliers", ar:"النقد المدفوع للموردين", actual:-1436600, budget:-1370000},
+    {en:"Cash paid for labor", ar:"النقد المدفوع للعمالة", actual:-1386400, budget:-1340000},
+    {en:"Other operating payments", ar:"مدفوعات تشغيلية أخرى", actual:-212000, budget:-198000} ],
+  investing:[ {en:"Purchase of kitchen equipment", ar:"شراء معدات مطبخ", actual:-186000, budget:-150000},
+    {en:"Branch renovation capex", ar:"مصاريف رأسمالية لتجديد الفروع", actual:-94000, budget:-120000} ],
+  financing:[ {en:"Lease principal payments (IFRS 16)", ar:"سداد أصل الالتزام الإيجاري (IFRS 16)", actual:-158000, budget:-158000},
+    {en:"Owner distributions", ar:"توزيعات على الملاك", actual:-300000, budget:-300000} ],
+  openingCash:1240000,
+};
+
+let cashTrend = { months:["Jan","Feb","Mar","Apr","May","Jun"], net:[210000,180000,250000,190000,230000,265000] };
+
+let monthlyTrend = {
+  months:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+  salesActual:[368000,352000,402000,388000,410000,395000,420000,432000,408000,445000,468000,532600],
+  salesBudget:[360000,360000,380000,380000,395000,395000,400000,410000,400000,420000,440000,480000],
+  ebitdaActual:[15.8,14.2,16.5,15.9,17.1,16.4,17.8,18.2,16.9,18.5,19.1,20.4],
+  ebitdaBudget:[16,16,16,16,16,16,16,16,16,16,16,16],
+};
+
+let wasteData = [
+  {en:"Fresh Produce", ar:"المنتجات الطازجة", value:38200, pctOfCogs:2.7, trend:0.6},
+  {en:"Meat & Poultry", ar:"اللحوم والدواجن", value:29600, pctOfCogs:2.1, trend:-0.3},
+  {en:"Dairy", ar:"الألبان", value:14100, pctOfCogs:1.0, trend:0.2},
+  {en:"Packaging", ar:"مواد التغليف", value:9800, pctOfCogs:0.7, trend:0.1},
+  {en:"Prepared Food (Kitchen Waste)", ar:"هدر المطبخ (أطعمة محضرة)", value:21300, pctOfCogs:1.5, trend:0.9},
+];
+const WASTE_COLORS = ["#C9A227","#4FA88A","#7C8FA6","#D9A441","#C1503F"];
+
+let staffData = [
+  {branchRef:"b1", laborHours:5620, covers:28400},
+  {branchRef:"b2", laborHours:5910, covers:31200},
+  {branchRef:"b3", laborHours:4680, covers:16800},
+  {branchRef:"b4", laborHours:3990, covers:14100},
+];
+
+/* Sales activity heatmap — rows=days, cols=hour slots (11:00–23:00), relative intensity 0-100 */
+const HEATMAP_HOURS = ["11","12","13","14","15","16","17","18","19","20","21","22"];
+let heatmapData = {
+  days:[
+    {en:"Sun", ar:"الأحد", vals:[20,35,55,40,25,20,45,70,85,90,75,45]},
+    {en:"Mon", ar:"الإثنين", vals:[18,30,50,38,22,18,42,68,80,86,70,40]},
+    {en:"Tue", ar:"الثلاثاء", vals:[22,38,58,42,26,22,48,72,88,92,78,48]},
+    {en:"Wed", ar:"الأربعاء", vals:[24,40,60,45,28,24,50,75,90,94,80,50]},
+    {en:"Thu", ar:"الخميس", vals:[28,45,65,50,32,30,58,82,95,99,88,60]},
+    {en:"Fri", ar:"الجمعة", vals:[15,25,45,55,60,55,70,92,100,98,90,70]},
+    {en:"Sat", ar:"السبت", vals:[20,32,52,50,45,40,62,88,96,95,85,62]},
+  ],
+};
+
+let menuData = [
+  {name:"Grilled Kabsa Platter", category:"Main", branch:"Jeddah — Corniche", price:48, foodCost:14.5, units:2400},
+  {name:"Shawarma Wrap", category:"Main", branch:"Riyadh — Olaya", price:22, foodCost:6.8, units:5100},
+  {name:"Mixed Grill Sharing", category:"Main", branch:"Jeddah — Rawdah", price:96, foodCost:31, units:900},
+  {name:"Fattoush Salad", category:"Starter", branch:"Khobar — Corniche", price:26, foodCost:7.2, units:1600},
+  {name:"Um Ali", category:"Dessert", branch:"Riyadh — Olaya", price:19, foodCost:4.9, units:2100},
+];
+
+let employeesData = [
+  {name:"Ahmed Al-Fahad", branch:"Jeddah — Corniche", role:"Kitchen Chef", hireDate:"2023-02-10", wage:32, monthlyHours:190},
+  {name:"Sara Al-Otaibi", branch:"Riyadh — Olaya", role:"Branch Manager", hireDate:"2022-06-01", wage:48, monthlyHours:200},
+  {name:"Mohammed Al-Qahtani", branch:"Jeddah — Rawdah", role:"Server", hireDate:"2024-01-15", wage:22, monthlyHours:175},
+  {name:"Lama Al-Harbi", branch:"Khobar — Corniche", role:"Cashier", hireDate:"2023-09-20", wage:20, monthlyHours:180},
+];
+
+let suppliersData = [
+  {name:"Al-Watania Poultry", category:"Meat & Poultry", monthlySpend:186000, leadTime:2, contact:"sales@watania.example"},
+  {name:"Fresh Valley Produce", category:"Fresh Produce", monthlySpend:94000, leadTime:1, contact:"orders@freshvalley.example"},
+  {name:"Almarai Dairy", category:"Dairy", monthlySpend:52000, leadTime:2, contact:"b2b@almarai.example"},
+  {name:"GulfPack Packaging", category:"Packaging", monthlySpend:38000, leadTime:5, contact:"info@gulfpack.example"},
+];
+
+let branchInfoData = [
+  {branch:"Jeddah — Corniche", address:"Corniche Rd, Jeddah", size:280, seating:96, openingDate:"2019-03-01", manager:"Ahmed Al-Fahad"},
+  {branch:"Riyadh — Olaya", address:"Olaya St, Riyadh", size:340, seating:120, openingDate:"2020-08-15", manager:"Sara Al-Otaibi"},
+  {branch:"Jeddah — Rawdah", address:"Rawdah District, Jeddah", size:210, seating:70, openingDate:"2021-11-20", manager:"Mohammed Al-Qahtani"},
+  {branch:"Khobar — Corniche", address:"Corniche Rd, Khobar", size:195, seating:64, openingDate:"2022-05-10", manager:"Lama Al-Harbi"},
+];
+
+const settingsRules = [
+  {en:{name:"IFRS 16 — Leases", detail:"Right-of-use asset depreciation applied to all branch leases on a straight-line basis."},
+   ar:{name:"معيار IFRS 16 — عقود الإيجار", detail:"يُطبّق استهلاك أصول حق الاستخدام على جميع عقود إيجار الفروع بطريقة القسط الثابت."}},
+  {en:{name:"IFRS 15 — Revenue Recognition", detail:"Dine-in, takeaway, aggregator and loyalty revenue streams recognized at point of transfer of control."},
+   ar:{name:"معيار IFRS 15 — إثبات الإيرادات", detail:"يتم إثبات إيرادات تناول الطعام والطلبات الخارجية وتطبيقات التوصيل وبرامج الولاء عند انتقال السيطرة."}},
+  {en:{name:"IAS 2 — Inventories", detail:"Food and beverage stock valued at lower of cost and net realizable value; spoilage expensed as incurred."},
+   ar:{name:"معيار IAS 2 — المخزون", detail:"يُقيَّم مخزون الأغذية والمشروبات بأقل القيمتين (التكلفة أو صافي القيمة القابلة للتحقق)، ويُحمَّل الهدر عند حدوثه."}},
+  {en:{name:"USALI Classification", detail:"P&L structured per the Uniform System of Accounts: COGS, Labor, Prime Cost, Occupancy, EBITDA."},
+   ar:{name:"تصنيف USALI", detail:"تُبنى قائمة الدخل وفق النظام الموحد للحسابات: تكلفة البضاعة، العمالة، التكلفة الأساسية، الإشغال، والأرباح قبل الفوائد."}},
+];
+
+/* Deep-clone snapshot of factory defaults, used by "reset to sample data" */
+const DEFAULTS = JSON.parse(JSON.stringify({
+  BRANCH_IDS, DYNAMIC_BRANCH_NAMES, branchKpis, revenueBreakdown, branchMatrix, pnl,
+  cashFlow, cashTrend, monthlyTrend, wasteData, staffData,
+  menuData, employeesData, suppliersData, branchInfoData,
+}));
+
+const uploadStatus = {}; // templateId -> {ok, msg}
+
+/* ============================================================
+   SERVER PERSISTENCE — uploaded/edited data is saved as one JSON
+   blob covering exactly the same fields DEFAULTS tracks (the app's
+   own "resettable" data set), so a reload restores what was
+   uploaded instead of falling back to the demo figures.
+============================================================ */
+function collectState(){
+  return {
+    BRANCH_IDS, DYNAMIC_BRANCH_NAMES, branchKpis, revenueBreakdown, branchMatrix, pnl,
+    cashFlow, cashTrend, monthlyTrend, wasteData, staffData, menuData, employeesData, suppliersData, branchInfoData,
+  };
+}
+function applyState(loaded){
+  if(!loaded) return;
+  if(loaded.BRANCH_IDS) BRANCH_IDS = loaded.BRANCH_IDS;
+  if(loaded.DYNAMIC_BRANCH_NAMES) DYNAMIC_BRANCH_NAMES = loaded.DYNAMIC_BRANCH_NAMES;
+  if(loaded.branchKpis) branchKpis = loaded.branchKpis;
+  if(loaded.revenueBreakdown) revenueBreakdown = loaded.revenueBreakdown;
+  if(loaded.branchMatrix) branchMatrix = loaded.branchMatrix;
+  if(loaded.pnl) pnl = loaded.pnl;
+  if(loaded.cashFlow) cashFlow = loaded.cashFlow;
+  if(loaded.cashTrend) cashTrend = loaded.cashTrend;
+  if(loaded.monthlyTrend) monthlyTrend = loaded.monthlyTrend;
+  if(loaded.wasteData) wasteData = loaded.wasteData;
+  if(loaded.staffData) staffData = loaded.staffData;
+  if(loaded.menuData) menuData = loaded.menuData;
+  if(loaded.employeesData) employeesData = loaded.employeesData;
+  if(loaded.suppliersData) suppliersData = loaded.suppliersData;
+  if(loaded.branchInfoData) branchInfoData = loaded.branchInfoData;
+}
+function persist(){
+  AzieData.debouncedSave("cfo-dashboard", collectState);
+}
+
+/* ============================================================
+   HELPERS
+============================================================ */
+const t = (key) => I18N[LANG][key] ?? key;
+function branchName(id){
+  if(id === "all") return t("consolidated");
+  if(DYNAMIC_BRANCH_NAMES[id]) return DYNAMIC_BRANCH_NAMES[id];
+  return (I18N[LANG].branches[id]) || id;
+}
+
+function fmtNum(n, compact=false){
+  const sign = n < 0 ? "-" : "";
+  const abs = Math.abs(Math.round(n));
+  if(compact && abs >= 1000){
+    const val = abs / 1000;
+    return sign + val.toFixed(abs >= 100000 ? 0 : 1) + "K";
+  }
+  return sign + abs.toLocaleString("en-US");
+}
+function pctStr(n, d=1){ return n.toFixed(d) + "%"; }
+function numSpan(text){ return '<span class="ltr-num">'+text+'</span>'; }
+
+function trendHtml(value, suffix){
+  const up = value >= 0;
+  const arrow = up
+    ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>'
+    : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="7" x2="17" y2="17"/><polyline points="17 7 17 17 7 17"/></svg>';
+  return `<span class="trend ${up?'up':'down'}">${arrow}${numSpan(Math.abs(value).toFixed(1)+(suffix||' pts'))}</span>`;
+}
+function pillHtml(tone, text){ return `<span class="pill pill-${tone}">${text}</span>`; }
+
+function kpiCard({label, value, suffix, deltaPts, benchmark, alert, suffixPct}){
+  return `
+  <div class="kpi ${alert?'alert':''}">
+    ${alert?'<span class="ping"></span>':''}
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-value-row">
+      <span class="kpi-value">${numSpan(value)}</span>
+      ${suffix?`<span class="kpi-suffix">${suffix}</span>`:''}
+    </div>
+    <div class="kpi-bottom">
+      <span>${deltaPts!==undefined ? trendHtml(deltaPts, suffixPct?'%':undefined) : ''}</span>
+      <span>${benchmark}</span>
+    </div>
+  </div>`;
+}
+function destroyChart(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
+const sumField = (arr, f) => arr.reduce((a,r)=>a+r[f],0);
+
+/* ============================================================
+   RENDER: SIDEBAR / HEADER
+============================================================ */
+function visibleNav(){
+  return window.__allowedScreens ? NAV.filter(n => window.__allowedScreens.includes(n.id)) : NAV;
+}
+function renderNav(){
+  const el = document.getElementById("navList");
+  let html = ""; let lastGroup = null;
+  visibleNav().forEach(n=>{
+    if(n.group !== lastGroup){ html += `<div class="nav-group-label">${t(n.group)}</div>`; lastGroup = n.group; }
+    html += `<button class="nav-btn ${TAB===n.id?'active':''}" data-tab="${n.id}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[n.icon]}</svg>
+      <span>${t(n.key)}</span></button>`;
+  });
+  el.innerHTML = html;
+  el.querySelectorAll(".nav-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      TAB = btn.dataset.tab;
+      document.getElementById("sidebar").classList.remove("open");
+      document.getElementById("overlay").classList.remove("show");
+      renderAll();
+    });
+  });
+}
+
+function renderSelects(){
+  const bSel = document.getElementById("branchSelect");
+  bSel.innerHTML = BRANCH_IDS.map(id => `<option value="${id}">${branchName(id)}</option>`).join("");
+  bSel.value = BRANCH_IDS.includes(BRANCH) ? BRANCH : "all";
+  BRANCH = bSel.value;
+  bSel.onchange = ()=>{ BRANCH = bSel.value; renderAll(); };
+
+  const rSel = document.getElementById("rangeSelect");
+  rSel.innerHTML = t("ranges").map((r,i)=>`<option value="${i}">${r}</option>`).join("");
+  rSel.value = RANGE_IDX;
+  rSel.onchange = ()=>{ RANGE_IDX = rSel.value; renderAll(); };
+}
+
+function renderHeaderTexts(){
+  document.getElementById("crumbText").textContent = t(NAV.find(n=>n.id===TAB).key);
+  document.getElementById("pageTitle").textContent = t(NAV.find(n=>n.id===TAB).key);
+  document.getElementById("pageSub").textContent = branchName(BRANCH) + " · " + t("ranges")[RANGE_IDX];
+  document.querySelectorAll('[data-i18n]').forEach(elm=>{ elm.textContent = t(elm.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(elm=>{ elm.placeholder = t(elm.getAttribute('data-i18n-placeholder')); });
+  document.getElementById("alertCount").textContent = generateInsights().filter(i=>i.severity==="critical").length;
+  renderChatChips();
+}
+
+/* ============================================================
+   TAB: EXECUTIVE
+============================================================ */
+function renderExecTab(){
+  const k = branchKpis[BRANCH] || branchKpis["all"];
+  const salesDelta = ((k.netSales - k.netSalesLY) / k.netSalesLY) * 100;
+  const prime = k.cogs + k.labor;
+  const rev = revenueBreakdown[BRANCH] || revenueBreakdown["all"];
+  const revLabels = [t("dineIn"), t("takeaway"), t("aggregators")];
+
+  const kpisHtml = `
+    <div class="grid grid-kpi">
+      ${kpiCard({label:t("netSales"), value:fmtNum(k.netSales,true), suffix:"SAR", deltaPts:salesDelta, benchmark:t("vsLastYear")})}
+      ${kpiCard({label:t("cogsPct"), value:pctStr(k.cogs), deltaPts:k.cogs-k.cogsB, suffixPct:true, benchmark:t("targetCogs"), alert:k.cogs>k.cogsB+2})}
+      ${kpiCard({label:t("laborPct"), value:pctStr(k.labor), deltaPts:k.labor-k.laborB, suffixPct:true, benchmark:t("targetLabor"), alert:k.labor>k.laborB+2})}
+      ${kpiCard({label:t("primePct"), value:pctStr(prime), deltaPts:prime-60, suffixPct:true, benchmark:t("ceiling60"), alert:prime>60})}
+      ${kpiCard({label:t("ebitdaMargin"), value:pctStr(k.ebitda), deltaPts:k.ebitda-k.ebitdaB, suffixPct:true, benchmark:t("targetEbitda")})}
+    </div>`;
+
+  const insightsHtml = `
+    <div class="card">
+      <div class="insights-head">
+        <div class="insights-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.9L12 3z"/><path d="M5 19l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/></svg>
+        </div>
+        <div>
+          <div class="card-title">${t("aiPanelTitle")}</div>
+          <div class="card-desc">${t("aiPanelSub")}</div>
+        </div>
+      </div>
+      <div>
+        ${generateInsights().map(ins=>{
+          const d = ins[LANG];
+          const toneMap = {critical:"bad", warning:"warn", positive:"good"};
+          const sevMap = {critical:"sevCritical", warning:"sevWarning", positive:"sevPositive"};
+          const isApplied = !!applied[ins.id];
+          const iconColor = toneMap[ins.severity]==="bad" ? "var(--bad-text)" : toneMap[ins.severity]==="warn" ? "var(--warn-text)" : "var(--good-text)";
+          return `
+          <div class="insight-item">
+            <div class="insight-row">
+              <div class="insight-left">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px;flex-shrink:0;">
+                  ${ins.severity==="positive" ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>' : '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>'}
+                </svg>
+                <div>
+                  <div class="insight-title-row">
+                    <span class="insight-title">${d.title}</span>
+                    ${pillHtml(toneMap[ins.severity], t(sevMap[ins.severity]))}
+                  </div>
+                  <p class="insight-body">${d.body}</p>
+                  <p class="insight-action">${t("recommended")}: ${d.action}</p>
+                </div>
+              </div>
+              <button class="approve-btn ${isApplied?'applied':''}" data-id="${ins.id}">${isApplied?t("applied"):t("approve")}</button>
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>`;
+
+  const pieHtml = `
+    <div class="card">
+      <div class="card-title" style="margin-bottom:12px;">${t("revenueMix")}</div>
+      <div class="chart-box"><canvas id="pieChart"></canvas></div>
+      <div class="legend-list">
+        ${revLabels.map((name,i)=>`
+          <div class="legend-item">
+            <span class="legend-name"><span class="dot" style="background:${PIE_COLORS[i]}"></span>${name}</span>
+            <span class="ltr-num">${fmtNum(rev[i])}</span>
+          </div>`).join("")}
+      </div>
+    </div>`;
+
+  document.getElementById("tab-exec").innerHTML = `
+    <div class="stack">
+      ${kpisHtml}
+      <div class="grid grid-2col">${insightsHtml}${pieHtml}</div>
+      ${branchMatrixCardHtml()}
+    </div>`;
+
+  document.querySelectorAll(".approve-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      applied[btn.dataset.id] = !applied[btn.dataset.id];
+      renderExecTab();
+    });
+  });
+
+  destroyChart("pieChart");
+  charts.pieChart = new Chart(document.getElementById("pieChart"), {
+    type:"doughnut",
+    data:{ labels:revLabels, datasets:[{ data:rev, backgroundColor:PIE_COLORS, borderColor:"#1C1A14", borderWidth:2 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:"62%",
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>c.label+": "+fmtNum(c.raw) } } } }
+  });
+  wireMatrixCharts();
+}
+
+/* ============================================================
+   BRANCH MATRIX
+============================================================ */
+function branchMatrixCardHtml(){
+  return `
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">${t("branchMatrixTitle")}</div>
+        <div class="card-desc">${t("branchMatrixSub")}</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>${t("colBranch")}</th><th class="num">${t("colNetSales")}</th><th class="num">${t("colVsBudget")}</th>
+          <th class="num">${t("colEbitdaPct")}</th><th class="num">${t("colPrimePct")}</th><th class="num">${t("colAggComm")}</th>
+        </tr></thead>
+        <tbody>
+          ${branchMatrix.map(b=>`
+            <tr>
+              <td style="font-weight:500;">${branchName(b.id)}</td>
+              <td class="num">${numSpan(fmtNum(b.sales))}</td>
+              <td class="num">${trendHtml(b.variance,'%')}</td>
+              <td class="num"><span style="color:${b.ebitda>=16?'var(--good-text)':'var(--warn-text)'}">${numSpan(pctStr(b.ebitda))}</span></td>
+              <td class="num"><span style="color:${b.prime>60?'var(--bad-text)':'var(--text)'};font-weight:${b.prime>60?600:400}">${numSpan(pctStr(b.prime))}</span></td>
+              <td class="num">${numSpan(pctStr(b.aggCommission))}</td>
+            </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+    <div class="grid grid-chart2" style="margin-top:18px;">
+      <div class="card-soft"><div class="chart-title">${t("ebitdaChartTitle")}</div><div class="chart-box"><canvas id="ebitdaChart"></canvas></div></div>
+      <div class="card-soft"><div class="chart-title">${t("primeTrendTitle")}</div><div class="chart-box"><canvas id="primeTrendChart"></canvas></div></div>
+    </div>
+  </div>`;
+}
+
+function wireMatrixCharts(){
+  const ebCanvas = document.getElementById("ebitdaChart");
+  if(ebCanvas){
+    destroyChart("ebitdaChart");
+    charts.ebitdaChart = new Chart(ebCanvas, {
+      type:"bar",
+      data:{ labels:branchMatrix.map(b=>branchName(b.id)),
+        datasets:[{ data:branchMatrix.map(b=>b.ebitda), backgroundColor:branchMatrix.map(b=>b.ebitda>=16?"#4FA88A":"#D9A441"), borderRadius:4, maxBarThickness:38 }] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>c.formattedValue+"%" } } },
+        scales:{ x:{ ticks:{ color:"#8A7F65", font:{size:10} }, grid:{ display:false } },
+                 y:{ ticks:{ color:"#8A7F65", font:{size:10}, callback:(v)=>v+"%" }, grid:{ color:"#25211A" } } } }
+    });
+  }
+  const ptCanvas = document.getElementById("primeTrendChart");
+  if(ptCanvas){
+    destroyChart("primeTrendChart");
+    charts.primeTrendChart = new Chart(ptCanvas, {
+      type:"line",
+      data:{ labels:trendData.weeks, datasets:[
+        { data:trendData.target, borderColor:"#8A7F65", borderDash:[4,4], pointRadius:0, borderWidth:1.5 },
+        { data:trendData.primeCost, borderColor:"#C1503F", backgroundColor:"#C1503F", pointRadius:3, borderWidth:2.5, tension:.3 } ]},
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} },
+        scales:{ x:{ ticks:{ color:"#8A7F65", font:{size:10} }, grid:{ display:false } },
+                 y:{ min:45, max:65, ticks:{ color:"#8A7F65", font:{size:10}, callback:(v)=>v+"%" }, grid:{ color:"#25211A" } } } }
+    });
+  }
+}
+function renderBranchesTab(){ document.getElementById("tab-branches").innerHTML = branchMatrixCardHtml(); wireMatrixCharts(); }
+
+/* ============================================================
+   TAB: FINANCIAL STATEMENTS (P&L)
+============================================================ */
+function pnlRowHtml(labelHtml, actual, budget, strong){
+  const variance = budget===0 ? 0 : ((actual-budget)/budget)*100;
+  const varColor = Math.abs(variance) < 0.05 ? "var(--text-dim)" : (actual>budget ? "var(--bad-text)" : "var(--good-text)");
+  return `<tr class="pnl-child ${strong?'row-strong':''}">
+    <td>${labelHtml}</td><td class="num">${numSpan(fmtNum(actual))}</td>
+    <td class="num" style="color:var(--text-dim)">${numSpan(fmtNum(budget))}</td>
+    <td class="num" style="color:${varColor}">${numSpan((variance>=0?'+':'')+variance.toFixed(1)+'%')}</td></tr>`;
+}
+function pnlSectionHtml(sectionKey, titleKey, rows, totalLabel, isRevenue){
+  const actualTotal = sumField(rows, "actual"), budgetTotal = sumField(rows, "budget");
+  const open = sectionOpen[sectionKey];
+  const rowsHtml = rows.map(r=>{
+    const label = isRevenue ? t(r.key) : r[LANG];
+    const v = r.budget===0?0:((r.actual-r.budget)/r.budget)*100;
+    const c = Math.abs(v)<0.05?"var(--text-dim)":(r.actual>r.budget?"var(--bad-text)":"var(--good-text)");
+    return `<tr class="pnl-child section-${sectionKey} ${open?'':'hidden'}">
+      <td style="padding-inline-start:22px;color:var(--text-dim);">${label}</td>
+      <td class="num">${numSpan(fmtNum(r.actual))}</td>
+      <td class="num" style="color:var(--text-dim)">${numSpan(fmtNum(r.budget))}</td>
+      <td class="num"><span style="color:${c}">${numSpan((v>=0?'+':'')+v.toFixed(1)+'%')}</span></td></tr>`;
+  }).join("");
+  const tv = budgetTotal===0?0:((actualTotal-budgetTotal)/budgetTotal)*100;
+  const tc = Math.abs(tv)<0.05?"var(--text-dim)":(actualTotal>budgetTotal?"var(--bad-text)":"var(--good-text)");
+  const totalRow = `<tr class="pnl-child section-${sectionKey} ${open?'':'hidden'} row-strong">
+    <td>${totalLabel}</td><td class="num">${numSpan(fmtNum(actualTotal))}</td>
+    <td class="num" style="color:var(--text-dim)">${numSpan(fmtNum(budgetTotal))}</td>
+    <td class="num"><span style="color:${tc}">${numSpan((tv>=0?'+':'')+tv.toFixed(1)+'%')}</span></td></tr>`;
+  return `<tr class="section-row ${open?'':'collapsed'}" data-section="${sectionKey}"><td colspan="4"><span class="chev">▾</span>${t(titleKey)}</td></tr>${rowsHtml}${totalRow}`;
+}
+function renderPnlTab(){
+  const revTotal = sumField(pnl.revenue,"actual"), revBudget = sumField(pnl.revenue,"budget");
+  const cosTotal = sumField(pnl.cos,"actual"), cosBudget = sumField(pnl.cos,"budget");
+  const grossActual = revTotal - cosTotal, grossBudget = revBudget - cosBudget;
+  const ctrlTotal = sumField(pnl.controllable,"actual"), ctrlBudget = sumField(pnl.controllable,"budget");
+  const primeActual = cosTotal + ctrlTotal, primeBudget = cosBudget + ctrlBudget;
+  const occActual = sumField(pnl.occupancy,"actual"), occBudget = sumField(pnl.occupancy,"budget");
+  const ebitdaActual = grossActual - ctrlTotal - occActual, ebitdaBudget = grossBudget - ctrlBudget - occBudget;
+  const ebVar = ebitdaBudget ? ((ebitdaActual-ebitdaBudget)/ebitdaBudget)*100 : 0;
+
+  document.getElementById("tab-pnl").innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <div><div class="card-title">${t("pnlTitle")}</div><div class="card-desc">${t("pnlSub")}</div></div>
+        ${pillHtml("neutral", t("actualVsBudget"))}
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>${t("colLineItem")}</th><th class="num">${t("colActual")}</th><th class="num">${t("colBudget")}</th><th class="num">${t("colVariance")}</th></tr></thead>
+        <tbody>
+          ${pnlSectionHtml("revenue","secRevenue",pnl.revenue,t("totalRevenue"),true)}
+          ${pnlSectionHtml("cos","secCos",pnl.cos,t("totalCos"),false)}
+          ${pnlRowHtml(t("grossProfit"), grossActual, grossBudget, true)}
+          ${pnlSectionHtml("labor","secLabor",pnl.controllable,t("totalLabor"),false)}
+          ${pnlRowHtml(t("primeCostRow"), primeActual, primeBudget, true)}
+          ${pnlSectionHtml("occupancy","secOccupancy",pnl.occupancy,t("totalOccupancy"),false)}
+          <tr class="pnl-child ebitda-row">
+            <td>${t("storeEbitda")}</td>
+            <td class="num" style="color:var(--good-text)">${numSpan(fmtNum(ebitdaActual))}</td>
+            <td class="num" style="color:var(--text-dim)">${numSpan(fmtNum(ebitdaBudget))}</td>
+            <td class="num" style="color:var(--good-text)">${numSpan(ebVar.toFixed(1)+'%')}</td>
+          </tr>
+        </tbody>
+      </table></div>
+    </div>`;
+  document.querySelectorAll(".section-row").forEach(row=>{
+    row.addEventListener("click", ()=>{ sectionOpen[row.dataset.section] = !sectionOpen[row.dataset.section]; renderPnlTab(); });
+  });
+}
+
+/* ============================================================
+   TAB: CASH FLOW
+============================================================ */
+function renderCashflowTab(){
+  const opActual = sumField(cashFlow.operating,"actual"), opBudget = sumField(cashFlow.operating,"budget");
+  const invActual = sumField(cashFlow.investing,"actual"), invBudget = sumField(cashFlow.investing,"budget");
+  const finActual = sumField(cashFlow.financing,"actual"), finBudget = sumField(cashFlow.financing,"budget");
+  const netActual = opActual+invActual+finActual, netBudget = opBudget+invBudget+finBudget;
+  const closing = cashFlow.openingCash + netActual;
+
+  document.getElementById("tab-cashflow").innerHTML = `
+    <div class="stack">
+      <div class="grid grid-kpi4">
+        ${kpiCard({label:t("totalOperating"), value:fmtNum(opActual,true), suffix:"SAR", deltaPts:opBudget?((opActual-opBudget)/Math.abs(opBudget))*100:0, suffixPct:true, benchmark:t("actualVsBudget")})}
+        ${kpiCard({label:t("totalInvesting"), value:fmtNum(invActual,true), suffix:"SAR", deltaPts:invBudget?((invActual-invBudget)/Math.abs(invBudget))*100:0, suffixPct:true, benchmark:t("actualVsBudget")})}
+        ${kpiCard({label:t("totalFinancing"), value:fmtNum(finActual,true), suffix:"SAR", deltaPts:finBudget?((finActual-finBudget)/Math.abs(finBudget))*100:0, suffixPct:true, benchmark:t("actualVsBudget")})}
+        ${kpiCard({label:t("closingCash"), value:fmtNum(closing,true), suffix:"SAR", benchmark:t("openingCash")+": "+fmtNum(cashFlow.openingCash,true)})}
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">${t("cashflowTitle")}</div><div class="card-desc">${t("cashflowSub")}</div></div></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>${t("colLineItem")}</th><th class="num">${t("colActual")}</th><th class="num">${t("colBudget")}</th><th class="num">${t("colVariance")}</th></tr></thead>
+          <tbody>
+            ${pnlSectionHtml("operating","secOperating",cashFlow.operating,t("totalOperating"),false)}
+            ${pnlSectionHtml("investing","secInvesting",cashFlow.investing,t("totalInvesting"),false)}
+            ${pnlSectionHtml("financing","secFinancing",cashFlow.financing,t("totalFinancing"),false)}
+            <tr class="pnl-child ebitda-row">
+              <td>${t("netChangeCash")}</td>
+              <td class="num" style="color:${netActual>=0?'var(--good-text)':'var(--bad-text)'}">${numSpan(fmtNum(netActual))}</td>
+              <td class="num" style="color:var(--text-dim)">${numSpan(fmtNum(netBudget))}</td>
+              <td class="num">${numSpan((netBudget?((netActual-netBudget)/Math.abs(netBudget)*100):0).toFixed(1)+'%')}</td>
+            </tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="chart-title">${t("monthlyNetCash")}</div>
+        <div class="chart-box tall"><canvas id="cashTrendChart"></canvas></div>
+      </div>
+    </div>`;
+  document.querySelectorAll(".section-row").forEach(row=>{
+    row.addEventListener("click", ()=>{ sectionOpen[row.dataset.section] = !sectionOpen[row.dataset.section]; renderCashflowTab(); });
+  });
+  destroyChart("cashTrendChart");
+  charts.cashTrendChart = new Chart(document.getElementById("cashTrendChart"), {
+    type:"bar",
+    data:{ labels:cashTrend.months, datasets:[{ data:cashTrend.net, backgroundColor:cashTrend.net.map(v=>v>=0?"#4FA88A":"#C1503F"), borderRadius:4, maxBarThickness:44 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>fmtNum(c.raw)+" SAR" } } },
+      scales:{ x:{ ticks:{ color:"#8A7F65", font:{size:11} }, grid:{ display:false } }, y:{ ticks:{ color:"#8A7F65", font:{size:11}, callback:(v)=>fmtNum(v,true) }, grid:{ color:"#25211A" } } } }
+  });
+}
+
+/* ============================================================
+   TAB: BUDGET VS ACTUAL TREND
+============================================================ */
+function renderTrendTab(){
+  const ytdActual = sumField(monthlyTrend.salesActual.map(v=>({actual:v})),"actual");
+  const ytdBudget = sumField(monthlyTrend.salesBudget.map(v=>({actual:v})),"actual");
+  const avgEbitda = monthlyTrend.ebitdaActual.reduce((a,b)=>a+b,0)/monthlyTrend.ebitdaActual.length;
+
+  document.getElementById("tab-trend").innerHTML = `
+    <div class="stack">
+      <div class="grid grid-kpi4">
+        ${kpiCard({label:t("ytdActual"), value:fmtNum(ytdActual,true), suffix:"SAR", benchmark:""})}
+        ${kpiCard({label:t("ytdBudget"), value:fmtNum(ytdBudget,true), suffix:"SAR", benchmark:""})}
+        ${kpiCard({label:t("ytdVariance"), value:pctStr(((ytdActual-ytdBudget)/ytdBudget)*100), deltaPts:((ytdActual-ytdBudget)/ytdBudget)*100, suffixPct:true, benchmark:t("actualVsBudget")})}
+        ${kpiCard({label:t("avgEbitda"), value:pctStr(avgEbitda), deltaPts:avgEbitda-16, suffixPct:true, benchmark:t("targetEbitda")})}
+      </div>
+      <div class="card"><div class="chart-title">${t("salesTrendTitle")}</div><div class="chart-box tall"><canvas id="salesTrendChart"></canvas></div></div>
+      <div class="card"><div class="chart-title">${t("ebitdaTrendTitle")}</div><div class="chart-box tall"><canvas id="ebitdaTrendChart"></canvas></div></div>
+    </div>`;
+
+  destroyChart("salesTrendChart");
+  charts.salesTrendChart = new Chart(document.getElementById("salesTrendChart"), {
+    type:"line",
+    data:{ labels:monthlyTrend.months, datasets:[
+      { label:t("colBudget"), data:monthlyTrend.salesBudget, borderColor:"#8A7F65", borderDash:[4,4], pointRadius:0, borderWidth:1.5 },
+      { label:t("colActual"), data:monthlyTrend.salesActual, borderColor:"#C9A227", backgroundColor:"rgba(201,162,39,.15)", fill:true, pointRadius:2, borderWidth:2.5, tension:.3 } ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:"bottom", labels:{ color:"#B7AC92", font:{size:11}, boxWidth:12 } } },
+      scales:{ x:{ ticks:{ color:"#8A7F65", font:{size:11} }, grid:{ display:false } }, y:{ ticks:{ color:"#8A7F65", font:{size:11}, callback:(v)=>fmtNum(v,true) }, grid:{ color:"#25211A" } } } }
+  });
+  destroyChart("ebitdaTrendChart");
+  charts.ebitdaTrendChart = new Chart(document.getElementById("ebitdaTrendChart"), {
+    type:"line",
+    data:{ labels:monthlyTrend.months, datasets:[
+      { label:t("colBudget"), data:monthlyTrend.ebitdaBudget, borderColor:"#8A7F65", borderDash:[4,4], pointRadius:0, borderWidth:1.5 },
+      { label:t("colActual"), data:monthlyTrend.ebitdaActual, borderColor:"#4FA88A", backgroundColor:"#4FA88A", pointRadius:2, borderWidth:2.5, tension:.3 } ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:"bottom", labels:{ color:"#B7AC92", font:{size:11}, boxWidth:12 } } },
+      scales:{ x:{ ticks:{ color:"#8A7F65", font:{size:11} }, grid:{ display:false } }, y:{ ticks:{ color:"#8A7F65", font:{size:11}, callback:(v)=>v+"%" }, grid:{ color:"#25211A" } } } }
+  });
+}
+
+/* ============================================================
+   TAB: COST CONTROL
+============================================================ */
+function renderCostTab(){
+  const k = branchKpis[BRANCH] || branchKpis["all"];
+  document.getElementById("tab-cost").innerHTML = `
+    <div class="stack">
+      <div class="grid grid-kpi3">
+        ${kpiCard({label:t("cogsPct"), value:pctStr(k.cogs), deltaPts:k.cogs-k.cogsB, suffixPct:true, benchmark:t("targetCogs"), alert:k.cogs>k.cogsB+2})}
+        ${kpiCard({label:t("laborPct"), value:pctStr(k.labor), deltaPts:k.labor-k.laborB, suffixPct:true, benchmark:t("targetLabor"), alert:k.labor>k.laborB+2})}
+        ${kpiCard({label:t("primePct"), value:pctStr(k.cogs+k.labor), deltaPts:(k.cogs+k.labor)-60, suffixPct:true, benchmark:t("ceiling60"), alert:(k.cogs+k.labor)>60})}
+      </div>
+      <div class="card"><div class="chart-title">${t("primeTrend6w")}</div><div class="chart-box tall"><canvas id="costTrendChart"></canvas></div></div>
+    </div>`;
+  destroyChart("costTrendChart");
+  charts.costTrendChart = new Chart(document.getElementById("costTrendChart"), {
+    type:"line",
+    data:{ labels:trendData.weeks, datasets:[
+      { label:t("ceiling60"), data:trendData.target, borderColor:"#8A7F65", borderDash:[4,4], pointRadius:0, borderWidth:1.5 },
+      { label:t("primePct"), data:trendData.primeCost, borderColor:"#C1503F", backgroundColor:"#C1503F", pointRadius:3, borderWidth:2.5, tension:.3 } ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:"bottom", labels:{ color:"#B7AC92", font:{size:11}, boxWidth:12 } } },
+      scales:{ x:{ ticks:{ color:"#8A7F65", font:{size:11} }, grid:{ display:false } }, y:{ min:45, max:65, ticks:{ color:"#8A7F65", font:{size:11}, callback:(v)=>v+"%" }, grid:{ color:"#25211A" } } } }
+  });
+}
+
+/* ============================================================
+   TAB: WASTE & SHRINKAGE
+============================================================ */
+function renderWasteTab(){
+  const totalVal = sumField(wasteData,"value");
+  const totalPct = sumField(wasteData,"pctOfCogs");
+  const avgTrend = wasteData.reduce((a,r)=>a+r.trend,0)/wasteData.length;
+  document.getElementById("tab-waste").innerHTML = `
+    <div class="stack">
+      <div class="grid grid-kpi3">
+        ${kpiCard({label:t("totalWasteValue"), value:fmtNum(totalVal,true), suffix:"SAR", benchmark:""})}
+        ${kpiCard({label:t("wastePctCogs"), value:pctStr(totalPct), benchmark:"", alert:totalPct>7})}
+        ${kpiCard({label:t("momChange"), value:pctStr(avgTrend), deltaPts:avgTrend, suffixPct:true, benchmark:""})}
+      </div>
+      <div class="grid grid-2col">
+        <div class="card">
+          <div class="card-head"><div><div class="card-title">${t("wasteTitle")}</div><div class="card-desc">${t("wasteSub")}</div></div></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>${t("colCategory")}</th><th class="num">${t("colWasteValue")}</th><th class="num">${t("colPctCogs")}</th><th class="num">${t("colMomChange")}</th></tr></thead>
+            <tbody>
+              ${wasteData.map(w=>`<tr>
+                <td style="font-weight:500;">${w[LANG]}</td>
+                <td class="num">${numSpan(fmtNum(w.value))}</td>
+                <td class="num">${numSpan(pctStr(w.pctOfCogs))}</td>
+                <td class="num">${trendHtml(w.trend,'%')}</td>
+              </tr>`).join("")}
+            </tbody>
+          </table></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px;">${t("wasteByCategory")}</div>
+          <div class="chart-box"><canvas id="wasteChart"></canvas></div>
+        </div>
+      </div>
+    </div>`;
+  destroyChart("wasteChart");
+  charts.wasteChart = new Chart(document.getElementById("wasteChart"), {
+    type:"doughnut",
+    data:{ labels:wasteData.map(w=>w[LANG]), datasets:[{ data:wasteData.map(w=>w.value), backgroundColor:WASTE_COLORS, borderColor:"#1C1A14", borderWidth:2 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:"55%",
+      plugins:{ legend:{ position:"bottom", labels:{ color:"#B7AC92", font:{size:10}, boxWidth:10 } }, tooltip:{ callbacks:{ label:(c)=>c.label+": "+fmtNum(c.raw) } } } }
+  });
+}
+
+/* ============================================================
+   TAB: STAFF PRODUCTIVITY
+============================================================ */
+function staffDisplayName(entry){ return entry.name || branchName(entry.branchRef); }
+function staffSales(entry){ if(entry.sales !== undefined) return entry.sales; const k = branchKpis[entry.branchRef]; return k ? k.netSales : 0; }
+
+function renderStaffTab(){
+  const rows = staffData.map(s=>{
+    const sales = staffSales(s);
+    return { name:staffDisplayName(s), laborHours:s.laborHours, covers:s.covers, sales, splh:s.laborHours?sales/s.laborHours:0, perCover:s.covers?sales/s.covers:0 };
+  });
+  document.getElementById("tab-staff").innerHTML = `
+    <div class="stack">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">${t("staffTitle")}</div><div class="card-desc">${t("staffSub")}</div></div></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>${t("colBranch")}</th><th class="num">${t("colLaborHours")}</th><th class="num">${t("colCovers")}</th><th class="num">${t("colSplh")}</th><th class="num">${t("colSalesPerCover")}</th></tr></thead>
+          <tbody>
+            ${rows.map(r=>`<tr>
+              <td style="font-weight:500;">${r.name}</td>
+              <td class="num">${numSpan(r.laborHours.toLocaleString("en-US"))}</td>
+              <td class="num">${numSpan(r.covers.toLocaleString("en-US"))}</td>
+              <td class="num">${numSpan(fmtNum(r.splh))}</td>
+              <td class="num">${numSpan(fmtNum(r.perCover))}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table></div>
+      </div>
+      <div class="card"><div class="chart-title">${t("splhChartTitle")}</div><div class="chart-box tall"><canvas id="splhChart"></canvas></div></div>
+    </div>`;
+  destroyChart("splhChart");
+  charts.splhChart = new Chart(document.getElementById("splhChart"), {
+    type:"bar",
+    data:{ labels:rows.map(r=>r.name), datasets:[{ data:rows.map(r=>Math.round(r.splh)), backgroundColor:"#C9A227", borderRadius:4, maxBarThickness:44 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>fmtNum(c.raw)+" SAR" } } },
+      scales:{ x:{ ticks:{ color:"#8A7F65", font:{size:11} }, grid:{ display:false } }, y:{ ticks:{ color:"#8A7F65", font:{size:11}, callback:(v)=>fmtNum(v,true) }, grid:{ color:"#25211A" } } } }
+  });
+}
+
+/* ============================================================
+   DYNAMIC AI INSIGHTS — computed from whatever data is loaded now
+============================================================ */
+function generateInsights(){
+  const list = []; let idc = 1;
+
+  branchMatrix.forEach(b=>{
+    if(b.prime > 60){
+      list.push({id:idc++, severity:"critical",
+        en:{title:`Prime Cost breach — ${branchName(b.id)}`, body:`Prime cost is running at ${b.prime.toFixed(1)}%, above the 60% ceiling, compressing store-level margin.`, action:`Audit food waste and overtime scheduling at ${branchName(b.id)}.`},
+        ar:{title:`تجاوز التكلفة الأساسية — ${branchName(b.id)}`, body:`التكلفة الأساسية عند ${b.prime.toFixed(1)}% متجاوزة سقف 60%، ما يضغط على هامش الربح.`, action:`مراجعة هدر الأغذية وجدولة الوقت الإضافي في ${branchName(b.id)}.`}});
+    }
+  });
+  branchMatrix.forEach(b=>{
+    if(b.variance < -3){
+      list.push({id:idc++, severity:"warning",
+        en:{title:`${branchName(b.id)} trailing budget`, body:`Net sales are ${Math.abs(b.variance).toFixed(1)}% below budget this period.`, action:`Review local demand drivers and the promotional calendar for ${branchName(b.id)}.`},
+        ar:{title:`${branchName(b.id)} أقل من الموازنة`, body:`صافي المبيعات أقل من الموازنة بنسبة ${Math.abs(b.variance).toFixed(1)}% هذه الفترة.`, action:`مراجعة محركات الطلب المحلية وجدول العروض في ${branchName(b.id)}.`}});
+    }
+  });
+  if(branchMatrix.length){
+    const best = branchMatrix.reduce((a,b)=> b.ebitda>a.ebitda?b:a, branchMatrix[0]);
+    list.push({id:idc++, severity:"positive",
+      en:{title:`${branchName(best.id)} leading on EBITDA`, body:`EBITDA margin of ${best.ebitda.toFixed(1)}% is the strongest in the portfolio this period.`, action:`Document staffing and menu-mix practices at ${branchName(best.id)} as a playbook for other branches.`},
+      ar:{title:`${branchName(best.id)} الأعلى في هامش الأرباح`, body:`هامش الأرباح ${best.ebitda.toFixed(1)}% هو الأفضل ضمن المحفظة هذه الفترة.`, action:`توثيق ممارسات التوظيف ومزيج القائمة في ${branchName(best.id)} كنموذج للفروع الأخرى.`}});
+  }
+  aggregatorData.forEach(a=>{
+    if(a.commissionPct >= 24){
+      list.push({id:idc++, severity:"warning",
+        en:{title:`${a.name} commission drag`, body:`${a.name} commission take is ${a.commissionPct}% of GMV, compressing delivery-channel margin.`, action:`Renegotiate tier pricing or shift promo budget toward lower-commission platforms.`},
+        ar:{title:`عبء عمولة ${a.name}`, body:`عمولة ${a.name} تبلغ ${a.commissionPct}% من إجمالي المبيعات، ما يضغط على هامش قناة التوصيل.`, action:`إعادة التفاوض على شرائح العمولة أو تحويل ميزانية العروض إلى منصات أقل عمولة.`}});
+    }
+  });
+  const totalWastePct = sumField(wasteData,"pctOfCogs");
+  if(wasteData.length && totalWastePct > 6){
+    const top = wasteData.reduce((a,b)=> b.value>a.value?b:a, wasteData[0]);
+    list.push({id:idc++, severity:"warning",
+      en:{title:"Waste above healthy range", body:`Total waste is ${totalWastePct.toFixed(1)}% of COGS, led by ${top.en} at ${fmtNum(top.value)} SAR.`, action:"Tighten par-stock levels and review receiving/prep procedures for the top category."},
+      ar:{title:"الهدر أعلى من النطاق الصحي", body:`إجمالي الهدر ${totalWastePct.toFixed(1)}% من تكلفة البضاعة، بقيادة ${top.ar} بقيمة ${fmtNum(top.value)} ريال.`, action:"تشديد حدود المخزون ومراجعة إجراءات الاستلام والتحضير للفئة الأعلى."}});
+  }
+  const opA=sumField(cashFlow.operating,"actual"), invA=sumField(cashFlow.investing,"actual"), finA=sumField(cashFlow.financing,"actual");
+  if(opA+invA+finA < 0){
+    list.push({id:idc++, severity:"critical",
+      en:{title:"Negative net cash flow", body:`Net change in cash is ${fmtNum(opA+invA+finA)} SAR this period, driven by financing and investing outflows.`, action:"Review capex timing and the distribution schedule against operating cash generation."},
+      ar:{title:"تدفق نقدي صافٍ سلبي", body:`صافي التغير في النقدية ${fmtNum(opA+invA+finA)} ريال هذه الفترة، بسبب التدفقات الخارجة الاستثمارية والتمويلية.`, action:"مراجعة توقيت المصاريف الرأسمالية وجدول التوزيعات مقابل النقد التشغيلي المتولد."}});
+  }
+  const li = monthlyTrend.ebitdaActual.length-1;
+  if(li>=0 && monthlyTrend.ebitdaActual[li] < monthlyTrend.ebitdaBudget[li]){
+    list.push({id:idc++, severity:"warning",
+      en:{title:`${monthlyTrend.months[li]} EBITDA below budget`, body:`EBITDA margin came in at ${monthlyTrend.ebitdaActual[li].toFixed(1)}% vs. a ${monthlyTrend.ebitdaBudget[li].toFixed(1)}% budget.`, action:"Compare cost structure against prior months to isolate the driver."},
+      ar:{title:`هامش أرباح ${monthlyTrend.months[li]} أقل من الموازنة`, body:`بلغ هامش الأرباح ${monthlyTrend.ebitdaActual[li].toFixed(1)}% مقابل موازنة ${monthlyTrend.ebitdaBudget[li].toFixed(1)}%.`, action:"مقارنة هيكل التكاليف بالأشهر السابقة لتحديد السبب."}});
+  }
+  if(staffData.length){
+    const rows = staffData.map(s=>({name:staffDisplayName(s), splh: s.laborHours? staffSales(s)/s.laborHours:0}));
+    const avg = rows.reduce((a,r)=>a+r.splh,0)/rows.length;
+    const worst = rows.reduce((a,b)=> b.splh<a.splh?b:a, rows[0]);
+    if(avg>0 && worst.splh < avg*0.85){
+      list.push({id:idc++, severity:"warning",
+        en:{title:`${worst.name} productivity lagging`, body:`Sales per labor hour is ${fmtNum(worst.splh)} SAR, below the ${fmtNum(avg)} SAR portfolio average.`, action:"Review shift scheduling and staffing levels against the sales curve."},
+        ar:{title:`تراجع إنتاجية ${worst.name}`, body:`المبيعات لكل ساعة عمل ${fmtNum(worst.splh)} ريال، أقل من متوسط المحفظة البالغ ${fmtNum(avg)} ريال.`, action:"مراجعة جدولة الورديات ومستويات التوظيف مقابل منحنى المبيعات."}});
+    }
+  }
+
+  const order = {critical:0, warning:1, positive:2};
+  list.sort((a,b)=>order[a.severity]-order[b.severity]);
+  return list.slice(0,6);
+}
+
+/* ============================================================
+   TAB: AGGREGATORS
+============================================================ */
+function renderAggregatorsTab(){
+  document.getElementById("tab-aggregators").innerHTML = `
+    <div class="card">
+      <div class="card-title">${t("aggTitle")}</div>
+      <div class="card-desc" style="margin-bottom:14px;">${t("aggSub")}</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>${t("colPlatform")}</th><th class="num">${t("colOrders")}</th><th class="num">${t("colGmv")}</th><th class="num">${t("colCommPct")}</th><th class="num">${t("colNetAfter")}</th></tr></thead>
+        <tbody>
+          ${aggregatorData.map(a=>`<tr>
+            <td style="font-weight:500;">${a.name}</td>
+            <td class="num">${numSpan(a.orders.toLocaleString("en-US"))}</td>
+            <td class="num">${numSpan(fmtNum(a.gmv))}</td>
+            <td class="num"><span style="color:${a.commissionPct>=24?'var(--bad-text)':'var(--text-dim)'};font-weight:${a.commissionPct>=24?600:400}">${numSpan(a.commissionPct+'%')}</span></td>
+            <td class="num" style="color:var(--good-text)">${numSpan(fmtNum(a.netAfterComm))}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+
+/* ============================================================
+   TAB: ADVANCED ANALYTICS
+============================================================ */
+function linearForecast(values, stepsAhead){
+  const n = values.length;
+  const xs = values.map((_,i)=>i);
+  const meanX = xs.reduce((a,b)=>a+b,0)/n;
+  const meanY = values.reduce((a,b)=>a+b,0)/n;
+  let num=0, den=0;
+  for(let i=0;i<n;i++){ num += (xs[i]-meanX)*(values[i]-meanY); den += (xs[i]-meanX)**2; }
+  const slope = den? num/den : 0;
+  const intercept = meanY - slope*meanX;
+  const out = [];
+  for(let s=1; s<=stepsAhead; s++){ out.push(slope*(n-1+s)+intercept); }
+  return out;
+}
+
+function renderAnalyticsTab(){
+  const maxVal = Math.max(...heatmapData.days.flatMap(d=>d.vals));
+  const heatmapHtml = `
+    <div class="heatmap-wrap">
+      <div class="heatmap" style="grid-template-columns:44px repeat(${HEATMAP_HOURS.length},1fr);">
+        <div></div>
+        ${HEATMAP_HOURS.map(h=>`<div class="heatmap-hourlabel">${h}</div>`).join("")}
+        ${heatmapData.days.map(d=>`
+          <div class="heatmap-daylabel">${d[LANG]}</div>
+          ${d.vals.map(v=>{
+            const alpha = (0.08 + (v/maxVal)*0.85).toFixed(2);
+            return `<div class="heatmap-cell" title="${d[LANG]} ${'--'}h: ${v}" style="background:rgba(201,162,39,${alpha});"></div>`;
+          }).join("")}
+        `).join("")}
+      </div>
+    </div>
+    <div class="analytics-legend"><span>${t("heatmapLow")}</span><span class="grad"></span><span>${t("heatmapHigh")}</span></div>`;
+
+  const totalSales = sumField(branchMatrix,"sales");
+  const totalWaste = sumField(wasteData,"value");
+  const scatterPoints = branchMatrix.map(b=>({
+    x: +b.prime.toFixed(1),
+    y: totalSales? +((totalWaste*(b.sales/totalSales))/b.sales*100).toFixed(2) : 0,
+    label: branchName(b.id),
+  }));
+
+  const last6 = monthlyTrend.salesActual.slice(-6);
+  const forecastVals = linearForecast(last6, 3);
+  const forecastMonths = ["+1","+2","+3"];
+  const fLabels = [...monthlyTrend.months, ...forecastMonths];
+  const fActual = [...monthlyTrend.salesActual, null, null, null];
+  const fForecast = [...monthlyTrend.salesActual.map(()=>null)];
+  fForecast[fForecast.length-1] = monthlyTrend.salesActual[monthlyTrend.salesActual.length-1];
+  forecastVals.forEach(v=>fForecast.push(v));
+
+  document.getElementById("tab-analytics").innerHTML = `
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">${t("analyticsTitle")}</div>
+        <div class="card-desc" style="margin-bottom:4px;">${t("analyticsSub")}</div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">${t("heatmapTitle")}</div><div class="card-desc">${t("heatmapSub")}</div></div></div>
+        ${heatmapHtml}
+      </div>
+      <div class="grid grid-chart2">
+        <div class="card">
+          <div class="card-head"><div><div class="card-title">${t("radarTitle")}</div><div class="card-desc">${t("radarSub")}</div></div></div>
+          <div class="chart-box tall"><canvas id="radarChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><div class="card-title">${t("scatterTitle")}</div><div class="card-desc">${t("scatterSub")}</div></div></div>
+          <div class="chart-box tall"><canvas id="scatterChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">${t("forecastTitle")}</div><div class="card-desc">${t("forecastSub")}</div></div></div>
+        <div class="chart-box tall"><canvas id="forecastChart"></canvas></div>
+        <div class="forecast-note"><span class="dash"></span>${t("forecastLegend")}</div>
+      </div>
+    </div>`;
+
+  const radarColors = ["#C9A227","#4FA88A","#C1503F","#7C8FA6","#D9A441","#8E6FD0"];
+  destroyChart("radarChart");
+  charts.radarChart = new Chart(document.getElementById("radarChart"), {
+    type:"radar",
+    data:{
+      labels:[t("ebitdaMargin"), t("cogsPct"), t("laborPct"), t("primePct"), t("colAggComm")],
+      datasets: branchMatrix.map((b,i)=>{
+        const k = branchKpis[b.id] || {cogs:0, labor:0};
+        return { label:branchName(b.id), data:[b.ebitda, k.cogs, k.labor, b.prime, b.aggCommission],
+          borderColor:radarColors[i%radarColors.length], backgroundColor:radarColors[i%radarColors.length]+"22",
+          pointBackgroundColor:radarColors[i%radarColors.length], borderWidth:2 };
+      })
+    },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:"bottom", labels:{ color:"#B7AC92", font:{size:10}, boxWidth:10 } } },
+      scales:{ r:{ angleLines:{ color:"#25211A" }, grid:{ color:"#25211A" }, pointLabels:{ color:"#B7AC92", font:{size:10} }, ticks:{ display:false, backdropColor:"transparent" } } } }
+  });
+
+  destroyChart("scatterChart");
+  charts.scatterChart = new Chart(document.getElementById("scatterChart"), {
+    type:"scatter",
+    data:{ datasets:[{ data:scatterPoints, backgroundColor:"#C9A227", pointRadius:7, pointHoverRadius:9 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=> scatterPoints[c.dataIndex].label+`: ${t("primePct")} ${c.parsed.x}%, ${t("colWasteValue")==="Waste Value"?"Waste":"هدر"} ${c.parsed.y}%` } } },
+      scales:{ x:{ title:{ display:true, text:t("primePct"), color:"#8A7F65", font:{size:10} }, ticks:{ color:"#8A7F65", font:{size:10}, callback:(v)=>v+"%" }, grid:{ color:"#25211A" } },
+               y:{ title:{ display:true, text:t("wastePctCogs"), color:"#8A7F65", font:{size:10} }, ticks:{ color:"#8A7F65", font:{size:10}, callback:(v)=>v+"%" }, grid:{ color:"#25211A" } } } }
+  });
+
+  destroyChart("forecastChart");
+  charts.forecastChart = new Chart(document.getElementById("forecastChart"), {
+    type:"line",
+    data:{ labels:fLabels, datasets:[
+      { label:t("colActual"), data:fActual, borderColor:"#C9A227", backgroundColor:"rgba(201,162,39,.15)", fill:true, spanGaps:false, pointRadius:2, borderWidth:2.5, tension:.3 },
+      { label:t("forecastLegend"), data:fForecast, borderColor:"#4FA88A", borderDash:[5,4], pointRadius:2, borderWidth:2.5, spanGaps:true, tension:.3 } ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:"bottom", labels:{ color:"#B7AC92", font:{size:11}, boxWidth:12 } } },
+      scales:{ x:{ ticks:{ color:"#8A7F65", font:{size:11} }, grid:{ display:false } }, y:{ ticks:{ color:"#8A7F65", font:{size:11}, callback:(v)=>fmtNum(v,true) }, grid:{ color:"#25211A" } } } }
+  });
+}
+
+/* ============================================================
+   TAB: MASTER DATA
+============================================================ */
+let masterSubTab = "menu";
+function renderMasterDataTab(){
+  const subTabs = [
+    {id:"menu", key:"tabMenu"}, {id:"employees", key:"tabEmployees"},
+    {id:"suppliers", key:"tabSuppliers"}, {id:"branchInfo", key:"tabBranchInfo"},
+  ];
+  let tableHtml = "";
+  if(masterSubTab==="menu"){
+    tableHtml = `<div class="table-wrap"><table>
+      <thead><tr><th>${t("colItemName")}</th><th>${t("colCategory2")}</th><th>${t("colBranch")}</th><th class="num">${t("colPrice")}</th><th class="num">${t("colFoodCostItem")}</th><th class="num">${t("colMargin")}</th></tr></thead>
+      <tbody>${menuData.map(m=>{
+        const margin = m.price? ((m.price-m.foodCost)/m.price*100):0;
+        return `<tr><td style="font-weight:500;">${m.name}</td><td>${m.category}</td><td>${m.branch}</td>
+          <td class="num">${numSpan(fmtNum(m.price))}</td><td class="num">${numSpan(fmtNum(m.foodCost))}</td>
+          <td class="num">${numSpan(pctStr(margin))}</td></tr>`;
+      }).join("")}</tbody></table></div>`;
+  } else if(masterSubTab==="employees"){
+    tableHtml = `<div class="table-wrap"><table>
+      <thead><tr><th>${t("colEmployeeName")}</th><th>${t("colBranch")}</th><th>${t("colRole")}</th><th>${t("colHireDate")}</th><th class="num">${t("colWage")}</th><th class="num">${t("colMonthlyHours")}</th></tr></thead>
+      <tbody>${employeesData.map(e=>`<tr><td style="font-weight:500;">${e.name}</td><td>${e.branch}</td><td>${e.role}</td>
+        <td>${numSpan(e.hireDate)}</td><td class="num">${numSpan(fmtNum(e.wage))}</td><td class="num">${numSpan(e.monthlyHours)}</td></tr>`).join("")}</tbody></table></div>`;
+  } else if(masterSubTab==="suppliers"){
+    tableHtml = `<div class="table-wrap"><table>
+      <thead><tr><th>${t("colSupplierName")}</th><th>${t("colCategory2")}</th><th class="num">${t("colMonthlySpend")}</th><th class="num">${t("colLeadTime")}</th><th>${t("colContact")}</th></tr></thead>
+      <tbody>${suppliersData.map(s=>`<tr><td style="font-weight:500;">${s.name}</td><td>${s.category}</td>
+        <td class="num">${numSpan(fmtNum(s.monthlySpend))}</td><td class="num">${numSpan(s.leadTime)}</td><td>${numSpan(s.contact)}</td></tr>`).join("")}</tbody></table></div>`;
+  } else if(masterSubTab==="branchInfo"){
+    tableHtml = `<div class="table-wrap"><table>
+      <thead><tr><th>${t("colBranch")}</th><th>${t("colAddress")}</th><th class="num">${t("colSize")}</th><th class="num">${t("colSeating")}</th><th>${t("colOpeningDate")}</th><th>${t("colManager")}</th></tr></thead>
+      <tbody>${branchInfoData.map(b=>`<tr><td style="font-weight:500;">${b.branch}</td><td>${b.address}</td>
+        <td class="num">${numSpan(b.size)}</td><td class="num">${numSpan(b.seating)}</td><td>${numSpan(b.openingDate)}</td><td>${b.manager}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+
+  document.getElementById("tab-masterdata").innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <div><div class="card-title">${t("masterDataTitle")}</div><div class="card-desc">${t("masterDataSub")}</div></div>
+        <button class="btn-ghost" id="goToUploadBtn">${t("goToUpload")}</button>
+      </div>
+      <div class="pill-tabs">
+        ${subTabs.map(s=>`<button class="pill-tab ${masterSubTab===s.id?'active':''}" data-sub="${s.id}">${t(s.key)}</button>`).join("")}
+      </div>
+      ${tableHtml}
+    </div>`;
+
+  document.getElementById("goToUploadBtn").addEventListener("click", ()=>{ TAB="upload"; renderAll(); });
+  document.querySelectorAll(".pill-tab").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ masterSubTab = btn.dataset.sub; renderMasterDataTab(); });
+  });
+}
+
+/* ============================================================
+   TAB: SETTINGS
+============================================================ */
+function renderSettingsTab(){
+  document.getElementById("tab-settings").innerHTML = `
+    <div class="card">
+      <div class="card-title">${t("settingsTitle")}</div>
+      <div class="card-desc" style="margin-bottom:14px;">${t("settingsSub")}</div>
+      ${settingsRules.map(r=>{ const d = r[LANG]; return `
+        <div class="rule-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--good-text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px;flex-shrink:0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div><div class="rule-name">${d.name}</div><div class="rule-detail">${d.detail}</div></div>
+        </div>`; }).join("")}
+    </div>`;
+}
+
+/* ============================================================
+   TEMPLATES — definitions, generation, parsing
+============================================================ */
+const TEMPLATES = {
+  pnl: {
+    category:"financial",
+    titleKey:"pnlTplTitle", descKey:"pnlTplDesc",
+    columns:["branch_name","period","dine_in_revenue","takeaway_revenue","aggregator_revenue","last_year_sales","food_cost","beverage_cost","packaging_cost","direct_labor","kitchen_wages","management_allocation","rent","utilities","maintenance","budget_net_sales","budget_cogs_pct","budget_labor_pct"],
+    required:["branch_name","dine_in_revenue","takeaway_revenue","aggregator_revenue","food_cost","beverage_cost","packaging_cost","direct_labor","kitchen_wages","management_allocation","rent","utilities","maintenance"],
+    sample:[
+      ["Jeddah — Corniche","2026-07",890000,280000,350000,1410000,392000,84000,60000,214000,206000,60000,113000,42000,19000,1410000,30,25],
+      ["Riyadh — Olaya","2026-07",1010000,300400,370000,1390500,395000,90000,63000,214000,206000,65000,113000,42000,19000,1390500,30,25],
+      ["Jeddah — Rawdah","2026-07",380200,180000,330000,902000,255000,54000,40000,207000,205000,53000,113000,42000,19000,902000,30,25],
+      ["Khobar — Corniche","2026-07",420000,141600,168400,687800,192000,46000,32000,152000,150000,44000,90000,35000,15000,687800,30,25],
+    ],
+  },
+  cashflow: {
+    category:"financial",
+    titleKey:"cashTplTitle", descKey:"cashTplDesc",
+    columns:["section","line_item_en","line_item_ar","actual","budget"],
+    required:["section","line_item_en","actual","budget"],
+    sample:[
+      ["operating","Cash received from customers","النقد المحصل من العملاء",4820600,4650000],
+      ["operating","Cash paid to suppliers","النقد المدفوع للموردين",-1436600,-1370000],
+      ["operating","Cash paid for labor","النقد المدفوع للعمالة",-1386400,-1340000],
+      ["operating","Other operating payments","مدفوعات تشغيلية أخرى",-212000,-198000],
+      ["investing","Purchase of kitchen equipment","شراء معدات مطبخ",-186000,-150000],
+      ["investing","Branch renovation capex","مصاريف رأسمالية لتجديد الفروع",-94000,-120000],
+      ["financing","Lease principal payments (IFRS 16)","سداد أصل الالتزام الإيجاري",-158000,-158000],
+      ["financing","Owner distributions","توزيعات على الملاك",-300000,-300000],
+    ],
+  },
+  trend: {
+    category:"financial",
+    titleKey:"trendTplTitle", descKey:"trendTplDesc",
+    columns:["month","sales_actual","sales_budget","ebitda_actual","ebitda_budget"],
+    required:["month","sales_actual","sales_budget","ebitda_actual","ebitda_budget"],
+    sample:[
+      ["Jan",368000,360000,15.8,16],["Feb",352000,360000,14.2,16],["Mar",402000,380000,16.5,16],
+      ["Apr",388000,380000,15.9,16],["May",410000,395000,17.1,16],["Jun",395000,395000,16.4,16],
+      ["Jul",420000,400000,17.8,16],["Aug",432000,410000,18.2,16],["Sep",408000,400000,16.9,16],
+      ["Oct",445000,420000,18.5,16],["Nov",468000,440000,19.1,16],["Dec",532600,480000,20.4,16],
+    ],
+  },
+  waste: {
+    category:"financial",
+    titleKey:"wasteTplTitle", descKey:"wasteTplDesc",
+    columns:["category_en","category_ar","waste_value","pct_of_cogs","mom_change_pts"],
+    required:["category_en","waste_value","pct_of_cogs"],
+    sample:[
+      ["Fresh Produce","المنتجات الطازجة",38200,2.7,0.6],
+      ["Meat & Poultry","اللحوم والدواجن",29600,2.1,-0.3],
+      ["Dairy","الألبان",14100,1.0,0.2],
+      ["Packaging","مواد التغليف",9800,0.7,0.1],
+      ["Prepared Food (Kitchen Waste)","هدر المطبخ (أطعمة محضرة)",21300,1.5,0.9],
+    ],
+  },
+  staff: {
+    category:"financial",
+    titleKey:"staffTplTitle", descKey:"staffTplDesc",
+    columns:["branch_name","labor_hours","covers","net_sales"],
+    required:["branch_name","labor_hours","covers"],
+    sample:[
+      ["Jeddah — Corniche",5620,28400,1520000],
+      ["Riyadh — Olaya",5910,31200,1680400],
+      ["Jeddah — Rawdah",4680,16800,890200],
+      ["Khobar — Corniche",3990,14100,730000],
+    ],
+  },
+  menu: {
+    category:"master",
+    titleKey:"menuTplTitle", descKey:"menuTplDesc",
+    columns:["item_name","category","branch_name","price","food_cost","monthly_units_sold"],
+    required:["item_name","price","food_cost"],
+    sample:[
+      ["Grilled Kabsa Platter","Main","Jeddah — Corniche",48,14.5,2400],
+      ["Shawarma Wrap","Main","Riyadh — Olaya",22,6.8,5100],
+      ["Mixed Grill Sharing","Main","Jeddah — Rawdah",96,31,900],
+      ["Fattoush Salad","Starter","Khobar — Corniche",26,7.2,1600],
+      ["Um Ali","Dessert","Riyadh — Olaya",19,4.9,2100],
+    ],
+  },
+  employees: {
+    category:"master",
+    titleKey:"employeesTplTitle", descKey:"employeesTplDesc",
+    columns:["employee_name","branch_name","role","hire_date","hourly_wage","monthly_hours"],
+    required:["employee_name","branch_name","role"],
+    sample:[
+      ["Ahmed Al-Fahad","Jeddah — Corniche","Kitchen Chef","2023-02-10",32,190],
+      ["Sara Al-Otaibi","Riyadh — Olaya","Branch Manager","2022-06-01",48,200],
+      ["Mohammed Al-Qahtani","Jeddah — Rawdah","Server","2024-01-15",22,175],
+      ["Lama Al-Harbi","Khobar — Corniche","Cashier","2023-09-20",20,180],
+    ],
+  },
+  suppliers: {
+    category:"master",
+    titleKey:"suppliersTplTitle", descKey:"suppliersTplDesc",
+    columns:["supplier_name","category","monthly_spend","lead_time_days","contact"],
+    required:["supplier_name","category","monthly_spend"],
+    sample:[
+      ["Al-Watania Poultry","Meat & Poultry",186000,2,"sales@watania.example"],
+      ["Fresh Valley Produce","Fresh Produce",94000,1,"orders@freshvalley.example"],
+      ["Almarai Dairy","Dairy",52000,2,"b2b@almarai.example"],
+      ["GulfPack Packaging","Packaging",38000,5,"info@gulfpack.example"],
+    ],
+  },
+  branchInfo: {
+    category:"master",
+    titleKey:"branchInfoTplTitle", descKey:"branchInfoTplDesc",
+    columns:["branch_name","address","size_sqm","seating_capacity","opening_date","manager_name"],
+    required:["branch_name","address"],
+    sample:[
+      ["Jeddah — Corniche","Corniche Rd, Jeddah",280,96,"2019-03-01","Ahmed Al-Fahad"],
+      ["Riyadh — Olaya","Olaya St, Riyadh",340,120,"2020-08-15","Sara Al-Otaibi"],
+      ["Jeddah — Rawdah","Rawdah District, Jeddah",210,70,"2021-11-20","Mohammed Al-Qahtani"],
+      ["Khobar — Corniche","Corniche Rd, Khobar",195,64,"2022-05-10","Lama Al-Harbi"],
+    ],
+  },
+};
+
+function csvEscape(v){
+  const s = String(v);
+  return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+function downloadBlob(filename, content, mime){
+  const blob = new Blob([content], {type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+function downloadTemplateCSV(id){
+  const tpl = TEMPLATES[id];
+  const aoa = [tpl.columns, ...tpl.sample];
+  const csv = aoa.map(row=>row.map(csvEscape).join(",")).join("\r\n");
+  downloadBlob(id+"_template.csv", "\uFEFF"+csv, "text/csv;charset=utf-8;");
+}
+function downloadTemplateXLSX(id){
+  const tpl = TEMPLATES[id];
+  const aoa = [tpl.columns, ...tpl.sample];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Template");
+  XLSX.writeFile(wb, id+"_template.xlsx");
+}
+
+function parseUploadedFile(file, cb){
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:"array"});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, {defval:""});
+      cb(null, rows);
+    }catch(err){ cb(err); }
+  };
+  reader.onerror = ()=>cb(new Error("read error"));
+  reader.readAsArrayBuffer(file);
+}
+
+function validateRows(id, rows){
+  const tpl = TEMPLATES[id];
+  if(!rows || rows.length===0) return {ok:false, msg:t("emptyFile")};
+  const firstKeys = Object.keys(rows[0]).map(k=>k.trim().toLowerCase());
+  const missing = tpl.required.filter(c=>!firstKeys.includes(c));
+  if(missing.length) return {ok:false, msg:t("missingCols")+" "+missing.join(", ")};
+  return {ok:true};
+}
+function num(v, fallback=0){ const n = parseFloat(v); return isNaN(n) ? fallback : n; }
+function getCell(row, key){
+  const foundKey = Object.keys(row).find(k=>k.trim().toLowerCase()===key);
+  return foundKey ? row[foundKey] : "";
+}
+
+function applyPnlUpload(rows){
+  const newIds = ["all"]; const newNames = {}; const newKpis = {}; const newRevBreak = {}; const newMatrix = [];
+  let revAct=[0,0,0], cosAct=[0,0,0], laborAct=[0,0,0], occAct=[0,0,0];
+  let cosBudgetAgg=0, laborBudgetAgg=0, revBudgetAgg=0, cosActualAgg=0, laborActualAgg=0, revActualAgg=0;
+
+  rows.forEach((row,idx)=>{
+    const id = "u"+idx;
+    const name = String(getCell(row,"branch_name")||("Branch "+(idx+1)));
+    const dineIn = num(getCell(row,"dine_in_revenue")), takeaway = num(getCell(row,"takeaway_revenue")), agg = num(getCell(row,"aggregator_revenue"));
+    const netSales = dineIn+takeaway+agg;
+    const lastYear = num(getCell(row,"last_year_sales"), netSales*0.92);
+    const food = num(getCell(row,"food_cost")), bev = num(getCell(row,"beverage_cost")), pack = num(getCell(row,"packaging_cost"));
+    const cosTotal = food+bev+pack;
+    const directLabor = num(getCell(row,"direct_labor")), kitchenWages = num(getCell(row,"kitchen_wages")), mgmt = num(getCell(row,"management_allocation"));
+    const laborTotal = directLabor+kitchenWages+mgmt;
+    const rent = num(getCell(row,"rent")), util = num(getCell(row,"utilities")), maint = num(getCell(row,"maintenance"));
+    const occTotal = rent+util+maint;
+    const budgetNetSales = num(getCell(row,"budget_net_sales"), netSales);
+    const budgetCogsPct = num(getCell(row,"budget_cogs_pct"), 30);
+    const budgetLaborPct = num(getCell(row,"budget_labor_pct"), 25);
+    const cogsPct = netSales? cosTotal/netSales*100 : 0;
+    const laborPct = netSales? laborTotal/netSales*100 : 0;
+    const ebitda = netSales? ((netSales-cosTotal-laborTotal-occTotal)/netSales*100) : 0;
+    const variance = budgetNetSales? ((netSales-budgetNetSales)/budgetNetSales*100) : 0;
+
+    newIds.push(id); newNames[id] = name;
+    newKpis[id] = {netSales, netSalesLY:lastYear, cogs:cogsPct, cogsB:budgetCogsPct, labor:laborPct, laborB:budgetLaborPct, ebitda, ebitdaB:16};
+    newRevBreak[id] = [dineIn, takeaway, agg];
+    newMatrix.push({id, ebitda, prime:cogsPct+laborPct, aggCommission:num(getCell(row,"aggregator_commission_pct"),6.5), sales:netSales, variance});
+
+    revAct[0]+=dineIn; revAct[1]+=takeaway; revAct[2]+=agg; revActualAgg+=netSales; revBudgetAgg+=budgetNetSales;
+    cosAct[0]+=food; cosAct[1]+=bev; cosAct[2]+=pack; cosActualAgg+=cosTotal; cosBudgetAgg += budgetNetSales*budgetCogsPct/100;
+    laborAct[0]+=directLabor; laborAct[1]+=kitchenWages; laborAct[2]+=mgmt; laborActualAgg+=laborTotal; laborBudgetAgg += budgetNetSales*budgetLaborPct/100;
+    occAct[0]+=rent; occAct[1]+=util; occAct[2]+=maint;
+  });
+
+  const totalNet = Object.values(newKpis).reduce((a,k)=>a+k.netSales,0);
+  const totalNetLY = Object.values(newKpis).reduce((a,k)=>a+k.netSalesLY,0);
+  const totalCos = cosAct[0]+cosAct[1]+cosAct[2], totalLabor = laborAct[0]+laborAct[1]+laborAct[2], totalOcc = occAct[0]+occAct[1]+occAct[2];
+  newKpis.all = { netSales:totalNet, netSalesLY:totalNetLY,
+    cogs: totalNet? totalCos/totalNet*100:0, cogsB:30, labor: totalNet? totalLabor/totalNet*100:0, laborB:25,
+    ebitda: totalNet? ((totalNet-totalCos-totalLabor-totalOcc)/totalNet*100):0, ebitdaB:16 };
+  newRevBreak.all = [revAct[0],revAct[1],revAct[2]];
+
+  const scaleCos = cosActualAgg? cosBudgetAgg/cosActualAgg : 1;
+  const scaleLabor = laborActualAgg? laborBudgetAgg/laborActualAgg : 1;
+  const scaleRev = revActualAgg? revBudgetAgg/revActualAgg : 1;
+
+  pnl.revenue[0].actual = revAct[0]; pnl.revenue[0].budget = revAct[0]*scaleRev;
+  pnl.revenue[1].actual = revAct[1]; pnl.revenue[1].budget = revAct[1]*scaleRev;
+  pnl.revenue[2].actual = revAct[2]; pnl.revenue[2].budget = revAct[2]*scaleRev;
+  pnl.cos[0].actual = cosAct[0]; pnl.cos[0].budget = cosAct[0]*scaleCos;
+  pnl.cos[1].actual = cosAct[1]; pnl.cos[1].budget = cosAct[1]*scaleCos;
+  pnl.cos[2].actual = cosAct[2]; pnl.cos[2].budget = cosAct[2]*scaleCos;
+  pnl.controllable[0].actual = laborAct[0]; pnl.controllable[0].budget = laborAct[0]*scaleLabor;
+  pnl.controllable[1].actual = laborAct[1]; pnl.controllable[1].budget = laborAct[1]*scaleLabor;
+  pnl.controllable[2].actual = laborAct[2]; pnl.controllable[2].budget = laborAct[2]*scaleLabor;
+  pnl.occupancy[0].actual = occAct[0]; pnl.occupancy[0].budget = occAct[0];
+  pnl.occupancy[1].actual = occAct[1]; pnl.occupancy[1].budget = occAct[1];
+  pnl.occupancy[2].actual = occAct[2]; pnl.occupancy[2].budget = occAct[2];
+
+  BRANCH_IDS = newIds; DYNAMIC_BRANCH_NAMES = newNames; branchKpis = newKpis; revenueBreakdown = newRevBreak; branchMatrix = newMatrix;
+  BRANCH = "all";
+}
+
+function applyCashflowUpload(rows){
+  const buckets = {operating:[], investing:[], financing:[]};
+  rows.forEach(row=>{
+    const section = String(getCell(row,"section")||"operating").trim().toLowerCase();
+    const entry = { en:String(getCell(row,"line_item_en")||"Item"), ar:String(getCell(row,"line_item_ar")||getCell(row,"line_item_en")||"بند"),
+      actual:num(getCell(row,"actual")), budget:num(getCell(row,"budget")) };
+    if(buckets[section]) buckets[section].push(entry); else buckets.operating.push(entry);
+  });
+  cashFlow.operating = buckets.operating.length?buckets.operating:cashFlow.operating;
+  cashFlow.investing = buckets.investing.length?buckets.investing:[];
+  cashFlow.financing = buckets.financing.length?buckets.financing:[];
+}
+
+function applyTrendUpload(rows){
+  const months=[],sa=[],sb=[],ea=[],eb=[];
+  rows.forEach(row=>{
+    months.push(String(getCell(row,"month")||""));
+    sa.push(num(getCell(row,"sales_actual"))); sb.push(num(getCell(row,"sales_budget")));
+    ea.push(num(getCell(row,"ebitda_actual"))); eb.push(num(getCell(row,"ebitda_budget"),16));
+  });
+  monthlyTrend = { months, salesActual:sa, salesBudget:sb, ebitdaActual:ea, ebitdaBudget:eb };
+}
+
+function applyWasteUpload(rows){
+  wasteData = rows.map(row=>({
+    en:String(getCell(row,"category_en")||"Category"), ar:String(getCell(row,"category_ar")||getCell(row,"category_en")||"فئة"),
+    value:num(getCell(row,"waste_value")), pctOfCogs:num(getCell(row,"pct_of_cogs")), trend:num(getCell(row,"mom_change_pts")) }));
+}
+
+function applyStaffUpload(rows){
+  staffData = rows.map(row=>({
+    name:String(getCell(row,"branch_name")||"Branch"), laborHours:num(getCell(row,"labor_hours")), covers:num(getCell(row,"covers")),
+    sales: getCell(row,"net_sales")!=="" ? num(getCell(row,"net_sales")) : undefined }));
+}
+
+function applyMenuUpload(rows){
+  menuData = rows.map(row=>({ name:String(getCell(row,"item_name")||"Item"), category:String(getCell(row,"category")||""),
+    branch:String(getCell(row,"branch_name")||""), price:num(getCell(row,"price")), foodCost:num(getCell(row,"food_cost")),
+    units:num(getCell(row,"monthly_units_sold")) }));
+}
+function applyEmployeesUpload(rows){
+  employeesData = rows.map(row=>({ name:String(getCell(row,"employee_name")||"Employee"), branch:String(getCell(row,"branch_name")||""),
+    role:String(getCell(row,"role")||""), hireDate:String(getCell(row,"hire_date")||""), wage:num(getCell(row,"hourly_wage")),
+    monthlyHours:num(getCell(row,"monthly_hours")) }));
+}
+function applySuppliersUpload(rows){
+  suppliersData = rows.map(row=>({ name:String(getCell(row,"supplier_name")||"Supplier"), category:String(getCell(row,"category")||""),
+    monthlySpend:num(getCell(row,"monthly_spend")), leadTime:num(getCell(row,"lead_time_days")), contact:String(getCell(row,"contact")||"") }));
+}
+function applyBranchInfoUpload(rows){
+  branchInfoData = rows.map(row=>({ branch:String(getCell(row,"branch_name")||"Branch"), address:String(getCell(row,"address")||""),
+    size:num(getCell(row,"size_sqm")), seating:num(getCell(row,"seating_capacity")), openingDate:String(getCell(row,"opening_date")||""),
+    manager:String(getCell(row,"manager_name")||"") }));
+}
+
+const APPLIERS = {
+  pnl:applyPnlUpload, cashflow:applyCashflowUpload, trend:applyTrendUpload, waste:applyWasteUpload, staff:applyStaffUpload,
+  menu:applyMenuUpload, employees:applyEmployeesUpload, suppliers:applySuppliersUpload, branchInfo:applyBranchInfoUpload,
+};
+
+function resetTemplate(id){
+  if(id==="pnl"){
+    BRANCH_IDS = JSON.parse(JSON.stringify(DEFAULTS.BRANCH_IDS));
+    DYNAMIC_BRANCH_NAMES = JSON.parse(JSON.stringify(DEFAULTS.DYNAMIC_BRANCH_NAMES));
+    branchKpis = JSON.parse(JSON.stringify(DEFAULTS.branchKpis));
+    revenueBreakdown = JSON.parse(JSON.stringify(DEFAULTS.revenueBreakdown));
+    branchMatrix = JSON.parse(JSON.stringify(DEFAULTS.branchMatrix));
+    pnl = JSON.parse(JSON.stringify(DEFAULTS.pnl));
+    BRANCH = "all";
+  } else if(id==="cashflow"){ cashFlow = JSON.parse(JSON.stringify(DEFAULTS.cashFlow)); }
+  else if(id==="trend"){ monthlyTrend = JSON.parse(JSON.stringify(DEFAULTS.monthlyTrend)); }
+  else if(id==="waste"){ wasteData = JSON.parse(JSON.stringify(DEFAULTS.wasteData)); }
+  else if(id==="staff"){ staffData = JSON.parse(JSON.stringify(DEFAULTS.staffData)); }
+  else if(id==="menu"){ menuData = JSON.parse(JSON.stringify(DEFAULTS.menuData)); }
+  else if(id==="employees"){ employeesData = JSON.parse(JSON.stringify(DEFAULTS.employeesData)); }
+  else if(id==="suppliers"){ suppliersData = JSON.parse(JSON.stringify(DEFAULTS.suppliersData)); }
+  else if(id==="branchInfo"){ branchInfoData = JSON.parse(JSON.stringify(DEFAULTS.branchInfoData)); }
+  delete uploadStatus[id];
+  renderAll();
+  persist();
+}
+
+function handleUploadInput(id, input){
+  const file = input.files[0];
+  if(!file) return;
+  parseUploadedFile(file, (err, rows)=>{
+    if(err){ uploadStatus[id] = {ok:false, msg:t("uploadError")+" "+err.message}; renderUploadTab(); return; }
+    const v = validateRows(id, rows);
+    if(!v.ok){ uploadStatus[id] = {ok:false, msg:v.msg}; renderUploadTab(); return; }
+    try{
+      APPLIERS[id](rows);
+      uploadStatus[id] = {ok:true, msg:rows.length+" "+t("uploadSuccess")};
+      renderAll();
+      persist();
+    }catch(e){ uploadStatus[id] = {ok:false, msg:t("uploadError")+" "+e.message}; renderUploadTab(); }
+    input.value = "";
+  });
+}
+
+function renderUploadTab(){
+  const ids = Object.keys(TEMPLATES);
+  const financialIds = ids.filter(id=>TEMPLATES[id].category==="financial");
+  const masterIds = ids.filter(id=>TEMPLATES[id].category==="master");
+
+  function templateCard(id){
+    const tpl = TEMPLATES[id];
+    const st = uploadStatus[id];
+    return `
+        <div class="template-card">
+          <div class="template-title">${t(tpl.titleKey)}</div>
+          <div class="template-desc">${t(tpl.descKey)}</div>
+          <div class="template-actions">
+            <button class="btn-ghost" data-action="csv" data-id="${id}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              ${t("downloadCsv")}
+            </button>
+            <button class="btn-ghost" data-action="xlsx" data-id="${id}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              ${t("downloadXlsx")}
+            </button>
+            <label class="btn-brass file-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              ${t("uploadFile")}
+              <input type="file" accept=".csv,.xlsx,.xls" data-id="${id}" />
+            </label>
+            <button class="btn-ghost" data-action="reset" data-id="${id}">${t("resetSample")}</button>
+          </div>
+          <div class="cols-hint">${t("requiredColumns")}: ${tpl.required.map(c=>'<code>'+c+'</code>').join(" ")}</div>
+          ${st ? `<div class="status-msg ${st.ok?'status-ok':'status-err'}">${st.msg}</div>` : ""}
+        </div>`;
+  }
+
+  document.getElementById("tab-upload").innerHTML = `
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">${t("uploadTitle")}</div>
+        <div class="card-desc" style="margin-bottom:4px;">${t("uploadSub")}</div>
+      </div>
+      <div class="template-group-label">${t("tplGroupFinancial")}</div>
+      ${financialIds.map(templateCard).join("")}
+      <div class="template-group-label">${t("tplGroupMaster")}</div>
+      ${masterIds.map(templateCard).join("")}
+    </div>`;
+
+  document.querySelectorAll('.template-card [data-action="csv"]').forEach(b=>b.addEventListener("click", ()=>downloadTemplateCSV(b.dataset.id)));
+  document.querySelectorAll('.template-card [data-action="xlsx"]').forEach(b=>b.addEventListener("click", ()=>downloadTemplateXLSX(b.dataset.id)));
+  document.querySelectorAll('.template-card [data-action="reset"]').forEach(b=>b.addEventListener("click", ()=>resetTemplate(b.dataset.id)));
+  document.querySelectorAll('.template-card input[type=file]').forEach(inp=>inp.addEventListener("change", ()=>handleUploadInput(inp.dataset.id, inp)));
+}
+
+/* ============================================================
+   TAB: MANUAL
+============================================================ */
+function renderManualTab(){
+  const sections = [
+    { key:"manualTocOverview", en:{title:"Overview", body:"The CFO Assistant consolidates sales, cost, labor and cash data for a multi-branch restaurant group into one place, structured around USALI and IFRS 15/16/IAS 2. Use the sidebar to move between the Executive Summary, financial reports, cost controls, and data tools."},
+      ar:{title:"نظرة عامة", body:"يجمع مساعد المدير المالي بيانات المبيعات والتكاليف والعمالة والنقدية لسلسلة مطاعم متعددة الفروع في مكان واحد، وفق معايير USALI وIFRS 15/16 وIAS 2. استخدم القائمة الجانبية للتنقل بين الملخص التنفيذي والتقارير المالية وضبط التكاليف وأدوات البيانات."} },
+    { key:"manualTocFilters", en:{title:"Filters & Navigation", body:"The header lets you pick a branch (or Consolidated for all branches) and a reporting period. Most reports update instantly to reflect your selection. Use the language switch (EN / عربي) at any time — the whole interface, including numbers and RTL layout, adapts automatically."},
+      ar:{title:"التصفية والتنقل", body:"يتيح لك الشريط العلوي اختيار فرع معين (أو الوضع الموحّد لجميع الفروع) وفترة التقرير. تتحدث معظم التقارير فورًا حسب اختيارك. يمكنك تبديل اللغة (EN / عربي) في أي وقت — تتكيف الواجهة بالكامل تلقائيًا بما في ذلك اتجاه الصفحة."} },
+    { key:"manualTocKpi", en:{title:"Reading the KPI Cards", body:"Each KPI card shows the current value, a trend arrow versus its benchmark, and the benchmark itself. A red pulsing dot means the metric has breached its target — for example Prime Cost above the 60% ceiling, or COGS/Labor more than 2 points over target."},
+      ar:{title:"قراءة بطاقات المؤشرات", body:"تعرض كل بطاقة القيمة الحالية، وسهم الاتجاه مقارنة بالمعيار المستهدف، والمعيار نفسه. النقطة الحمراء النابضة تعني أن المؤشر تجاوز هدفه — مثل تجاوز التكلفة الأساسية سقف 60%، أو تجاوز تكلفة البضاعة أو العمالة الهدف بأكثر من نقطتين."} },
+    { key:"manualTocInsights", en:{title:"AI Insights & Approvals", body:"The Executive Summary surfaces the top financial signals for the period, tagged Red flag, Watch, or On track. Each card includes a recommended action. Click Approve to mark a recommendation as actioned — this is a local tracking toggle for your team, not an automated system change."},
+      ar:{title:"رؤى الذكاء الاصطناعي والاعتماد", body:"يعرض الملخص التنفيذي أبرز الإشارات المالية للفترة، مصنّفة كـ إنذار أو مراقبة أو ضمن المستهدف. تتضمن كل بطاقة توصية إجرائية. اضغط اعتماد لتمييز التوصية كمنفذة — وهو مجرد مؤشر تتبع محلي لفريقك وليس تنفيذًا تلقائيًا."} },
+    { key:"manualTocReports", en:{title:"Available Reports", body:"", list:["Executive Summary — KPIs, AI insights, revenue mix, branch matrix","Financial Statements — full USALI P&L, Actual vs. Budget","Cash Flow Statement — operating, investing, financing activities","Budget vs Actual — Full Year — 12-month sales and EBITDA trend","Branch Performance Matrix — EBITDA, prime cost, aggregator drag per store","Cost Control — COGS%, labor%, prime cost trend","Waste & Shrinkage — waste value and % of COGS by category","Staff Productivity — sales per labor hour and per cover","Aggregator & Channel Profitability — orders, GMV, commission by platform"] },
+      ar:{title:"التقارير المتاحة", body:"", list:["الملخص التنفيذي — المؤشرات، رؤى الذكاء الاصطناعي، مزيج الإيرادات، مصفوفة الفروع","القوائم المالية — قائمة الدخل الكاملة وفق USALI، الفعلي مقابل الموازنة","قائمة التدفقات النقدية — الأنشطة التشغيلية والاستثمارية والتمويلية","الموازنة مقابل الفعلي — كامل السنة — اتجاه المبيعات وهامش الأرباح لـ12 شهرًا","مصفوفة أداء الفروع — هامش الأرباح، التكلفة الأساسية، عمولة التوصيل لكل فرع","ضبط التكاليف — نسبة تكلفة البضاعة والعمالة، اتجاه التكلفة الأساسية","الهدر والفاقد — قيمة الهدر ونسبته من تكلفة البضاعة حسب الفئة","إنتاجية الموظفين — المبيعات لكل ساعة عمل ولكل زبون","ربحية تطبيقات التوصيل والقنوات — الطلبات، إجمالي المبيعات، العمولة لكل منصة"] } },
+    { key:"manualTocUpload", en:{title:"Uploading Your Own Data", body:"Open Data Upload & Templates in the sidebar. For each report family: 1) Download the CSV or Excel template — it already contains sample rows in the exact column layout the system expects. 2) Replace the sample rows with your own figures, keeping the English column headers unchanged. 3) Use Upload File and select your completed CSV or XLSX. The dashboard re-calculates KPIs, tables and charts immediately. Use Reset to sample data at any time to return to the demo figures."},
+      ar:{title:"رفع بياناتك الخاصة", body:"افتح رفع البيانات والنماذج من القائمة الجانبية. لكل مجموعة تقارير: 1) حمّل نموذج CSV أو إكسل — يحتوي بالفعل على صفوف تجريبية بنفس ترتيب الأعمدة الذي يتوقعه النظام. 2) استبدل الصفوف التجريبية بأرقامك الخاصة مع إبقاء عناوين الأعمدة الإنجليزية كما هي. 3) استخدم رفع ملف واختر ملف CSV أو إكسل المكتمل. تُعاد حساب المؤشرات والجداول والرسوم البيانية فورًا. استخدم إعادة البيانات التجريبية في أي وقت للعودة إلى الأرقام التجريبية."} },
+    { key:"manualTocColors", en:{title:"Color Legend", body:"", swatches:[["#C9A227","Brand / neutral — brass gold"],["#4FA88A","Good — on or above target"],["#D9A441","Warning — approaching a limit"],["#C1503F","Alert — over target or unfavorable"]] },
+      ar:{title:"دليل الألوان", body:"", swatches:[["#C9A227","العلامة / محايد — ذهبي نحاسي"],["#4FA88A","جيد — ضمن الهدف أو أعلى منه"],["#D9A441","تحذير — يقترب من الحد"],["#C1503F","إنذار — تجاوز الهدف أو غير مواتٍ"]] } },
+    { key:"manualTocReset", en:{title:"Resetting Data", body:"Uploaded data is saved to the platform's database and is shared across everyone with access to this app — it survives refreshes and reopening the tool. Each template in the Data Upload tab also has its own Reset to sample data button so you can restore the demo figures for one report without affecting the others."},
+      ar:{title:"إعادة ضبط البيانات", body:"يتم حفظ البيانات المرفوعة في قاعدة بيانات المنصة وتكون مشتركة بين جميع من لديهم صلاحية الوصول لهذا التطبيق — تبقى محفوظة حتى بعد تحديث الصفحة أو إغلاق الأداة وإعادة فتحها. يحتوي كل نموذج في تبويب رفع البيانات على زر إعادة البيانات التجريبية الخاص به لاستعادة الأرقام التجريبية لتقرير واحد دون التأثير على البقية."} },
+    { key:"manualTocExport", en:{title:"Exporting & Printing", body:"Use the Export button in the header to open your browser's print dialog, then choose Save as PDF to keep a snapshot of the current report and filters."},
+      ar:{title:"التصدير والطباعة", body:"استخدم زر تصدير في الشريط العلوي لفتح نافذة الطباعة في المتصفح، ثم اختر الحفظ كملف PDF للاحتفاظ بنسخة من التقرير الحالي والفلاتر المستخدمة."} },
+  ];
+
+  document.getElementById("tab-manual").innerHTML = `
+    <div class="card">
+      <div class="card-title">${t("manualTitle")}</div>
+      <div class="card-desc" style="margin-bottom:6px;">${t("manualSub")}</div>
+      ${sections.map((s,i)=>{
+        const d = s[LANG];
+        let extra = "";
+        if(d.list) extra = `<ul>${d.list.map(li=>`<li>${li}</li>`).join("")}</ul>`;
+        if(d.swatches) extra = `<div class="swatch-row">${d.swatches.map(sw=>`<span class="swatch"><span class="dot" style="background:${sw[0]}"></span>${sw[1]}</span>`).join("")}</div>`;
+        return `<div class="manual-section">
+          <div class="manual-title"><span class="manual-num">${i+1}</span>${d.title}</div>
+          <div class="manual-body">${d.body}${extra}</div>
+        </div>`;
+      }).join("")}
+    </div>`;
+}
+
+/* ============================================================
+   MASTER RENDER
+============================================================ */
+function renderAll(){
+  document.body.dataset.lang = LANG;
+  document.documentElement.lang = LANG;
+  document.documentElement.dir = LANG === "ar" ? "rtl" : "ltr";
+
+  if(window.__allowedScreens){
+    const vis = visibleNav();
+    if(vis.length === 0){
+      AzieScreens.renderNoAccess(document.body, "CFO Assistant");
+      return;
+    }
+    if(!vis.find(n=>n.id===TAB)) TAB = vis[0].id;
+  }
+
+  renderNav();
+  renderSelects();
+  renderHeaderTexts();
+
+  document.querySelectorAll(".tab-section").forEach(s=>s.classList.remove("active"));
+  document.getElementById("tab-"+TAB).classList.add("active");
+
+  if(TAB==="exec") renderExecTab();
+  else if(TAB==="pnl") renderPnlTab();
+  else if(TAB==="cashflow") renderCashflowTab();
+  else if(TAB==="trend") renderTrendTab();
+  else if(TAB==="branches") renderBranchesTab();
+  else if(TAB==="cost") renderCostTab();
+  else if(TAB==="waste") renderWasteTab();
+  else if(TAB==="staff") renderStaffTab();
+  else if(TAB==="aggregators") renderAggregatorsTab();
+  else if(TAB==="analytics") renderAnalyticsTab();
+  else if(TAB==="masterdata") renderMasterDataTab();
+  else if(TAB==="upload") renderUploadTab();
+  else if(TAB==="manual") renderManualTab();
+  else if(TAB==="settings") renderSettingsTab();
+}
+
+/* ============================================================
+   SMART ASSISTANT — Claude-powered chat grounded in current dashboard data
+============================================================ */
+let chatOpen = false;
+let chatLoading = false;
+let chatHistory = [];   // full display history, may include the canned greeting
+let apiHistory = [];    // only real turns sent to the model as context
+
+function buildDashboardContext(){
+  const k = branchKpis[BRANCH] || branchKpis.all;
+  const opA=sumField(cashFlow.operating,"actual"), invA=sumField(cashFlow.investing,"actual"), finA=sumField(cashFlow.financing,"actual");
+  return JSON.stringify({
+    selectedBranch: branchName(BRANCH),
+    period: t("ranges")[RANGE_IDX],
+    kpis: { netSalesSAR:Math.round(k.netSales), cogsPct:+k.cogs.toFixed(1), laborPct:+k.labor.toFixed(1),
+      primeCostPct:+(k.cogs+k.labor).toFixed(1), ebitdaMarginPct:+k.ebitda.toFixed(1) },
+    branches: branchMatrix.map(b=>({ name:branchName(b.id), salesSAR:Math.round(b.sales), ebitdaPct:+b.ebitda.toFixed(1),
+      primeCostPct:+b.prime.toFixed(1), vsBudgetPct:+b.variance.toFixed(1), aggCommissionPct:b.aggCommission })),
+    topInsights: generateInsights().map(i=>({severity:i.severity, title:i[LANG].title})),
+    wasteTotalSAR: Math.round(sumField(wasteData,"value")), wastePctOfCogs: +sumField(wasteData,"pctOfCogs").toFixed(1),
+    cashFlowNetSAR: Math.round(opA+invA+finA),
+    ytdSalesActualSAR: Math.round(sumField(monthlyTrend.salesActual.map(v=>({actual:v})),"actual")),
+    ytdSalesBudgetSAR: Math.round(sumField(monthlyTrend.salesBudget.map(v=>({actual:v})),"actual")),
+    aggregators: aggregatorData.map(a=>({name:a.name, commissionPct:a.commissionPct, gmvSAR:a.gmv})),
+  });
+}
+
+function scrollChatToBottom(){
+  const el = document.getElementById("chatMessages");
+  if(el) el.scrollTop = el.scrollHeight;
+}
+
+function renderChatMessages(){
+  const el = document.getElementById("chatMessages");
+  if(!el) return;
+  el.innerHTML = chatHistory.map(m=>`<div class="chat-msg ${m.role==='user'?'user':'bot'}">${escapeHtml(m.content)}</div>`).join("")
+    + (chatLoading ? `<div class="chat-msg bot typing">${t("chatTyping")}</div>` : "");
+  scrollChatToBottom();
+}
+function escapeHtml(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+
+function renderChatChips(){
+  const el = document.getElementById("chatChips");
+  if(!el) return;
+  if(apiHistory.length>0){ el.innerHTML=""; return; }
+  const chips = [t("chatChip1"), t("chatChip2"), t("chatChip3"), t("chatChip4")];
+  el.innerHTML = chips.map(c=>`<button class="chat-chip">${c}</button>`).join("");
+  el.querySelectorAll(".chat-chip").forEach(btn=>{
+    btn.addEventListener("click", ()=> sendChatMessage(btn.textContent));
+  });
+}
+
+function addUserMessage(text){ chatHistory.push({role:"user", content:text}); apiHistory.push({role:"user", content:text}); }
+function addBotMessage(text, real=true){ chatHistory.push({role:"assistant", content:text}); if(real) apiHistory.push({role:"assistant", content:text}); }
+
+async function sendChatMessage(text){
+  text = (text||"").trim();
+  if(!text || chatLoading) return;
+  addUserMessage(text);
+  renderChatChips();
+  renderChatMessages();
+  chatLoading = true;
+  renderChatMessages();
+
+  const sysEn = "You are a restaurant-industry CFO analyst embedded in a financial dashboard. Answer the user's question using ONLY the JSON data snapshot below; if the data does not contain what is needed, say so plainly rather than guessing or inventing numbers. Be concise (2-5 sentences unless a short list is clearer), always express currency in SAR, and speak like a helpful, direct finance analyst. Respond in English.";
+  const sysAr = "أنت محلل مالي (مساعد مدير مالي) لسلسلة مطاعم، مدمج داخل لوحة تحكم مالية. أجب عن سؤال المستخدم بالاعتماد فقط على بيانات JSON أدناه؛ إذا لم تحتوِ البيانات على ما يلزم فقل ذلك بوضوح بدل التخمين أو اختلاق أرقام. كن مختصرًا (من 2 إلى 5 جمل، إلا إذا كانت قائمة قصيرة أوضح)، واستخدم دائمًا الريال السعودي كعملة، وتحدث كمحلل مالي مباشر ومفيد. أجب باللغة العربية.";
+  const system = (LANG==="ar" ? sysAr : sysEn) + "\n\nData snapshot (JSON):\n" + buildDashboardContext();
+
+  try{
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        model:"claude-sonnet-4-6",
+        max_tokens:1000,
+        system: system,
+        messages: apiHistory,
+      }),
+    });
+    const data = await res.json();
+    const parts = (data && data.content ? data.content : []).filter(c=>c.type==="text").map(c=>c.text);
+    const reply = parts.join("\n").trim();
+    chatLoading = false;
+    addBotMessage(reply || t("chatNoResponse"));
+  }catch(e){
+    chatLoading = false;
+    addBotMessage(t("chatError"), false);
+  }
+  renderChatMessages();
+}
+
+function openChatPanel(){
+  chatOpen = true;
+  document.getElementById("chatPanel").classList.add("open");
+  document.getElementById("chatFabDot").style.display = "none";
+  if(chatHistory.length===0){ addBotMessage(t("chatGreeting"), false); renderChatMessages(); }
+  renderChatChips();
+}
+function closeChatPanel(){ chatOpen = false; document.getElementById("chatPanel").classList.remove("open"); }
+
+/* ============================================================
+   EVENTS
+============================================================ */
+document.getElementById("menuToggle").addEventListener("click", ()=>{
+  document.getElementById("sidebar").classList.add("open");
+  document.getElementById("overlay").classList.add("show");
+});
+document.getElementById("sidebarClose").addEventListener("click", ()=>{
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("overlay").classList.remove("show");
+});
+document.getElementById("overlay").addEventListener("click", ()=>{
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("overlay").classList.remove("show");
+});
+document.getElementById("langEnBtn").addEventListener("click", ()=>{
+  LANG = "en"; document.getElementById("langEnBtn").classList.add("active"); document.getElementById("langArBtn").classList.remove("active"); renderAll();
+});
+document.getElementById("langArBtn").addEventListener("click", ()=>{
+  LANG = "ar"; document.getElementById("langArBtn").classList.add("active"); document.getElementById("langEnBtn").classList.remove("active"); renderAll();
+});
+document.querySelector(".export-btn").addEventListener("click", ()=> window.print());
+
+document.getElementById("chatFab").addEventListener("click", ()=>{ chatOpen ? closeChatPanel() : openChatPanel(); });
+document.getElementById("chatClose").addEventListener("click", closeChatPanel);
+document.getElementById("chatSend").addEventListener("click", ()=>{
+  const inp = document.getElementById("chatInput");
+  sendChatMessage(inp.value);
+  inp.value = "";
+});
+document.getElementById("chatInput").addEventListener("keydown", (e)=>{
+  if(e.key==="Enter" && !e.shiftKey){
+    e.preventDefault();
+    const inp = document.getElementById("chatInput");
+    sendChatMessage(inp.value);
+    inp.value = "";
+  }
+});
+
+(async function init(){
+  try{
+    window.__allowedScreens = await AzieScreens.fetchAllowed("cfo-dashboard");
+  }catch(err){
+    console.error(err);
+    window.__allowedScreens = [];
+  }
+  if(window.__allowedScreens.length > 0 && !window.__allowedScreens.includes(TAB)){
+    TAB = window.__allowedScreens[0];
+  }
+  try{
+    const loaded = await AzieData.load("cfo-dashboard");
+    if(loaded && Object.keys(loaded).length > 0) applyState(loaded);
+  }catch(err){
+    console.error("cfo-dashboard: تعذر تحميل البيانات من الخادم", err);
+  }
+  renderAll();
+})();
+</script>
+</body>
+</html>

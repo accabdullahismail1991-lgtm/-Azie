@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الاستراتيجية بالعربي — النظام التفاعلي الشامل</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;800&display=swap');
+:root{--ink:#1a1410;--cream:#faf7f2;--warm:#f0e9dc;--gold:#c8933a;--gold-lt:#e8c97a;--rust:#8b2e10;--sage:#2d5a3d;--blue:#1e3a5f;--charcoal:#1e1c1a;--muted:#7a6e64;--border:#ddd5c8;--white:#fff;--radius:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Tajawal',sans-serif;background:var(--cream);color:var(--ink);font-size:16px;line-height:1.8}
+/* ── NAV ── */
+nav{background:var(--charcoal);position:sticky;top:0;z-index:200;border-bottom:3px solid var(--gold)}
+.nav-inner{max-width:1300px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:58px}
+.nav-logo{font-family:'Cairo',sans-serif;font-weight:900;font-size:1.1rem;color:var(--gold-lt);white-space:nowrap}
+.nav-tabs{display:flex;gap:2px;list-style:none;height:100%;overflow-x:auto}
+.nav-tabs li a{display:flex;align-items:center;height:100%;padding:0 14px;color:#a09890;text-decoration:none;font-size:.84rem;font-weight:600;border-bottom:3px solid transparent;transition:all .2s;cursor:pointer;white-space:nowrap}
+.nav-tabs li a:hover,.nav-tabs li a.active{color:var(--gold-lt);border-bottom-color:var(--gold);background:rgba(200,147,58,.08)}
+/* ── HERO ── */
+.hero{background:var(--charcoal);color:var(--white);padding:60px 20px 50px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(200,147,58,.2) 0%,transparent 65%)}
+.hero-eyebrow{display:inline-block;border:1px solid var(--gold);color:var(--gold-lt);font-size:.75rem;font-weight:700;letter-spacing:.14em;padding:4px 16px;margin-bottom:20px;text-transform:uppercase}
+.hero h1{font-family:'Cairo',sans-serif;font-size:clamp(2rem,5vw,3.4rem);font-weight:900;line-height:1.2;margin-bottom:16px;color:var(--white)}
+.hero h1 em{color:var(--gold-lt);font-style:normal}
+.hero-sub{font-size:1rem;color:#b0a89e;max-width:600px;margin:0 auto 28px}
+.hero-pills{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.pill{background:rgba(200,147,58,.15);border:1px solid rgba(200,147,58,.35);color:var(--gold-lt);padding:5px 16px;border-radius:100px;font-size:.8rem;font-weight:600}
+/* ── LAYOUT ── */
+.container{max-width:1300px;margin:0 auto;padding:0 20px}
+.section{padding:50px 0}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.section-hd{display:flex;align-items:flex-end;gap:16px;margin-bottom:40px;padding-bottom:18px;border-bottom:2px solid var(--border)}
+.section-num{font-family:'Cairo',sans-serif;font-size:3.5rem;font-weight:900;color:var(--border);line-height:1;flex-shrink:0}
+.section-hd h2{font-family:'Cairo',sans-serif;font-size:1.7rem;font-weight:900;color:var(--ink)}
+.section-hd p{font-size:.88rem;color:var(--muted);margin-top:3px}
+/* ── CARDS ── */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:24px;transition:box-shadow .2s,transform .2s}
+.card:hover{box-shadow:0 6px 24px rgba(0,0,0,.07);transform:translateY(-2px)}
+.card-tag{display:inline-block;font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:12px}
+.tag-s{background:#fdf3e3;color:#a07020}
+.tag-t{background:#e8f3ec;color:#2a5a3a}
+.tag-e{background:#e8ecf8;color:#2a3a8a}
+.tag-p{background:#fce8e4;color:#8b2e10}
+.card h3{font-family:'Cairo',sans-serif;font-size:1.05rem;font-weight:800;margin-bottom:8px}
+.card .en{font-size:.76rem;color:var(--muted);font-style:italic;margin-bottom:10px;display:block}
+.card p{font-size:.87rem;color:#484440;line-height:1.7}
+.rest-box{margin-top:14px;padding:11px 14px;background:#fff9f2;border-right:3px solid var(--gold);border-radius:0 8px 8px 0;font-size:.83rem;color:var(--charcoal)}
+.rest-box strong{display:block;font-size:.7rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+/* ── PHASE TIMELINE ── */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:grid;grid-template-columns:60px 1fr;gap:0 20px}
+.tl-circle{width:52px;height:52px;border-radius:50%;background:var(--charcoal);color:var(--gold-lt);display:flex;align-items:center;justify-content:center;font-family:'Cairo',sans-serif;font-weight:900;font-size:1.15rem;flex-shrink:0;position:relative;z-index:1}
+.tl-line-col{display:flex;flex-direction:column;align-items:center}
+.tl-line{width:2px;flex:1;background:var(--border);margin:5px 0}
+.tl-body{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin-bottom:22px}
+.tl-body h3{font-family:'Cairo',sans-serif;font-size:1.15rem;font-weight:800;margin-bottom:6px}
+.tl-body .desc{font-size:.87rem;color:var(--muted);margin-bottom:14px}
+.tags-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.atag{background:var(--warm);color:var(--charcoal);font-size:.76rem;font-weight:600;padding:4px 12px;border-radius:6px}
+.tl-rest{border-top:1px solid var(--warm);padding-top:12px;margin-top:4px}
+.tl-rest .rl{font-size:.72rem;font-weight:800;color:var(--rust);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.tl-rest p{font-size:.85rem;color:#484440}
+/* ── TOOL DETAIL ── */
+.tool-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.tool-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:box-shadow .2s}
+.tool-card:hover{box-shadow:0 5px 20px rgba(0,0,0,.07)}
+.tool-hd{padding:18px 22px 14px;border-bottom:1px solid var(--warm);display:flex;gap:12px;align-items:center}
+.tool-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0}
+.tool-icon.a{background:#fdf3e3}
+.tool-icon.b{background:#e8f3ec}
+.tool-icon.c{background:#e8ecf8}
+.tool-icon.d{background:#fce8e4}
+.tool-hd h3{font-family:'Cairo',sans-serif;font-size:1rem;font-weight:800}
+.tool-hd .en{font-size:.73rem;color:var(--muted);font-style:italic}
+.tool-bd{padding:16px 22px 20px}
+.tool-bd p{font-size:.86rem;color:#484440;margin-bottom:12px;line-height:1.7}
+.rest-app{background:linear-gradient(135deg,#fff9f2,#fdf3e3);border:1px solid #e8d5b0;border-radius:8px;padding:12px 15px}
+.rest-app .ral{font-size:.7rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.rest-app p{font-size:.82rem;color:var(--charcoal);margin:0}
+/* ── FORMS ── */
+.tmpl{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:28px}
+.tmpl-hd{background:var(--charcoal);padding:18px 26px;display:flex;align-items:center;gap:12px}
+.tmpl-hd .ico{font-size:1.4rem}
+.tmpl-hd h3{font-family:'Cairo',sans-serif;font-size:1.05rem;font-weight:800;color:var(--white)}
+.tmpl-hd span{font-size:.8rem;color:#b0a89e}
+.tmpl-bd{padding:26px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.form-row.one{grid-template-columns:1fr}
+.form-row.three{grid-template-columns:1fr 1fr 1fr}
+.fg label{display:block;font-size:.78rem;font-weight:800;color:var(--charcoal);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px}
+.fg input,.fg textarea,.fg select{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 13px;font-family:'Tajawal',sans-serif;font-size:.9rem;color:var(--ink);background:var(--cream);transition:border-color .2s;resize:vertical}
+.fg input:focus,.fg textarea:focus,.fg select:focus{outline:none;border-color:var(--gold);background:var(--white)}
+.fg textarea{min-height:78px}
+.fg .tip{font-size:.76rem;color:var(--muted);margin-top:4px;font-style:italic}
+/* ── SWOT ── */
+.swot{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sq{border-radius:10px;padding:18px}
+.sq.s{background:#e8f3ec;border:1px solid #b8dac5}
+.sq.w{background:#fce8e4;border:1px solid #f0c4b8}
+.sq.o{background:#e8ecf8;border:1px solid #b8c4e8}
+.sq.t{background:#fdf3e3;border:1px solid #e8d5b0}
+.sq h4{font-family:'Cairo',sans-serif;font-size:.92rem;font-weight:800;margin-bottom:10px}
+.sq.s h4{color:#1a4a2a}.sq.w h4{color:#7a1a0a}.sq.o h4{color:#1a2a7a}.sq.t h4{color:#6a4a0a}
+.sq textarea{width:100%;border:none;background:transparent;font-family:'Tajawal',sans-serif;font-size:.86rem;resize:none;min-height:85px;color:var(--ink)}
+.sq textarea:focus{outline:none}
+/* ── KPI TABLE ── */
+.kpi-table{width:100%;border-collapse:collapse;font-size:.86rem}
+.kpi-table th{background:var(--charcoal);color:var(--gold-lt);padding:10px 13px;text-align:right;font-size:.75rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.kpi-table td{padding:9px 13px;border-bottom:1px solid var(--warm);vertical-align:middle}
+.kpi-table tr:hover td{background:#faf7f2}
+.kpi-table td input{border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-family:'Tajawal',sans-serif;font-size:.85rem;width:90px;background:var(--white)}
+.kpi-table td input:focus{outline:none;border-color:var(--gold)}
+.badge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:.7rem;font-weight:700}
+.b-on{background:#e8f3ec;color:#1a4a2a}
+.b-risk{background:#fdf3e3;color:#6a4a0a}
+.b-off{background:#fce8e4;color:#7a1a0a}
+/* ── GANTT ── */
+.gantt{overflow-x:auto;margin-top:12px}
+.gantt-table{min-width:750px;width:100%;border-collapse:collapse;font-size:.82rem}
+.gantt-table th{background:var(--charcoal);color:var(--gold-lt);padding:8px 10px;text-align:center;font-size:.72rem;font-weight:700;letter-spacing:.04em}
+.gantt-table th:first-child{text-align:right;min-width:180px}
+.gantt-table td{padding:7px 10px;border-bottom:1px solid var(--warm);text-align:center;vertical-align:middle}
+.gantt-table td:first-child{text-align:right;font-weight:600;color:var(--charcoal)}
+.g-bar{height:20px;background:var(--gold);border-radius:4px;opacity:.85}
+.g-bar.b{background:var(--sage)}
+.g-bar.c{background:var(--blue)}
+.g-bar.d{background:var(--rust)}
+/* ── AI CHAT ── */
+.ai-section{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:28px}
+.ai-hd{background:linear-gradient(135deg,var(--charcoal),#2e2820);padding:18px 26px;display:flex;align-items:center;gap:14px}
+.ai-hd .ai-icon{width:44px;height:44px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.ai-hd h3{font-family:'Cairo',sans-serif;font-size:1.05rem;font-weight:800;color:var(--white)}
+.ai-hd p{font-size:.8rem;color:#b0a89e;margin-top:2px}
+.chat-area{height:380px;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;background:#f8f5f0}
+.msg{max-width:85%;padding:12px 16px;border-radius:12px;font-size:.88rem;line-height:1.7}
+.msg.user{background:var(--charcoal);color:var(--white);align-self:flex-start;border-radius:12px 12px 4px 12px}
+.msg.ai{background:var(--white);border:1px solid var(--border);color:var(--ink);align-self:flex-end;border-radius:12px 12px 12px 4px}
+.msg.ai.loading{color:var(--muted);font-style:italic}
+.chat-input-row{display:flex;gap:10px;padding:16px 20px;background:var(--white);border-top:1px solid var(--border)}
+.chat-input-row textarea{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:10px 13px;font-family:'Tajawal',sans-serif;font-size:.9rem;resize:none;min-height:50px;max-height:120px}
+.chat-input-row textarea:focus{outline:none;border-color:var(--gold)}
+.chat-suggestions{display:flex;flex-wrap:wrap;gap:8px;padding:12px 20px 0;background:var(--white)}
+.sug-btn{background:var(--cream);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-family:'Tajawal',sans-serif;font-size:.8rem;cursor:pointer;transition:all .2s;color:var(--charcoal)}
+.sug-btn:hover{border-color:var(--gold);color:var(--gold);background:#fff9f2}
+/* ── BUTTONS ── */
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--white);border:none;border-radius:8px;padding:11px 22px;font-family:'Tajawal',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:background .2s}
+.btn-primary:hover{background:#a87820}
+.btn-outline{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--charcoal);border:2px solid var(--border);border-radius:8px;padding:9px 20px;font-family:'Tajawal',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-sm{display:inline-flex;align-items:center;gap:6px;background:var(--gold);color:var(--white);border:none;border-radius:7px;padding:9px 18px;font-family:'Tajawal',sans-serif;font-size:.84rem;font-weight:700;cursor:pointer;transition:background .2s}
+.btn-sm:hover{background:#a87820}
+.btn-send{background:var(--gold);color:var(--white);border:none;border-radius:8px;padding:10px 20px;font-family:'Tajawal',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s}
+.btn-send:hover{background:#a87820}
+.btn-send:disabled{background:#c8b898;cursor:not-allowed}
+/* ── INFO ── */
+.info-box{background:#fdf3e3;border:1px solid #e8d5b0;border-radius:10px;padding:16px 20px;margin:14px 0;font-size:.87rem;color:var(--charcoal);display:flex;gap:11px}
+.info-icon{font-size:1.15rem;flex-shrink:0}
+/* ── PRINT ── */
+.btns-row{display:flex;gap:14px;margin:24px 0}
+/* ── CALCULATOR ── */
+.calc-section{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:26px;margin-bottom:24px}
+.calc-section h3{font-family:'Cairo',sans-serif;font-size:1.05rem;font-weight:800;margin-bottom:18px;color:var(--ink)}
+.range-row{display:grid;grid-template-columns:1fr 2fr 80px;gap:12px;align-items:center;margin-bottom:12px}
+.range-row label{font-size:.84rem;font-weight:600;color:var(--charcoal)}
+.range-row input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:var(--border)}
+.range-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--gold);cursor:pointer}
+.range-val{text-align:center;font-weight:800;color:var(--gold);font-size:.95rem}
+.calc-result{background:linear-gradient(135deg,var(--charcoal),#2e2820);border-radius:12px;padding:20px 24px;color:var(--white);margin-top:16px}
+.calc-result h4{font-family:'Cairo',sans-serif;font-size:.9rem;font-weight:700;color:var(--gold-lt);margin-bottom:14px}
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.result-item{text-align:center}
+.result-item .rv{font-family:'Cairo',sans-serif;font-size:1.6rem;font-weight:900;color:var(--gold-lt)}
+.result-item .rl{font-size:.75rem;color:#b0a89e;margin-top:2px}
+/* ── FOOTER ── */
+footer{background:var(--charcoal);color:#7a6e64;text-align:center;padding:28px 20px;font-size:.8rem;margin-top:50px}
+footer strong{color:var(--gold-lt)}
+@media(max-width:900px){.grid-3,.tool-grid{grid-template-columns:1fr 1fr}.grid-4{grid-template-columns:1fr 1fr}.form-row.three{grid-template-columns:1fr}}
+@media(max-width:640px){.grid-3,.grid-2,.tool-grid,.grid-4,.form-row,.form-row.three{grid-template-columns:1fr}.swot{grid-template-columns:1fr}.nav-tabs{display:none}.result-grid{grid-template-columns:1fr}}
+@media print{nav,.ai-section,.btns-row{display:none!important}.tab-content{display:block!important}.section{break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">📘 الاستراتيجية بالعربي</div>
+    <ul class="nav-tabs">
+      <li><a class="active" onclick="switchTab('overview',this)">🏠 الرئيسية</a></li>
+      <li><a onclick="switchTab('concepts',this)">📖 المفاهيم</a></li>
+      <li><a onclick="switchTab('tools',this)">🧰 الأدوات</a></li>
+      <li><a onclick="switchTab('phases',this)">🗺 المراحل</a></li>
+      <li><a onclick="switchTab('restaurant',this)">🍽 نموذج المطعم</a></li>
+      <li><a onclick="switchTab('calculator',this)">🧮 حاسبة الربحية</a></li>
+      <li><a onclick="switchTab('assistant',this)">🤖 المساعد الاستراتيجي</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">بناءً على كتاب IASPBOK — ترجمة أمجد كردي</div>
+  <h1>الاستراتيجية <em>بالعربي</em></h1>
+  <p class="hero-sub">منظومة تفاعلية شاملة لإدارة الاستراتيجية مع نماذج عملية ومساعد ذكاء اصطناعي مدمج لقطاع المطاعم والأعمال</p>
+  <div class="hero-pills">
+    <div class="pill">صياغة الاستراتيجية</div>
+    <div class="pill">تحول المنظمة</div>
+    <div class="pill">التنفيذ</div>
+    <div class="pill">إشراك المصلحة</div>
+    <div class="pill">الحوكمة</div>
+    <div class="pill">50+ أداة استراتيجية</div>
+    <div class="pill">مساعد AI مدمج</div>
+  </div>
+</div>
+
+<main class="container">
+
+<!-- ════════════════════════════════════════════ -->
+<!-- TAB 1: OVERVIEW -->
+<!-- ════════════════════════════════════════════ -->
+<div id="tab-overview" class="tab-content active">
+<div class="section">
+  <div class="section-hd">
+    <div class="section-num">01</div>
+    <div><h2>منظومة إدارة الاستراتيجية</h2><p>خمس مراحل متكاملة تقود المنظمة من التخطيط إلى التنفيذ والقياس</p></div>
+  </div>
+
+  <div class="info-box">
+    <div class="info-icon">💡</div>
+    <div>الأسئلة الخمسة الجوهرية التي يجيب عنها هذا الكتاب: <strong>أين نريد أن نكون؟ • كيف نعرف أننا وصلنا؟ • أين نحن الآن؟ • كيف نصل؟ • ما الذي يتغير في بيئتنا؟</strong></div>
+  </div>
+
+  <div class="grid-3" style="margin-top:24px">
+    <div class="card" style="border-top:4px solid #c8933a">
+      <span class="card-tag tag-s">المرحلة ١</span>
+      <h3>📋 صياغة الاستراتيجية</h3>
+      <p>تحليل البيئتين الداخلية والخارجية، تطوير رؤية مشتركة، صياغة الخطة الاستراتيجية الكاملة.</p>
+      <div class="rest-box"><strong>🍽 المطعم</strong>لماذا مطعمك موجود؟ من تخدم؟ ماذا تريد أن تصبح عليه بعد ٣ سنوات؟</div>
+    </div>
+    <div class="card" style="border-top:4px solid #2d5a3d">
+      <span class="card-tag tag-t">المرحلة ٢</span>
+      <h3>🔄 تحول المنظمة</h3>
+      <p>محاذاة نموذج التشغيل مع الاستراتيجية الجديدة من خلال مشاريع تحول مدروسة ومتسلسلة.</p>
+      <div class="rest-box"><strong>🍽 المطعم</strong>إعادة تصميم المطبخ، تدريب الفريق على نظام جديد، افتتاح فرع ثانٍ.</div>
+    </div>
+    <div class="card" style="border-top:4px solid #1e3a5f">
+      <span class="card-tag tag-e">المرحلة ٣</span>
+      <h3>⚙️ تنفيذ الاستراتيجية</h3>
+      <p>تقديم القيمة لأصحاب المصلحة يومياً من خلال مواءمة الأنشطة التشغيلية مع الاستراتيجية.</p>
+      <div class="rest-box"><strong>🍽 المطعم</strong>مراقبة جودة الطعام يومياً، إدارة المخزون، تقديم خدمة عملاء متميزة باستمرار.</div>
+    </div>
+    <div class="card" style="border-top:4px solid #8b2e10">
+      <span class="card-tag tag-p">المرحلة ٤</span>
+      <h3>🤝 إشراك أصحاب المصلحة</h3>
+      <p>بناء الالتزام بنجاح الاستراتيجية من موظفين وشركاء وعملاء وجميع المؤثرين.</p>
+      <div class="rest-box"><strong>🍽 المطعم</strong>تحفيز الطهاة والنادلين، بناء علاقة وثيقة مع الموردين، الاستماع للعملاء.</div>
+    </div>
+    <div class="card" style="border-top:4px solid #7a6e64">
+      <span class="card-tag tag-s">المرحلة ٥</span>
+      <h3>🏛️ حوكمة الاستراتيجية</h3>
+      <p>المتابعة والقياس والمراجعة الدورية لضمان سير الاستراتيجية في مسارها الصحيح.</p>
+      <div class="rest-box"><strong>🍽 المطعم</strong>مراجعة الأرباح شهرياً، متابعة تقييمات العملاء، تصحيح المسار عند الانحراف.</div>
+    </div>
+    <div class="card" style="border-top:4px solid #c8933a;background:linear-gradient(135deg,#faf7f2,#fff9f2)">
+      <span class="card-tag tag-s">تعريف أساسي</span>
+      <h3>🎯 ما هي الاستراتيجية؟</h3>
+      <p><strong>الاستراتيجية</strong> هي المبادئ التوجيهية عالية المستوى التي تتبناها المنظمة لتوفير قيمة لأصحاب المصلحة و/أو الحصول على ميزة تنافسية.</p>
+      <div class="rest-box"><strong>🍽 المطعم</strong>"نحن لا نبيع طعاماً فقط — نبيع ذكريات وتجارب تجمع العائلات."</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- TAB 2: CONCEPTS -->
+<!-- ════════════════════════════════════════════ -->
+<div id="tab-concepts" class="tab-content">
+<div class="section">
+  <div class="section-hd">
+    <div class="section-num">02</div>
+    <div><h2>المفاهيم والتعاريف الأساسية</h2><p>١٦ مفهوماً محورياً مع أمثلة تطبيقية مباشرة للمطاعم</p></div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card"><span class="card-tag tag-s">مفهوم ١</span><h3>الرسالة</h3><span class="en">Mission</span><p>بيان يحدد الغرض من المنظمة وسبب وجودها — من هي، ماذا تفعل، وكيف تفعل ذلك. يوجه القرارات ويحدد الحدود.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>"نقدّم تجربة طعام شامية أصيلة تجمع العائلات على مائدة واحدة بمكونات محلية طازجة."</div></div>
+    <div class="card"><span class="card-tag tag-s">مفهوم ٢</span><h3>الرؤية</h3><span class="en">Vision</span><p>بيان ملهم يوضح الحالة المستقبلية المرغوبة — صورة ذهنية مقنعة للمستقبل تحفّز الجميع للسعي نحو تحقيقها.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>"٢٠٣٠ — ١٠ فروع ناجحة في المنطقة ونصبح وجهة الطعام العربي الأولى وجائزة أفضل تجربة عائلية."</div></div>
+    <div class="card"><span class="card-tag tag-s">مفهوم ٣</span><h3>القيم الأساسية</h3><span class="en">Core Values</span><p>المعتقدات والمبادئ التي تحدد شخصية المنظمة وتوجّه سلوك الفريق وقراراته في كل موقف.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>الجودة لا تُساوَم • الضيف أولاً • الأصالة في كل طبق • احترام الفريق • الاستدامة البيئية</div></div>
+    <div class="card"><span class="card-tag tag-s">مفهوم ٤</span><h3>مقترح قيمة العميل</h3><span class="en">Customer Value Proposition (CVP)</span><p>القيمة التي تريد المنظمة تقديمها لعملائها — ما الذي يجعل عميلك يختارك دون غيرك ويدفع مقابله.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>"أسرع غداء صحي في منطقة الأعمال مع طعم البيت — جاهز في ١٠ دقائق مع خدمة مميزة."</div></div>
+    <div class="card"><span class="card-tag tag-s">مفهوم ٥</span><h3>مقترح قيمة الموظف</h3><span class="en">Employee Value Proposition (EVP)</span><p>ما تقدمه للموظفين مقابل جهدهم: التعويض، المزايا، محتوى العمل، المسار المهني، الانتماء، الصحة والسلامة.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>راتب تنافسي + نسبة البقشيش + تدريب مهني شهري + بيئة عمل محترمة + مسار ترقي واضح</div></div>
+    <div class="card"><span class="card-tag tag-s">مفهوم ٦</span><h3>مقترح قيمة الملاك</h3><span class="en">Owner Value Proposition (OVP)</span><p>العائد الذي يتوقعه المستثمرون: الأرباح، النمو، مستوى المخاطرة، والمسؤولية الاجتماعية.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>عائد ٢٥٪ على الاستثمار خلال ٣ سنوات مع نمو مستدام ومخاطر محسوبة وسمعة قوية في السوق.</div></div>
+    <div class="card"><span class="card-tag tag-t">مفهوم ٧</span><h3>سلسلة القيمة</h3><span class="en">Value Chain (Porter)</span><p>مجموعة الأنشطة من المشتريات وحتى خدمة ما بعد البيع التي تخلق وتُسلّم القيمة للعميل.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>الموردون ← التخزين ← التحضير ← الطهي ← التقديم ← خدمة العملاء ← التقييمات والولاء</div></div>
+    <div class="card"><span class="card-tag tag-t">مفهوم ٨</span><h3>القدرات الاستراتيجية</h3><span class="en">Strategic Capabilities</span><p>القدرات التي توفر قيمة تنافسية حقيقية — تنشأ من تركيب متعمد لموارد متعددة لا من مورد واحد.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>الجمع بين: وصفات سرية متوارثة + شيف متمرس + نظام طلبات سريع + مشتريات بأفضل جودة.</div></div>
+    <div class="card"><span class="card-tag tag-t">مفهوم ٩</span><h3>الكفاءات الأساسية</h3><span class="en">Core Competencies</span><p>المهارات الفريدة التي تمتلكها المنظمة وتجعلها أفضل من غيرها — يصعب على المنافسين تقليدها.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>إتقان مطبخ بعينه • سرعة الخدمة بجودة ثابتة • بناء علاقات عاطفية دائمة مع العملاء</div></div>
+    <div class="card"><span class="card-tag tag-e">مفهوم ١٠</span><h3>الأهداف الاستراتيجية</h3><span class="en">Strategic Goals</span><p>الأهداف الكبرى طويلة المدى التي تحقق رؤية المنظمة — توجّه الجهود وتُحدد أولويات الموارد.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>تعزيز تجربة العميل • زيادة الإيرادات ٤٠٪ • تقليل الهدر ٣٠٪ • فتح فرع ثانٍ</div></div>
+    <div class="card"><span class="card-tag tag-e">مفهوم ١١</span><h3>الغايات الاستراتيجية SMART</h3><span class="en">Strategic Objectives</span><p>نتائج محددة وقابلة للقياس تجعل الأهداف قابلة للتنفيذ: Specific, Measurable, Attainable, Relevant, Time-bound.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>"رفع تقييم جوجل إلى ٤.٨ بحلول ديسمبر ٢٠٢٥" — محدد، قابل للقياس، ومحدد الوقت.</div></div>
+    <div class="card"><span class="card-tag tag-e">مفهوم ١٢</span><h3>مؤشرات الأداء KPIs</h3><span class="en">Key Performance Indicators</span><p>قيم قابلة للقياس تتتبع التقدم نحو الأهداف — تشمل مؤشرات رائدة تتنبأ بالمستقبل ومتأخرة تقيس الماضي.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>متوسط الفاتورة • معدل العودة • وقت الانتظار • نسبة الهدر • تقييم جوجل • معدل الاحتفاظ بالموظفين</div></div>
+    <div class="card"><span class="card-tag tag-p">مفهوم ١٣</span><h3>الميزة التنافسية</h3><span class="en">Competitive Advantage</span><p>ما يجعلك أفضل من المنافسين بطريقة يصعب تقليدها — إنشاء واستدامة الأداء المتفوق المدرك من العميل.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>وصفة سرية • موقع لا يُعوَّض • علاقة شخصية مع العملاء • سرعة لا يستطيع المنافس مجاراتها</div></div>
+    <div class="card"><span class="card-tag tag-p">مفهوم ١٤</span><h3>التوافق الاستراتيجي</h3><span class="en">Strategic Alignment</span><p>ضمان أن جميع أصحاب المصلحة يعملون معاً بشكل مركّز ومُلتزم لتحقيق الاستراتيجية والرؤية المشتركة.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>المشتريات + قائمة الطعام + الأسعار + التسويق + خدمة العملاء — كلها تخدم نفس الرسالة والرؤية.</div></div>
+    <div class="card"><span class="card-tag tag-p">مفهوم ١٥</span><h3>أصحاب المصلحة</h3><span class="en">Stakeholders</span><p>كل من يتأثر بالمنظمة أو يؤثر فيها — الموظفون، العملاء، الملاك، الموردون، المجتمع، الجهات التنظيمية.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>الطهاة والنادلون • العملاء الدائمون • الملاك والمستثمرون • الموردون • الجيران • البلدية</div></div>
+    <div class="card"><span class="card-tag tag-s">مفهوم ١٦</span><h3>المبادرات الاستراتيجية</h3><span class="en">Strategic Initiatives</span><p>المهام المؤسسية الرئيسية لدعم الاستراتيجية ودفع المنظمة للأمام — لها نطاق وميزانية وجدول زمني واضح.</p><div class="rest-box"><strong>🍽 مثال مطعم</strong>إطلاق نظام ولاء • الانضمام لتطبيق توصيل • تجديد ديكور المطعم • شهادة الجودة الغذائية</div></div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- TAB 3: TOOLS -->
+<!-- ════════════════════════════════════════════ -->
+<div id="tab-tools" class="tab-content">
+<div class="section">
+  <div class="section-hd">
+    <div class="section-num">03</div>
+    <div><h2>أدوات الاستراتيجية</h2><p>أكثر من ٥٠ أداة مصنّفة مع تطبيق مباشر على قطاع المطاعم</p></div>
+  </div>
+
+  <h3 style="font-family:Cairo,sans-serif;font-size:1rem;font-weight:800;margin-bottom:16px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">▸ أدوات التحليل والتشخيص</h3>
+  <div class="tool-grid" style="margin-bottom:36px">
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon a">🔍</div><div><h3>تحليل SWOT</h3><div class="en">Strengths, Weaknesses, Opportunities, Threats</div></div></div><div class="tool-bd"><p>أشهر أداة تحليلية في الاستراتيجية — تحليل نقاط القوة والضعف الداخلية والفرص والتهديدات الخارجية.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p><b>قوة:</b> شيف متمرس وموقع مميز | <b>ضعف:</b> مساحة محدودة | <b>فرصة:</b> الطلب على التوصيل ينمو | <b>تهديد:</b> سلسلة مطاعم كبيرة ستفتح قريباً</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon a">⚙️</div><div><h3>قوى بورتر الخمسة</h3><div class="en">Porter's Five Forces</div></div></div><div class="tool-bd"><p>تحليل قوى التنافس في الصناعة: شدة التنافس، قوة المشترين، قوة الموردين، تهديد البدائل، تهديد الداخلين الجدد.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>كيف تؤثر تطبيقات التوصيل بقوة التفاوض؟ هل يستطيع عملاؤك الانتقال لمطعم آخر بسهولة؟ هل الموردون يملكون القوة؟</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon a">🌍</div><div><h3>تحليل PESTEL</h3><div class="en">Political, Economic, Social, Technological, Environmental, Legal</div></div></div><div class="tool-bd"><p>مسح شامل للبيئة الخارجية — ٦ محاور تؤثر على مستقبل منظمتك من الخارج.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>لوائح الصحة والسلامة • التضخم وأسعار المواد • تحولات أذواق الجيل الجديد • تقنيات الدفع الرقمي • قوانين العمل</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon a">🕸️</div><div><h3>إطار ماكنزي 7-S</h3><div class="en">McKinsey 7-S Framework</div></div></div><div class="tool-bd"><p>تحليل ٧ عناصر تنظيمية مترابطة: الاستراتيجية، الهيكل، الأنظمة، القيم المشتركة، الأسلوب، الموظفون، المهارات.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>هل نظام حجز الطاولات يتوافق مع استراتيجيتك؟ هل مهارات فريقك تدعم رؤيتك؟ هل الهيكل مناسب للنمو؟</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon a">🦔</div><div><h3>مفهوم القنفذ</h3><div class="en">Hedgehog Concept — Collins</div></div></div><div class="tool-bd"><p>تقاطع ثلاثة دوائر: ما أنت متحمس له عمقاً + ما يمكنك أن تكون الأفضل فيه + ما يحرك محركك الاقتصادي.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>لا تحاول أن تكون كل شيء لكل الناس — ركز على ما تجيده، تحبه، ويدفع العميل مقابله بسعادة.</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon a">💎</div><div><h3>تحليل سلسلة القيمة</h3><div class="en">Value Chain Analysis — Porter</div></div></div><div class="tool-bd"><p>دراسة كل نشاط في المنظمة لفهم أين تُضاف القيمة وأين توجد التكاليف الزائدة وفرص التمايز.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>في أي مرحلة يتميز مطعمك أكثر؟ جودة المكونات؟ طريقة الطهي؟ طريقة التقديم؟ سرعة الخدمة؟</p></div></div></div>
+  </div>
+
+  <h3 style="font-family:Cairo,sans-serif;font-size:1rem;font-weight:800;margin-bottom:16px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">▸ أدوات التخطيط والصياغة</h3>
+  <div class="tool-grid" style="margin-bottom:36px">
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon b">🗺️</div><div><h3>مخطط نموذج العمل</h3><div class="en">Business Model Canvas (BMC)</div></div></div><div class="tool-bd"><p>أداة بصرية لتصميم نموذج الأعمال في ٩ لبنات: مقترح القيمة، شرائح العملاء، القنوات، الأنشطة، الموارد، الشركاء، الهيكل، الإيرادات، التكاليف.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>صفحة واحدة توضح كيف يعمل مطعمك: من تخدم؟ كيف تصلهم؟ ما مصادر إيراداتك؟ ما تكاليفك الرئيسية؟</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon b">🎯</div><div><h3>مصفوفة أنسوف</h3><div class="en">Ansoff's Matrix</div></div></div><div class="tool-bd"><p>٤ استراتيجيات للنمو: اختراق السوق (منتج حالي/سوق حالية) • تطوير المنتج • تطوير السوق • التنويع.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>زيادة زيارات العميل الحالي؟ أم إضافة أطباق جديدة؟ أم التوسع لمنطقة جديدة؟ أم فتح نوع مطعم مختلف كلياً؟</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon b">⚖️</div><div><h3>بطاقة الأداء المتوازن</h3><div class="en">Balanced Scorecard — Kaplan & Norton</div></div></div><div class="tool-bd"><p>قياس الأداء من ٤ محاور متوازنة: المالي + العملاء + العمليات الداخلية + التعلم والنمو.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p><b>مالي:</b> هامش ربح ≥٢٥٪ | <b>عملاء:</b> تقييم ٤.٨⭐ | <b>عمليات:</b> تحضير ≤١٠ دقائق | <b>تعلم:</b> تدريب شهري للفريق</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon b">🔵</div><div><h3>استراتيجية المحيط الأزرق</h3><div class="en">Blue Ocean Strategy</div></div></div><div class="tool-bd"><p>إنشاء مساحة سوقية جديدة غير متنازع عليها — ابتكر السوق بدلاً من التنافس في سوق مزدحمة.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>مطعم تجربة في الظلام • وجبات صحية بنظام اشتراك أسبوعي • تجربة طهي تفاعلي للعائلات • مطعم بدون قائمة ثابتة</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon b">🎯</div><div><h3>الأهداف والنتائج الرئيسية</h3><div class="en">OKRs — Objectives & Key Results</div></div></div><div class="tool-bd"><p>إطار تحديد الأهداف الطموحة مع نتائج قابلة للقياس — يُستخدم في Google وIntel وآلاف الشركات.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p><b>هدف:</b> أفضل مطعم في الحي<br><b>KR1:</b> ٢٠٠ تقييم جوجل ٤.٩ نجمة<br><b>KR2:</b> ٦٠٪ نسبة عودة العملاء<br><b>KR3:</b> ٠ شكاوى متكررة</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon b">📊</div><div><h3>استراتيجيات بورتر العامة</h3><div class="en">Porter's Generic Strategies</div></div></div><div class="tool-bd"><p>٣ موارد استراتيجية: قيادة التكلفة (الأرخص) • التمييز (الأفضل والأفرد) • التركيز (تخصص في شريحة).</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>لا يمكنك أن تكون الأرخص والأفخم معاً — اختر موقعك بوضوح وأبلّغ به عملاءك باستمرار.</p></div></div></div>
+  </div>
+
+  <h3 style="font-family:Cairo,sans-serif;font-size:1rem;font-weight:800;margin-bottom:16px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">▸ أدوات التنفيذ والتشغيل</h3>
+  <div class="tool-grid" style="margin-bottom:36px">
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon c">⚡</div><div><h3>لين — الإنتاج الرشيق</h3><div class="en">Lean Operations</div></div></div><div class="tool-bd"><p>إزالة الهدر بجميع أنواعه وتحسين تدفق القيمة — كل نشاط لا يُضيف قيمة للعميل هو هدر يجب إزالته.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>تقليص القائمة للأطباق الأكثر ربحاً • إعادة ترتيب المطبخ لتقليل الخطوات • تقليل هدر المواد الغذائية بنسبة ٣٠٪</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon c">🔄</div><div><h3>كايزن — التحسين المستمر</h3><div class="en">Kaizen</div></div></div><div class="tool-bd"><p>فلسفة التحسين المستمر اليومي — تحسين صغير كل يوم يُحدث فرقاً ضخماً على المدى الطويل (نشأت في اليابان).</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>اجتماع قصير يومي للفريق قبل الافتتاح: "ما الشيء الواحد الذي سنحسّنه اليوم؟" — ثقافة التحسين المستمر.</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon c">📋</div><div><h3>كانبان — الإدارة البصرية</h3><div class="en">Kanban</div></div></div><div class="tool-bd"><p>نظام بصري لإدارة تدفق العمل — ما ينتظر التنفيذ، ما قيد التنفيذ، وما اكتمل. يمنع الاختناقات.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>لوحة مطبخ: 🟡 الطلبات الواردة → 🔵 قيد التحضير → 🟢 جاهز للتسليم. كل الفريق يرى الحالة فوراً.</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon c">📐</div><div><h3>Six Sigma</h3><div class="en">Six Sigma — DMAIC</div></div></div><div class="tool-bd"><p>منهجية لتحقيق جودة قريبة من الكمال — تعريف، قياس، تحليل، تحسين، ضبط. تستهدف ٣.٤ خطأ لكل مليون.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>تعريف معيار الطبق المثالي → قياس الانحرافات يومياً → تحليل أسباب الشكاوى → تحسين العملية → ضبط المعيار</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon c">📈</div><div><h3>ذكاء الأعمال والبيانات</h3><div class="en">Business Intelligence & Data Analytics</div></div></div><div class="tool-bd"><p>استخدام البيانات لفهم الأداء واتخاذ قرارات مبنية على الحقائق لا على الحدس والتخمين.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>أي الأطباق أكثر مبيعاً؟ متى ذروة الزيارات؟ من العملاء المتكررون؟ ما نسبة الهدر؟ أين نخسر المال؟</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon c">⏱️</div><div><h3>نظرية القيود</h3><div class="en">Theory of Constraints — TOC</div></div></div><div class="tool-bd"><p>حدد الاختناق الأساسي الذي يُقيّد إنتاجية النظام بأكمله وركز عليه — قوة السلسلة بقوة أضعف حلقاتها.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>هل الاختناق في المطبخ؟ نقطة الدفع؟ عدد الطاولات؟ سرعة الطاهي الرئيسي؟ حل الاختناق الرئيسي يُضاعف الإنتاج.</p></div></div></div>
+  </div>
+
+  <h3 style="font-family:Cairo,sans-serif;font-size:1rem;font-weight:800;margin-bottom:16px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">▸ أدوات إدارة التغيير والأفراد</h3>
+  <div class="tool-grid">
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon d">🧊</div><div><h3>نموذج كيرت لوين</h3><div class="en">Lewin's Unfreeze-Change-Refreeze</div></div></div><div class="tool-bd"><p>إذابة الجليد (تهيئة للتغيير) → التغيير (التنفيذ) → إعادة التجميد (ترسيخ الجديد). أبسط وأشهر نموذج للتغيير.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>اشرح لفريقك لماذا التغيير ضروري ← نفّذ التغيير بدعم كافٍ ← أثبّت الطريقة الجديدة كإجراء موثق ملزم</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon d">🚀</div><div><h3>نموذج كوتر — ٨ خطوات</h3><div class="en">Kotter's 8-Step Change Model</div></div></div><div class="tool-bd"><p>خلق الإلحاح • بناء تحالف قيادي • رسم الرؤية • التواصل • تمكين العمل • الانتصارات القصيرة • التوطيد • الترسيخ.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>عند تغيير قائمة الطعام كلياً: اشرح الأسباب → اجمع فريق متحمس → اعرض الرؤية → جرّب ببعض الأطباق أولاً</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon d">🎯</div><div><h3>نموذج ADKAR</h3><div class="en">ADKAR — Prosci Change Model</div></div></div><div class="tool-bd"><p>وعي (Awareness) → رغبة (Desire) → معرفة (Knowledge) → قدرة (Ability) → تعزيز (Reinforcement).</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>هل يعرف فريقك سبب التغيير؟ هل يريدونه؟ هل يعرفون كيف يطبقونه؟ هل يمتلكون المهارات؟ هل يُشجَّعون؟</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon d">👥</div><div><h3>تحليل أصحاب المصلحة</h3><div class="en">Stakeholder Analysis & Mapping</div></div></div><div class="tool-bd"><p>خريطة أصحاب المصلحة حسب التأثير والاهتمام — من يجب إدارته بعناية؟ من يُبقى مطمئناً؟ من يُشرك كشريك؟</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>الملاك (عالي التأثير والاهتمام) • الزبائن الدائمون • المورد الرئيسي • البلدية والصحة والسلامة • الجيران</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon d">🏃</div><div><h3>القيادة الظرفية</h3><div class="en">Hersey-Blanchard Situational Leadership</div></div></div><div class="tool-bd"><p>لا يوجد أسلوب قيادة واحد مثالي — غيّر أسلوبك (توجيه، تدريب، دعم، تفويض) حسب نضج الموظف ومهارته.</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>الطاهي الجديد يحتاج توجيهاً مباشراً • الخبير يحتاج تفويضاً وثقة • المتحمس بلا مهارة يحتاج تدريباً ودعماً</p></div></div></div>
+    <div class="tool-card"><div class="tool-hd"><div class="tool-icon d">📊</div><div><h3>تحليل مصفوفة RAPID</h3><div class="en">RAPID Decision Matrix</div></div></div><div class="tool-bd"><p>توضيح أدوار اتخاذ القرار: من يوصي؟ من يوافق؟ من ينفذ؟ من يشارك البيانات؟ من يتخذ القرار النهائي؟</p><div class="rest-app"><div class="ral">🍽 تطبيق المطعم</div><p>من يقرر تغيير طبق في القائمة؟ من يوافق على المشتريات؟ من يحدد الأسعار؟ توضيح هذا يُقلّل التعارض.</p></div></div></div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- TAB 4: PHASES -->
+<!-- ════════════════════════════════════════════ -->
+<div id="tab-phases" class="tab-content">
+<div class="section">
+  <div class="section-hd">
+    <div class="section-num">04</div>
+    <div><h2>مراحل الاستراتيجية التفصيلية</h2><p>خطوات عملية لكل مرحلة من المراحل الخمس</p></div>
+  </div>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-line-col"><div class="tl-circle">١</div><div class="tl-line"></div></div>
+      <div class="tl-body"><h3>صياغة الاستراتيجية</h3><p class="desc">إجراء مسح للبيئة الخارجية والداخلية، تحديد الاتجاه الاستراتيجي، وإكمال الخطة الاستراتيجية</p><div class="tags-row"><span class="atag">SWOT</span><span class="atag">PESTEL</span><span class="atag">قوى بورتر</span><span class="atag">الرسالة والرؤية والقيم</span><span class="atag">مقترحات القيمة</span><span class="atag">OKRs</span><span class="atag">مصفوفة أنسوف</span><span class="atag">BMC</span><span class="atag">بطاقة الأداء المتوازن</span></div><div class="tl-rest"><div class="rl">🍽 خطوات المطعم</div><p>ابدأ بسؤال: لماذا مطعمك موجود؟ قيّم منافسيك وتحليل طلبات السوق. حدد من تخدم وما الذي يميزك. ثم ضع خطة واضحة بأهداف قابلة للقياس.</p></div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-line-col"><div class="tl-circle">٢</div><div class="tl-line"></div></div>
+      <div class="tl-body"><h3>تحول المنظمة</h3><p class="desc">تصميم البنية المؤسسية المستهدفة، تطوير خطة التحول، وتنفيذ مشاريع التحول بترتيب صحيح</p><div class="tags-row"><span class="atag">تحليل الفجوة</span><span class="atag">خطة التحول</span><span class="atag">التصميم التنظيمي</span><span class="atag">تخطيط القوى العاملة</span><span class="atag">مخطط جانت</span><span class="atag">المسار الحرج</span><span class="atag">تقييم الجاهزية</span><span class="atag">إدارة المخاطر</span></div><div class="tl-rest"><div class="rl">🍽 خطوات المطعم</div><p>حدد الفجوة بين كيف يعمل مطعمك اليوم وكيف يجب أن يعمل لتحقيق رؤيتك. ضع خطة زمنية لمشاريع التحول — هل تحتاج طاقم مختلف؟ نظام جديد؟ تحسين مطبخ؟</p></div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-line-col"><div class="tl-circle">٣</div><div class="tl-line"></div></div>
+      <div class="tl-body"><h3>تنفيذ الاستراتيجية</h3><p class="desc">تقديم القيمة يومياً من خلال العمليات التشغيلية المحسنة والمواءمة مع الاستراتيجية</p><div class="tags-row"><span class="atag">Lean</span><span class="atag">Six Sigma</span><span class="atag">Kaizen</span><span class="atag">Kanban</span><span class="atag">إدارة الجودة</span><span class="atag">KPIs</span><span class="atag">BI والبيانات</span><span class="atag">نظرية القيود</span></div><div class="tl-rest"><div class="rl">🍽 خطوات المطعم</div><p>راقب جودة كل طبق يخرج من مطبخك. تتبع وقت الانتظار والهدر وشكاوى العملاء يومياً. طبّق مبدأ كايزن: حسّن شيئاً واحداً كل يوم.</p></div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-line-col"><div class="tl-circle">٤</div><div class="tl-line"></div></div>
+      <div class="tl-body"><h3>إشراك أصحاب المصلحة</h3><p class="desc">بناء الالتزام وقيادة التغيير من خلال التواصل والتحفيز وبناء الثقة</p><div class="tags-row"><span class="atag">نموذج كوتر</span><span class="atag">ADKAR</span><span class="atag">لوين</span><span class="atag">تحليل المصلحة</span><span class="atag">إدارة التغيير</span><span class="atag">القيادة الظرفية</span><span class="atag">السلامة النفسية</span></div><div class="tl-rest"><div class="rl">🍽 خطوات المطعم</div><p>اجعل فريقك يؤمن برؤيتك ويشعر بالملكية. شارك معهم الأهداف الشهرية. احتفل بالانتصارات الصغيرة. استمع لمقترحاتهم باهتمام حقيقي.</p></div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-line-col"><div class="tl-circle">٥</div><div class="tl-line" style="opacity:0"></div></div>
+      <div class="tl-body"><h3>حوكمة الاستراتيجية</h3><p class="desc">المتابعة والقياس والمساءلة لضمان استمرار الاستراتيجية على المسار الصحيح</p><div class="tags-row"><span class="atag">Balanced Scorecard</span><span class="atag">OKRs</span><span class="atag">تقييم الأداء</span><span class="atag">Hoshin Kanri</span><span class="atag">إدارة المخاطر</span><span class="atag">الأهداف المتتالية</span><span class="atag">Do and Review</span></div><div class="tl-rest"><div class="rl">🍽 خطوات المطعم</div><p>راجع أداء مطعمك شهرياً: هل الأهداف تتحقق؟ ما الانحرافات؟ هل هناك مخاطر جديدة؟ اتخذ قرارات تصحيحية سريعة.</p></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- TAB 5: RESTAURANT TEMPLATE -->
+<!-- ════════════════════════════════════════════ -->
+<div id="tab-restaurant" class="tab-content">
+<div class="section">
+  <div class="section-hd">
+    <div class="section-num">05</div>
+    <div><h2>نموذج الخطة الاستراتيجية للمطعم</h2><p>نموذج عملي كامل — أملأ الحقول لبناء خطتك الاستراتيجية</p></div>
+  </div>
+
+  <div class="info-box"><div class="info-icon">📌</div><div>أكمل كل قسم بالترتيب — الخطة الاستراتيجية تبدأ بالهوية وتنتهي بخطة التنفيذ. اضغط "طباعة الخطة" عند الانتهاء.</div></div>
+
+  <!-- 1. Identity -->
+  <div class="tmpl">
+    <div class="tmpl-hd"><div class="ico">🏷️</div><div><h3>القسم الأول: هوية المطعم الاستراتيجية</h3><span>الرسالة • الرؤية • القيم الأساسية • الغاية</span></div></div>
+    <div class="tmpl-bd">
+      <div class="form-row">
+        <div class="fg"><label>اسم المطعم</label><input type="text" placeholder="مثال: مطعم البيت"></div>
+        <div class="fg"><label>نوع المطبخ / التخصص</label><input type="text" placeholder="مثال: مطبخ شامي أصيل"></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>المدينة / المنطقة</label><input type="text" placeholder="مثال: جدة — حي الروضة"></div>
+        <div class="fg"><label>عدد سنوات التشغيل</label><input type="text" placeholder="مثال: ٣ سنوات"></div>
+      </div>
+      <div class="form-row one">
+        <div class="fg"><label>رسالة المطعم — لماذا نحن موجودون؟</label>
+        <textarea placeholder="مثال: نقدّم تجربة طعام شامية أصيلة تجمع العائلات على مائدة واحدة بمكونات محلية طازجة وأجواء دافئة تعيد ذكريات البيت."></textarea>
+        <div class="tip">تعبّر عن هدفك الأعمق — ليس فقط ما تبيعه بل لماذا تبيعه</div></div>
+      </div>
+      <div class="form-row one">
+        <div class="fg"><label>رؤية المطعم — أين نريد أن نكون بعد ٣ سنوات؟</label>
+        <textarea placeholder="مثال: بحلول ٢٠٢٨ نصبح أفضل مطعم عائلي في المدينة بـ ٣ فروع يزورها ٥٠٠ عائلة أسبوعياً ونحصل على جائزة أفضل تجربة طعام عربي."></textarea>
+        <div class="tip">كن محدداً وطموحاً ومحدد الوقت — الرؤية الضبابية لا تُحفّز أحداً</div></div>
+      </div>
+      <div class="form-row one">
+        <div class="fg"><label>القيم الأساسية (٣-٥ قيم تحكم كيف تعمل وتتصرف)</label>
+        <textarea placeholder="مثال: ١- الجودة لا تُساوَم  ٢- الضيف أولاً دائماً  ٣- الأصالة في كل طبق  ٤- احترام الفريق  ٥- الاستدامة البيئية"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Stakeholder Value -->
+  <div class="tmpl">
+    <div class="tmpl-hd"><div class="ico">👥</div><div><h3>القسم الثاني: مقترحات القيمة لأصحاب المصلحة</h3><span>CVP • EVP • OVP • PVP</span></div></div>
+    <div class="tmpl-bd">
+      <div class="form-row">
+        <div class="fg"><label>🧑‍🍽️ قيمة العميل (CVP) — لماذا يختارك؟</label>
+        <textarea placeholder="ما الذي يجعل عميلك يختار مطعمك على المنافسين؟ التجربة الفريدة؟ الجودة؟ السعر؟ السرعة؟ الجو والأجواء؟"></textarea></div>
+        <div class="fg"><label>👨‍🍳 قيمة الموظف (EVP) — لماذا يعمل معك المتميز؟</label>
+        <textarea placeholder="الراتب التنافسي؟ بيئة العمل المحترمة؟ التدريب والتطور؟ الاستقرار الوظيفي؟ المشاركة في النجاح؟"></textarea></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>💼 قيمة الملاك (OVP) — ما العائد المتوقع؟</label>
+        <textarea placeholder="العائد المالي المتوقع ونسبة الربح؟ توقعات النمو؟ مستوى المخاطرة المقبول؟ الأثر الاجتماعي؟"></textarea></div>
+        <div class="fg"><label>🚚 قيمة الشركاء والموردين (PVP)</label>
+        <textarea placeholder="لماذا يختار الموردون التعامل معك؟ الدفع المنتظم؟ حجم الطلبات؟ علاقة طويلة الأمد؟ التعاون والشفافية؟"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. SWOT -->
+  <div class="tmpl">
+    <div class="tmpl-hd"><div class="ico">🔍</div><div><h3>القسم الثالث: تحليل SWOT</h3><span>تحليل البيئة الداخلية والخارجية</span></div></div>
+    <div class="tmpl-bd">
+      <div class="swot">
+        <div class="sq s"><h4>💪 نقاط القوة — Strengths</h4><textarea placeholder="ما الذي يميزك عن المنافسين؟&#10;• جودة الطعام ووصفات متميزة&#10;• موقع استراتيجي مميز&#10;• فريق متمرس وموالٍ&#10;• قاعدة عملاء راسخة&#10;• سمعة طيبة في المنطقة"></textarea></div>
+        <div class="sq w"><h4>⚠️ نقاط الضعف — Weaknesses</h4><textarea placeholder="ما الذي تحتاج لتحسينه؟&#10;• محدودية المساحة&#10;• ضعف التواجد الرقمي&#10;• دوران عالٍ للموظفين&#10;• نقص في الأنظمة والتقنية&#10;• اعتماد على أشخاص بعينهم"></textarea></div>
+        <div class="sq o"><h4>🚀 الفرص — Opportunities</h4><textarea placeholder="ما الفرص المتاحة في السوق؟&#10;• نمو الطلب على التوصيل&#10;• خلو المنطقة من منافس قوي&#10;• ترند الطعام الصحي والأصيل&#10;• إمكانية التوسع بفروع&#10;• برامج دعم حكومي للمطاعم"></textarea></div>
+        <div class="sq t"><h4>⚡ التهديدات — Threats</h4><textarea placeholder="ما التهديدات الخارجية؟&#10;• دخول سلاسل مطاعم كبيرة&#10;• ارتفاع أسعار المواد الغذائية&#10;• تشريعات ولوائح جديدة&#10;• تغير أذواق العملاء&#10;• منافسة تطبيقات التوصيل"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Competitive Strategy -->
+  <div class="tmpl">
+    <div class="tmpl-hd"><div class="ico">🏆</div><div><h3>القسم الرابع: الاستراتيجية التنافسية</h3><span>الموقع التنافسي • الميزة الفريدة • الجمهور المستهدف</span></div></div>
+    <div class="tmpl-bd">
+      <div class="form-row">
+        <div class="fg"><label>استراتيجيتك التنافسية (اختر وفق بورتر)</label>
+        <select><option>-- اختر موقعك التنافسي --</option><option>قيادة التكلفة — الأرخص في السوق مع جودة مقبولة</option><option>التمييز — تقديم شيء فريد يبرر سعراً أعلى من المنافسين</option><option>التركيز على شريحة — تخصص في جمهور معين أو منطقة محددة بعمق</option></select>
+        <div class="tip">لا يمكنك أن تكون الأرخص والأفخم معاً — اختر موقعك وأبلّغ به عملاءك بوضوح</div></div>
+        <div class="fg"><label>الميزة التنافسية الرئيسية — ما الذي يصعب نسخه؟</label>
+        <input type="text" placeholder="وصفة سرية؟ موقع لا يُعوَّض؟ علاقة شخصية؟ شيف مشهور؟ تجربة فريدة؟"></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>الجمهور المستهدف الأساسي</label>
+        <textarea placeholder="من هم عملاؤك المثاليون؟ أعمارهم، دخلهم، اهتماماتهم، موقعهم الجغرافي، مناسبة الزيارة؟"></textarea></div>
+        <div class="fg"><label>كيف ستتمايز عن أقرب ٣ منافسين؟</label>
+        <textarea placeholder="اذكر ٣ منافسين رئيسيين وما الذي يجعلك مختلفاً عن كل واحد منهم بشكل ملموس؟"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. OKRs -->
+  <div class="tmpl">
+    <div class="tmpl-hd"><div class="ico">🎯</div><div><h3>القسم الخامس: الأهداف والنتائج الرئيسية (OKRs)</h3><span>أهداف استراتيجية + نتائج قابلة للقياس</span></div></div>
+    <div class="tmpl-bd">
+      <div class="form-row one"><div class="fg"><label>الهدف الاستراتيجي الأول (٦-١٢ شهراً)</label><input type="text" placeholder="مثال: تعزيز تجربة العميل وزيادة نسبة العودة"></div></div>
+      <div class="form-row three">
+        <div class="fg"><label>النتيجة الرئيسية KR1</label><input type="text" placeholder="مثال: تقييم ٤.٨+ على جوجل"></div>
+        <div class="fg"><label>النتيجة الرئيسية KR2</label><input type="text" placeholder="مثال: ٦٠٪ نسبة عودة العملاء"></div>
+        <div class="fg"><label>النتيجة الرئيسية KR3</label><input type="text" placeholder="مثال: وقت انتظار ≤١٢ دقيقة"></div>
+      </div>
+      <div class="form-row one" style="margin-top:14px"><div class="fg"><label>الهدف الاستراتيجي الثاني</label><input type="text" placeholder="مثال: تحسين الكفاءة التشغيلية وتقليل التكاليف"></div></div>
+      <div class="form-row three">
+        <div class="fg"><label>KR1</label><input type="text" placeholder="مثال: تقليل الهدر الغذائي ٣٠٪"></div>
+        <div class="fg"><label>KR2</label><input type="text" placeholder="مثال: تكلفة البضاعة ≤٣٠٪"></div>
+        <div class="fg"><label>KR3</label><input type="text" placeholder="مثال: تدوير الطاولة ≤٤٥ دقيقة"></div>
+      </div>
+      <div class="form-row one" style="margin-top:14px"><div class="fg"><label>الهدف الاستراتيجي الثالث</label><input type="text" placeholder="مثال: التوسع الرقمي وزيادة التوصيل والحضور الإلكتروني"></div></div>
+      <div class="form-row three">
+        <div class="fg"><label>KR1</label><input type="text" placeholder="مثال: ٢٥٪ من الإيراد من التوصيل"></div>
+        <div class="fg"><label>KR2</label><input type="text" placeholder="مثال: ١٠٠٠ متابع جديد على انستقرام"></div>
+        <div class="fg"><label>KR3</label><input type="text" placeholder="مثال: ٥٠ طلب توصيل أسبوعياً"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. KPI Dashboard -->
+  <div class="tmpl">
+    <div class="tmpl-hd"><div class="ico">📊</div><div><h3>القسم السادس: لوحة مؤشرات الأداء الشهرية</h3><span>ادخل البيانات الفعلية لمتابعة مؤشراتك</span></div></div>
+    <div class="tmpl-bd">
+      <table class="kpi-table">
+        <thead><tr><th>المؤشر</th><th>الهدف</th><th>الفعلي هذا الشهر</th><th>الاتجاه</th><th>الحالة</th></tr></thead>
+        <tbody>
+          <tr><td>إيراد اليوم المتوسط</td><td>٣,٠٠٠ ر.س</td><td><input type="text" placeholder="أدخل"></td><td>📈</td><td><span class="badge b-on">على المسار</span></td></tr>
+          <tr><td>متوسط قيمة الفاتورة</td><td>٨٥ ر.س</td><td><input type="text" placeholder="أدخل"></td><td>💰</td><td><span class="badge b-risk">راجع</span></td></tr>
+          <tr><td>تقييم جوجل هذا الشهر</td><td>٤.٨ ⭐</td><td><input type="text" placeholder="أدخل"></td><td>⭐</td><td><span class="badge b-on">على المسار</span></td></tr>
+          <tr><td>وقت الانتظار المتوسط</td><td>≤ ١٢ دقيقة</td><td><input type="text" placeholder="أدخل"></td><td>⏱</td><td><span class="badge b-risk">راجع</span></td></tr>
+          <tr><td>نسبة الهدر الغذائي</td><td>≤ ٥٪</td><td><input type="text" placeholder="أدخل"></td><td>♻️</td><td><span class="badge b-off">تحت الهدف</span></td></tr>
+          <tr><td>نسبة العملاء المتكررين</td><td>٤٥٪ من الزيارات</td><td><input type="text" placeholder="أدخل"></td><td>👥</td><td><span class="badge b-on">على المسار</span></td></tr>
+          <tr><td>نسبة تكلفة البضاعة (COGS)</td><td>≤ ٣٠٪</td><td><input type="text" placeholder="أدخل"></td><td>📦</td><td><span class="badge b-risk">راجع</span></td></tr>
+          <tr><td>طلبات التوصيل الأسبوعية</td><td>٥٠ طلب</td><td><input type="text" placeholder="أدخل"></td><td>🛵</td><td><span class="badge b-off">تحت الهدف</span></td></tr>
+          <tr><td>رضا الموظفين (استطلاع شهري)</td><td>٤.٥ من ٥</td><td><input type="text" placeholder="أدخل"></td><td>😊</td><td><span class="badge b-on">على المسار</span></td></tr>
+          <tr><td>معدل دوران الموظفين</td><td>≤ ١٠٪ سنوياً</td><td><input type="text" placeholder="أدخل"></td><td>👔</td><td><span class="badge b-on">على المسار</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 7. Gantt Plan -->
+  <div class="tmpl">
+    <div class="tmpl-hd"><div class="ico">🗓️</div><div><h3>القسم السابع: خطة التحول — مخطط جانت (١٢ شهراً)</h3><span>المبادرات الاستراتيجية مرتّبة زمنياً</span></div></div>
+    <div class="tmpl-bd">
+      <div class="gantt">
+        <table class="gantt-table">
+          <thead><tr><th>المبادرة الاستراتيجية</th><th>ر١</th><th>ر٢</th><th>ر٣</th><th>ر٤</th><th>ر٥</th><th>ر٦</th><th>ر٧</th><th>ر٨</th><th>ر٩</th><th>ر١٠</th><th>ر١١</th><th>ر١٢</th></tr></thead>
+          <tbody>
+            <tr><td>تدريب الفريق وتطوير المهارات</td><td><div class="g-bar"></div></td><td><div class="g-bar"></div></td><td><div class="g-bar"></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>تحديث قائمة الطعام</td><td><div class="g-bar"></div></td><td><div class="g-bar"></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>إطلاق حضور قوي على السوشيال ميديا</td><td></td><td><div class="g-bar b"></div></td><td><div class="g-bar b"></div></td><td><div class="g-bar b"></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>تطبيق نظام POS وإدارة المخزون</td><td></td><td></td><td><div class="g-bar c"></div></td><td><div class="g-bar c"></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>الانضمام لتطبيق توصيل</td><td></td><td></td><td></td><td><div class="g-bar b"></div></td><td><div class="g-bar b"></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>إطلاق برنامج الولاء للعملاء</td><td></td><td></td><td></td><td></td><td><div class="g-bar c"></div></td><td><div class="g-bar c"></div></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>شهادة الجودة الغذائية HACCP</td><td></td><td></td><td></td><td></td><td></td><td><div class="g-bar d"></div></td><td><div class="g-bar d"></div></td><td><div class="g-bar d"></div></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>تجديد ديكور وأجواء المطعم</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><div class="g-bar"></div></td><td><div class="g-bar"></div></td><td></td><td></td><td></td></tr>
+            <tr><td>دراسة جدوى الفرع الثاني</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><div class="g-bar b"></div></td><td><div class="g-bar b"></div></td><td><div class="g-bar b"></div></td><td></td></tr>
+            <tr><td>افتتاح الفرع الثاني</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><div class="g-bar d"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Stakeholder Plan -->
+  <div class="tmpl">
+    <div class="tmpl-hd"><div class="ico">🤝</div><div><h3>القسم الثامن: خطة إشراك الفريق وأصحاب المصلحة</h3><span>بناء الالتزام وقيادة التغيير</span></div></div>
+    <div class="tmpl-bd">
+      <div class="form-row">
+        <div class="fg"><label>كيف ستشارك رؤيتك مع الفريق؟</label><textarea placeholder="اجتماع شهري مشترك؟ لوحة رؤية في المطبخ؟ مكافآت ربطت بالأهداف؟ احتفالات بالإنجازات؟"></textarea></div>
+        <div class="fg"><label>كيف ستحفز وتطور فريقك؟</label><textarea placeholder="مسار ترقي واضح؟ تدريب مهني منتظم؟ نسبة من الأرباح؟ مكافآت الأداء الشهرية؟ بيئة عمل محترمة؟"></textarea></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>كيف ستبني ولاء العملاء؟</label><textarea placeholder="برنامج ولاء؟ تواصل شخصي؟ مناسبات خاصة؟ استطلاعات رضا دورية؟ هدايا ومفاجآت للعملاء الدائمين؟"></textarea></div>
+        <div class="fg"><label>كيف ستدير علاقات الموردين؟</label><textarea placeholder="عقود واضحة؟ دفع منتظم في الوقت؟ شراكات طويلة الأمد؟ مراجعة جودة دورية؟ بناء ثقة متبادلة؟"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btns-row">
+    <button class="btn-primary" onclick="window.print()">🖨️ طباعة الخطة الاستراتيجية الكاملة</button>
+    <button class="btn-outline" onclick="if(confirm('هل تريد مسح جميع البيانات؟'))document.querySelectorAll('.tmpl-bd input,.tmpl-bd textarea,.tmpl-bd select').forEach(e=>{e.tagName==='SELECT'?e.selectedIndex=0:e.value=''})">🗑️ مسح النموذج</button>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- TAB 6: CALCULATOR -->
+<!-- ════════════════════════════════════════════ -->
+<div id="tab-calculator" class="tab-content">
+<div class="section">
+  <div class="section-hd">
+    <div class="section-num">06</div>
+    <div><h2>حاسبة الربحية الاستراتيجية للمطعم</h2><p>حاسبة تفاعلية تربط قراراتك الاستراتيجية بالنتائج المالية</p></div>
+  </div>
+
+  <div class="calc-section">
+    <h3>📊 معطيات مطعمك</h3>
+    <div class="range-row"><label>عدد طاولات المطعم</label><input type="range" min="5" max="50" value="15" id="r-tables" oninput="calcProfit()"><div class="range-val" id="v-tables">15</div></div>
+    <div class="range-row"><label>متوسط دوران الطاولة يومياً</label><input type="range" min="1" max="8" value="3" id="r-turns" oninput="calcProfit()"><div class="range-val" id="v-turns">3</div></div>
+    <div class="range-row"><label>متوسط الفاتورة للطاولة (ر.س)</label><input type="range" min="50" max="500" value="150" step="10" id="r-bill" oninput="calcProfit()"><div class="range-val" id="v-bill">150</div></div>
+    <div class="range-row"><label>أيام العمل في الشهر</label><input type="range" min="20" max="30" value="26" id="r-days" oninput="calcProfit()"><div class="range-val" id="v-days">26</div></div>
+    <div class="range-row"><label>تكلفة البضاعة المُباعة ٪ (COGS)</label><input type="range" min="20" max="50" value="30" id="r-cogs" oninput="calcProfit()"><div class="range-val" id="v-cogs">30%</div></div>
+    <div class="range-row"><label>تكاليف العمالة ٪</label><input type="range" min="15" max="40" value="25" id="r-labor" oninput="calcProfit()"><div class="range-val" id="v-labor">25%</div></div>
+    <div class="range-row"><label>الإيجار والمصاريف الثابتة ٪</label><input type="range" min="5" max="25" value="15" id="r-rent" oninput="calcProfit()"><div class="range-val" id="v-rent">15%</div></div>
+    <div class="range-row"><label>نسبة إيراد التوصيل من الإجمالي ٪</label><input type="range" min="0" max="50" value="15" id="r-delivery" oninput="calcProfit()"><div class="range-val" id="v-delivery">15%</div></div>
+    <div class="calc-result">
+      <h4>📈 النتائج التقديرية الشهرية</h4>
+      <div class="result-grid">
+        <div class="result-item"><div class="rv" id="res-revenue">٠</div><div class="rl">إجمالي الإيراد (ر.س)</div></div>
+        <div class="result-item"><div class="rv" id="res-profit">٠</div><div class="rl">صافي الربح (ر.س)</div></div>
+        <div class="result-item"><div class="rv" id="res-margin">٠</div><div class="rl">هامش الربح الصافي ٪</div></div>
+        <div class="result-item"><div class="rv" id="res-daily">٠</div><div class="rl">متوسط الإيراد اليومي (ر.س)</div></div>
+        <div class="result-item"><div class="rv" id="res-delivery-rev">٠</div><div class="rl">إيراد التوصيل (ر.س)</div></div>
+        <div class="result-item"><div class="rv" id="res-rating">٠</div><div class="rl">هدف الربح المقدر سنوياً (ر.س)</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="calc-section">
+    <h3>🎯 سيناريوهات النمو الاستراتيجي</h3>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px">
+      <div class="card" style="border-top:3px solid var(--gold)">
+        <h3 style="font-size:.95rem;margin-bottom:8px">📊 السيناريو التحفظي</h3>
+        <p style="font-size:.82rem">نمو ١٠٪ في الإيراد مع تثبيت التكاليف وتحسين بسيط في الكفاءة.</p>
+        <div style="margin-top:12px;font-family:Cairo,sans-serif;font-size:.88rem;color:var(--gold)"><strong>الربح المتوقع:</strong> <span id="s-conservative">يتم الحساب...</span></div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--sage)">
+        <h3 style="font-size:.95rem;margin-bottom:8px">📈 السيناريو المتوازن</h3>
+        <p style="font-size:.82rem">نمو ٢٥٪ بتطوير قناة التوصيل وتحسين دوران الطاولة والأسعار.</p>
+        <div style="margin-top:12px;font-family:Cairo,sans-serif;font-size:.88rem;color:var(--sage)"><strong>الربح المتوقع:</strong> <span id="s-balanced">يتم الحساب...</span></div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--rust)">
+        <h3 style="font-size:.95rem;margin-bottom:8px">🚀 السيناريو الطموح</h3>
+        <p style="font-size:.82rem">نمو ٥٠٪ بفتح فرع ثانٍ وتوسيع التوصيل وتحسين كفاءة شاملة.</p>
+        <div style="margin-top:12px;font-family:Cairo,sans-serif;font-size:.88rem;color:var(--rust)"><strong>الربح المتوقع:</strong> <span id="s-ambitious">يتم الحساب...</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- TAB 7: AI ASSISTANT -->
+<!-- ════════════════════════════════════════════ -->
+<div id="tab-assistant" class="tab-content">
+<div class="section">
+  <div class="section-hd">
+    <div class="section-num">07</div>
+    <div><h2>المساعد الاستراتيجي الذكي</h2><p>اسألني عن استراتيجيتك وأنا أجيبك استناداً لمنهجية الكتاب</p></div>
+  </div>
+
+  <div class="ai-section">
+    <div class="ai-hd">
+      <div class="ai-icon">🤖</div>
+      <div><h3>مساعد الاستراتيجية بالعربي</h3><p>مدرب على منهجية IASPBOK ومتخصص في قطاع المطاعم والأعمال العربية</p></div>
+    </div>
+    <div class="chat-suggestions">
+      <button class="sug-btn" onclick="sendSugg(this.textContent)">كيف أصيغ رسالة مطعمي؟</button>
+      <button class="sug-btn" onclick="sendSugg(this.textContent)">ما الفرق بين الهدف والغاية الاستراتيجية؟</button>
+      <button class="sug-btn" onclick="sendSugg(this.textContent)">كيف أحلل منافسيّ باستخدام قوى بورتر؟</button>
+      <button class="sug-btn" onclick="sendSugg(this.textContent)">اشرح لي OKRs بمثال مطعم</button>
+      <button class="sug-btn" onclick="sendSugg(this.textContent)">كيف أقلل هدر الطعام في مطعمي؟</button>
+      <button class="sug-btn" onclick="sendSugg(this.textContent)">ما الفرق بين Lean وKaizen وKanban؟</button>
+      <button class="sug-btn" onclick="sendSugg(this.textContent)">كيف أبني برنامج ولاء ناجح؟</button>
+      <button class="sug-btn" onclick="sendSugg(this.textContent)">متى أستخدم استراتيجية المحيط الأزرق؟</button>
+    </div>
+    <div class="chat-area" id="chat-area">
+      <div class="msg ai">مرحباً! أنا مساعدك الاستراتيجي المتخصص في منهجية الاستراتيجية بالعربي (IASPBOK). يمكنني مساعدتك في:<br><br>• <b>صياغة رسالة ورؤية وقيم</b> مطعمك أو منظمتك<br>• <b>تطبيق أدوات الاستراتيجية</b> (SWOT، بورتر، OKRs، وغيرها) على حالتك<br>• <b>بناء خطة تشغيلية</b> واستراتيجية مطعمك<br>• <b>شرح المفاهيم</b> الاستراتيجية بأمثلة عملية<br><br>ابدأ بسؤالك أو اختر من الاقتراحات أعلاه! 🍽</div>
+    </div>
+    <div class="chat-input-row">
+      <textarea id="user-input" placeholder="اكتب سؤالك هنا... مثال: كيف أبني استراتيجية لمطعمي الجديد في جدة؟" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"></textarea>
+      <button class="btn-send" id="send-btn" onclick="sendMessage()">إرسال ↵</button>
+    </div>
+  </div>
+</div>
+</div>
+
+</main>
+
+<footer>
+  <strong>الاستراتيجية بالعربي</strong> — بناءً على كتاب IASPBOK ترجمة وشرح أمجد كردي<br>
+  <span style="margin-top:6px;display:block">نظام تفاعلي شامل يضم ٧ أقسام • ١٦ مفهوم أساسي • ٥٠+ أداة استراتيجية • نماذج عملية كاملة • مساعد ذكاء اصطناعي مدمج</span>
+</footer>
+
+<script src="/assets/azie-screens.js"></script>
+<script>
+// ── TAB SWITCHING ──
+function switchTab(id,el){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-tabs a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── CALCULATOR ──
+function fmt(n){return Math.round(n).toLocaleString('ar-SA')}
+function calcProfit(){
+  const tables=+document.getElementById('r-tables').value;
+  const turns=+document.getElementById('r-turns').value;
+  const bill=+document.getElementById('r-bill').value;
+  const days=+document.getElementById('r-days').value;
+  const cogs=+document.getElementById('r-cogs').value/100;
+  const labor=+document.getElementById('r-labor').value/100;
+  const rent=+document.getElementById('r-rent').value/100;
+  const delPct=+document.getElementById('r-delivery').value/100;
+
+  document.getElementById('v-tables').textContent=tables;
+  document.getElementById('v-turns').textContent=turns;
+  document.getElementById('v-bill').textContent=bill+' ر.س';
+  document.getElementById('v-days').textContent=days;
+  document.getElementById('v-cogs').textContent=(cogs*100)+'%';
+  document.getElementById('v-labor').textContent=(labor*100)+'%';
+  document.getElementById('v-rent').textContent=(rent*100)+'%';
+  document.getElementById('v-delivery').textContent=(delPct*100)+'%';
+
+  const dailyRev=tables*turns*bill;
+  const monthlyRev=dailyRev*days;
+  const deliveryRev=monthlyRev*delPct;
+  const totalCosts=(cogs+labor+rent)*monthlyRev;
+  const profit=monthlyRev-totalCosts;
+  const margin=(profit/monthlyRev*100);
+
+  document.getElementById('res-revenue').textContent=fmt(monthlyRev);
+  document.getElementById('res-profit').textContent=fmt(profit);
+  document.getElementById('res-margin').textContent=margin.toFixed(1)+'%';
+  document.getElementById('res-daily').textContent=fmt(dailyRev);
+  document.getElementById('res-delivery-rev').textContent=fmt(deliveryRev);
+  document.getElementById('res-rating').textContent=fmt(profit*12);
+
+  document.getElementById('s-conservative').textContent=fmt(profit*1.1*12)+' ر.س/سنة';
+  document.getElementById('s-balanced').textContent=fmt(profit*1.25*12)+' ر.س/سنة';
+  document.getElementById('s-ambitious').textContent=fmt(profit*1.5*12)+' ر.س/سنة';
+}
+calcProfit();
+
+// ── AI CHAT ──
+const chatArea=document.getElementById('chat-area');
+const userInput=document.getElementById('user-input');
+const sendBtn=document.getElementById('send-btn');
+const conversationHistory=[];
+
+const systemPrompt=`أنت مساعد استراتيجي متخصص في كتاب "الاستراتيجية بالعربي" وهو ترجمة وشرح لكتاب IASPBOK (Guide to the Strategy Management Body of Knowledge) من تأليف Pierre Hadaya وJames D. Stockmal، ترجمه وشرحه أمجد كردي.
+
+أنت متخصص بشكل خاص في تطبيق مفاهيم الاستراتيجية على قطاع المطاعم والأعمال العربية.
+
+محتوى الكتاب الذي تعرفه:
+- المنظومة الخماسية: صياغة الاستراتيجية، تحول المنظمة، تنفيذ الاستراتيجية، إشراك أصحاب المصلحة، حوكمة الاستراتيجية
+- المفاهيم الأساسية: الرسالة، الرؤية، القيم، مقترحات القيمة (CVP/EVP/OVP/PVP)، سلسلة القيمة، القدرات الاستراتيجية، الكفاءات الأساسية، الأهداف الاستراتيجية، الغايات SMART، KPIs، OKRs
+- أدوات التحليل: SWOT، قوى بورتر، PESTEL، 7-S، مفهوم القنفذ، سلسلة القيمة، مصفوفة جنرال إلكتريك-ماكينزي
+- أدوات التخطيط: BMC، مصفوفة أنسوف، بطاقة الأداء المتوازن، المحيط الأزرق، OKRs، استراتيجيات بورتر العامة، مصفوفة تحديد الأولويات، تخطيط السيناريو
+- أدوات التنفيذ: Lean، Kaizen، Kanban، Six Sigma، إدارة الجودة، ذكاء الأعمال، نظرية القيود
+- أدوات التغيير والأفراد: نموذج لوين، كوتر (٨ خطوات)، ADKAR، تحليل أصحاب المصلحة، القيادة الظرفية، مصفوفة RAPID
+
+قواعد الإجابة:
+1. اجب باللغة العربية دائماً
+2. استخدم أمثلة عملية من قطاع المطاعم عند الإمكان
+3. اربط دائماً الإجابة النظرية بتطبيق عملي
+4. كن موجزاً وعملياً ومباشراً
+5. إذا طُلب منك مساعدة في كتابة رسالة أو رؤية أو تحليل، قدّمها بشكل كامل وجاهز للاستخدام
+6. استخدم التنسيق بالنقاط والترقيم عند الحاجة لوضوح أكبر`;
+
+async function sendMessage(){
+  const text=userInput.value.trim();
+  if(!text||sendBtn.disabled)return;
+  userInput.value='';
+  addMsg(text,'user');
+  conversationHistory.push({role:'user',content:text});
+  const loading=addMsg('يفكر المساعد...','ai loading');
+  sendBtn.disabled=true;
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        system:systemPrompt,
+        messages:conversationHistory
+      })
+    });
+    if(!resp.ok){
+      const err=await resp.json().catch(()=>({}));
+      throw new Error(err.error?.message||'HTTP '+resp.status);
+    }
+    const data=await resp.json();
+    loading.remove();
+    const reply=data.content&&data.content[0]?data.content[0].text:'لم تصل إجابة، حاول مرة أخرى.';
+    addMsg(reply,'ai');
+    conversationHistory.push({role:'assistant',content:reply});
+  }catch(e){
+    loading.remove();
+    addMsg('⚠️ '+e.message,'ai');
+  }finally{sendBtn.disabled=false}
+}
+
+function addMsg(text,cls){
+  const d=document.createElement('div');
+  d.className='msg '+cls;
+  d.innerHTML=text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<b>$1</b>');
+  chatArea.appendChild(d);
+  chatArea.scrollTop=chatArea.scrollHeight;
+  return d;
+}
+
+function sendSugg(text){
+  userInput.value=text;
+  sendMessage();
+}
+
+(async function initScreenGuard(){
+  let allowed = [];
+  try{
+    allowed = await AzieScreens.fetchAllowed('strategy-arabic');
+  }catch(err){
+    console.error(err);
+  }
+  if(allowed.length === 0){
+    AzieScreens.renderNoAccess(document.body, 'الاستراتيجية بالعربي');
+    return;
+  }
+  const navItems = ['overview','concepts','tools','phases','restaurant','calculator','assistant'].map(key => ({
+    key,
+    elements: [document.querySelector(`.nav-tabs a[onclick^="switchTab('${key}'"]`)],
+  }));
+  switchTab = AzieScreens.guardNavigate(switchTab, allowed, {
+    onBlocked: (key) => console.warn('لا تملك صلاحية على الشاشة:', key),
+  });
+  AzieScreens.hideDisallowedNav(navItems, allowed);
+  if(!allowed.includes('overview')){
+    const fallbackEl = navItems.find(n => n.key === allowed[0]).elements[0];
+    switchTab(allowed[0], fallbackEl);
+  }
+})();
+</script>
+</body>
+</html>
