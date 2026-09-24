@@ -3398,6 +3398,32 @@ function sig3(s1,s2,s3){
   return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:26px;direction:'+(isEn?'ltr':'rtl')+';">'+boxes+'</div>';
 }
 
+// ── sig4: same box style as sig3 but for a 4th signatory (e.g. custody
+// officer) that only applies to some vouchers — used together with
+// isCustodyFundSelected() below.
+function sig4(s1,s2,s3,s4){
+  const c = printColor||'#1a3a5c';
+  const isEn = typeof currentLang!=='undefined'&&currentLang==='en';
+  const sigLabel = isEn?'Signature / Date':'التوقيع / التاريخ';
+  const boxes = [s1,s2,s3,s4].map(function(lbl){
+    return '<div style="border:1.5px solid #ddd;border-radius:8px;padding:12px 10px;text-align:center;">'
+      +'<div style="font-size:11px;font-weight:700;color:'+c+';margin-bottom:30px;">'+(lbl||'—')+'</div>'
+      +'<div style="border-top:1px solid #ddd;padding-top:6px;font-size:10px;color:#aaa;">'+sigLabel+'</div>'
+      +'</div>';
+  }).join('');
+  return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:26px;direction:'+(isEn?'ltr':'rtl')+';">'+boxes+'</div>';
+}
+
+// ── Is the fund/account selected in a payment-method field one of the
+// configured "صندوق عهدة" (custody/imprest) cashboxes from بنوك وصناديق؟
+function isCustodyFundSelected(fieldId){
+  const val = v(fieldId);
+  if(!val) return false;
+  const banks = getBanks();
+  const match = banks.find(function(b){ return b.name===val || b.nameEn===val; });
+  return !!(match && match.type==='petty');
+}
+
 function infoGrid2(){
   const pairs = Array.from(arguments);
   return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;margin-bottom:16px">'+pairs.map(function(p){return infoR(p[0],p[1]);}).join('')+'</div>';
@@ -3622,6 +3648,10 @@ FORM_PREVIEWS['quotation'] = function(){
 // ── PAYMENT VOUCHER ──
 FORM_PREVIEWS['payment-voucher'] = function(){
   const c = '#7c3aed';
+  const fromCustody = isCustodyFundSelected('f-pv-method');
+  const sigs = fromCustody
+    ? sig4(t('sigCashier'), t('sigCustody'), t('sigFin'), t('sigBeneficiary'))
+    : sig3(t('sigCashier'), t('sigFin'), t('sigBeneficiary'));
   return `<div style="background:${c};color:white;border-radius:8px;padding:10px 16px;display:flex;justify-content:space-between;margin-bottom:12px;">
     <span style="font-weight:900;font-size:15px">📤 ${t('pvTitle')}</span>
     <span style="font-size:12px;opacity:.85">${t('pvNum')}: ${v('f-pv-num')||'—'} | ${v('f-pv-date')||'—'}</span>
@@ -3634,7 +3664,7 @@ FORM_PREVIEWS['payment-voucher'] = function(){
     [t('pvInvRef'), v('f-pv-invoice-ref')]
   ) + amtBox(v('f-pv-amount'), c)
   + notesBlock(t('pvReason'), v('f-pv-reason'), '#faf5ff', c)
-  + sig3(t('sigCashier'), t('sigFin'), currentLang==='en'?'Payee (Signature & Stamp)':t('sigPayer'));
+  + sigs;
 };
 
 // ── RECEIPT VOUCHER ──
@@ -3711,6 +3741,13 @@ FORM_PREVIEWS['petty-cash'] = function(){
     ]).filter(r=>r[1]);
   }
 
+  // مسؤول العهدة يوقّع إذا كان نوع السند نفسه "عهدة"، أو إذا كان صندوق
+  // الصرف المختار من البنوك والصناديق من نوع "صندوق عهدة" — أيهما تحقق
+  const needsCustodySig = type===t('pcCustody') || isCustodyFundSelected(isExp?'f-pc-method-exp':'f-pc-method');
+  const sigs = needsCustodySig
+    ? sig4(t('sigEmployee'), t('sigCustody'), t('sigDirectMgr'), t('sigFin'))
+    : sig3(t('sigEmployee'), t('sigDirectMgr'), t('sigFin'));
+
   return `<div style="background:${info.color};color:white;border-radius:8px;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
     <div style="font-size:16px;font-weight:900">${info.icon} ${info.badge}</div>
     <div style="font-size:11px;opacity:.85">${info.hint}</div>
@@ -3733,7 +3770,7 @@ FORM_PREVIEWS['petty-cash'] = function(){
     ${infoR(t('settlementNotes'), v('f-settlement-notes'))}
   </div>`
   + notesBlock(t('pcNotes'), v('f-pc-notes'))
-  + sig3(t('sigEmployee'), t('sigDirectMgr'), t('sigFin'));
+  + sigs;
 };
 
 // ── VARIATION ORDER ──
@@ -3899,6 +3936,7 @@ const TRANSLATIONS = {
     sigPM:'مدير المشروع', sigSup:'المشرف المنفذ', sigGM:'المدير العام', sigSiteEng:'مهندس الموقع', sigSiteMgr:'المشرف العام',
     sigPurch:'مدير المشتريات', sigQA:'مهندس الجودة', sigClient:'العميل', sigAcc:'محاسب الشركة', sigFin:'المدير المالي',
     sigSafety:'مسؤول السلامة', sigCashier:'أمين الصندوق / المحاسب', sigReviewer:'مراجع', sigPayer:'الدافع (توقيع وختم الاستلام)',
+    sigBeneficiary:'المستفيد (توقيع وختم الاستلام)', sigCustody:'مسؤول العهدة',
     sigRequester:'طالب الصرف', sigContractor:'ممثل المقاول', sigClientRep:'ممثل العميل', sigSupervisor:'مهندس الإشراف',
     sigMC:'المقاول الرئيسي', sigSC:'المقاول الفرعي', sigWitness:'الشاهد', sigVendor:'المورد (توقيع وختم)',
     sigEmployee:'الموظف / المستفيد', sigDirectMgr:'مشرف الموقع / المدير المباشر', sigOwner:'صاحب العمل', sigDate:'التوقيع / التاريخ',
@@ -4024,6 +4062,7 @@ const TRANSLATIONS = {
     sigPM:'Project Manager', sigSup:'Site Supervisor', sigGM:'General Manager', sigSiteEng:'Site Engineer', sigSiteMgr:'Site Manager',
     sigPurch:'Procurement Manager', sigQA:'QA Engineer', sigClient:'Client', sigAcc:'Company Accountant', sigFin:'Finance Manager',
     sigSafety:'Safety Officer', sigCashier:'Cashier / Accountant', sigReviewer:'Reviewer', sigPayer:'Payer (Signature & Stamp)',
+    sigBeneficiary:'Beneficiary (Signature & Stamp)', sigCustody:'Custody Officer',
     sigRequester:'Requester', sigContractor:"Contractor's Rep.", sigClientRep:"Client's Rep.", sigSupervisor:'Supervision Engineer',
     sigMC:'Main Contractor', sigSC:'Subcontractor', sigWitness:'Witness', sigVendor:'Vendor (Signature & Stamp)',
     sigEmployee:'Employee / Beneficiary', sigDirectMgr:'Direct Supervisor', sigOwner:'Employer', sigDate:'Signature / Date',
