@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دفتر التدفقات النقدية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F1E29;
+    --ink-panel:#16293A;
+    --ink-panel-2:#1C3145;
+    --paper:#F5EFDD;
+    --paper-dim:#EAE1C6;
+    --brass:#C9A227;
+    --brass-soft:#8A7433;
+    --revenue:#3D8361;
+    --revenue-deep:#245C41;
+    --expense:#B0503B;
+    --expense-deep:#7E3826;
+    --line: rgba(245,239,221,0.14);
+    --text-soft: rgba(245,239,221,0.62);
+    font-size:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 700px at 85% -10%, rgba(201,162,39,0.10), transparent 60%),
+      radial-gradient(900px 600px at -10% 110%, rgba(61,131,97,0.10), transparent 55%),
+      var(--ink);
+    color:var(--paper);
+    font-family:'Tajawal', sans-serif;
+    min-height:100vh;
+  }
+  .display{ font-family:'Cairo', sans-serif; }
+  .tabular{ font-variant-numeric: tabular-nums; }
+
+  /* ---------- layout ---------- */
+  .wrap{ max-width:1180px; margin:0 auto; padding:28px 20px 80px; }
+
+  /* ---------- header ---------- */
+  header.top{ display:flex; flex-wrap:wrap; gap:22px; justify-content:space-between; align-items:flex-end; margin-bottom:28px; }
+  .brand h1{ font-family:'Cairo',sans-serif; font-weight:900; font-size:1.8rem; margin:0 0 4px; letter-spacing:.2px;}
+  .brand p{ margin:0; color:var(--text-soft); font-size:.92rem;}
+  .brand .pin{ display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--brass); margin-left:8px; box-shadow:0 0 0 3px rgba(201,162,39,0.18); }
+
+  .stamps{ display:flex; gap:14px; flex-wrap:wrap; }
+  .stamp{
+    position:relative; width:118px; height:118px; border-radius:50%;
+    border:2px dashed var(--stamp-color, var(--brass));
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; transform:rotate(var(--tilt,-4deg));
+    background:rgba(0,0,0,0.12);
+    animation:stampIn .5s cubic-bezier(.2,.9,.3,1.2) both;
+  }
+  .stamp:nth-child(2){ --tilt:3deg; }
+  .stamp:nth-child(3){ --tilt:-2deg; }
+  @keyframes stampIn{ from{opacity:0; transform:rotate(var(--tilt,-4deg)) scale(.7);} to{opacity:1; transform:rotate(var(--tilt,-4deg)) scale(1);} }
+  .stamp .lbl{ font-size:.66rem; color:var(--text-soft); }
+  .stamp .val{ font-family:'Cairo',sans-serif; font-weight:800; font-size:1.02rem; margin-top:2px; }
+  .stamp.rev{ --stamp-color:var(--revenue); }
+  .stamp.exp{ --stamp-color:var(--expense); }
+  .stamp.net{ --stamp-color:var(--brass); }
+
+  /* ---------- project chips ---------- */
+  .chips-row{ display:flex; align-items:center; gap:10px; overflow-x:auto; padding:4px 2px 14px; margin-bottom:14px; border-bottom:1px solid var(--line); }
+  .chip{
+    flex:0 0 auto; cursor:pointer; user-select:none;
+    background:var(--ink-panel); border:1px solid var(--line); border-radius:12px;
+    padding:10px 16px; min-width:150px; transition:.15s transform, .15s border-color, .15s background;
+    position:relative;
+  }
+  .chip:hover{ transform:translateY(-2px); border-color:var(--brass-soft); }
+  .chip.active{ background:var(--ink-panel-2); border-color:var(--brass); box-shadow:0 4px 18px rgba(0,0,0,0.35); }
+  .chip .name{ font-weight:700; font-size:.92rem; display:block; }
+  .chip .net{ font-size:.74rem; color:var(--text-soft); margin-top:3px; display:block; }
+  .chip .net.pos{ color:var(--revenue); }
+  .chip .net.neg{ color:var(--expense); }
+  .chip::before{ /* paper-pin */
+    content:''; position:absolute; top:-5px; right:14px; width:8px; height:8px; border-radius:50%;
+    background:var(--brass); box-shadow:0 2px 3px rgba(0,0,0,0.4);
+  }
+  .chip-add{
+    flex:0 0 auto; min-width:120px; text-align:center; cursor:pointer;
+    border:1px dashed var(--brass-soft); border-radius:12px; padding:10px 16px;
+    color:var(--brass); font-weight:700; font-size:.88rem; background:transparent;
+  }
+  .chip-add:hover{ background:rgba(201,162,39,0.08); }
+
+  /* ---------- project detail ---------- */
+  .proj-head{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin:6px 0 18px;}
+  .proj-head h2{ font-family:'Cairo',sans-serif; font-size:1.3rem; margin:0; }
+  .proj-actions{ display:flex; gap:8px; }
+  .icon-btn{
+    background:var(--ink-panel); border:1px solid var(--line); color:var(--paper);
+    padding:7px 12px; border-radius:8px; font-size:.8rem; cursor:pointer; font-family:'Tajawal',sans-serif;
+  }
+  .icon-btn:hover{ border-color:var(--brass-soft); }
+  .icon-btn.danger:hover{ border-color:var(--expense); color:var(--expense); }
+
+  .ledgers{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:860px){ .ledgers{ grid-template-columns:1fr; } }
+
+  .ledger{ background:var(--paper); color:var(--ink); border-radius:14px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.28); }
+  .ledger .lhead{ display:flex; justify-content:space-between; align-items:center; padding:14px 16px; }
+  .ledger.exp .lhead{ background:linear-gradient(90deg, var(--expense-deep), var(--expense)); color:#fff; }
+  .ledger.rev .lhead{ background:linear-gradient(90deg, var(--revenue-deep), var(--revenue)); color:#fff; }
+  .lhead h3{ margin:0; font-family:'Cairo',sans-serif; font-size:1rem; }
+  .lhead .total{ font-family:'Cairo',sans-serif; font-weight:800; font-size:.98rem; }
+
+  table.entries{ width:100%; border-collapse:collapse; font-size:.82rem; }
+  table.entries th{ text-align:right; font-weight:700; color:var(--brass-soft); padding:8px 10px; border-bottom:1px solid var(--paper-dim); font-size:.72rem;}
+  table.entries td{ padding:6px 8px; border-bottom:1px solid var(--paper-dim); vertical-align:middle;}
+  table.entries tr:last-child td{ border-bottom:none; }
+  table.entries input{
+    width:100%; border:1px solid transparent; background:transparent; font-family:'Tajawal',sans-serif;
+    padding:6px 6px; border-radius:6px; color:var(--ink); font-size:.82rem;
+  }
+  table.entries input:hover{ border-color:var(--paper-dim); background:rgba(0,0,0,0.03); }
+  table.entries input:focus{ outline:none; border-color:var(--brass); background:#fff; }
+  table.entries input.amount{ font-family:'Cairo',sans-serif; font-weight:700; text-align:left; }
+  td.derived{ font-family:'Cairo',sans-serif; font-weight:700; color:var(--brass-soft); white-space:nowrap; text-align:left; font-size:.8rem;}
+  td.no{ color:var(--paper-dim); font-family:'Cairo',sans-serif; font-weight:800; color:#B8AC8A; width:22px; text-align:center;}
+  .del-cell{ width:26px; text-align:center; }
+  .del-btn{ background:none; border:none; cursor:pointer; color:#B0503B; opacity:.55; font-size:.95rem; }
+  .del-btn:hover{ opacity:1; }
+  .add-row{ padding:10px 14px; }
+  .add-row button{
+    width:100%; background:transparent; border:1.5px dashed var(--paper-dim); color:var(--brass-soft);
+    padding:8px; border-radius:8px; cursor:pointer; font-family:'Tajawal',sans-serif; font-weight:700; font-size:.8rem;
+  }
+  .add-row button:hover{ background:rgba(0,0,0,0.04); border-color:var(--brass); }
+  .empty-note{ padding:16px; font-size:.8rem; color:#8b806a; text-align:center;}
+  .assumption{
+    grid-column:1/-1; font-size:.76rem; color:var(--text-soft); background:var(--ink-panel);
+    border:1px solid var(--line); border-right:3px solid var(--brass); border-radius:8px; padding:10px 14px; margin-bottom:4px;
+  }
+
+  .summary-bar{
+    margin-top:18px; display:flex; gap:14px; flex-wrap:wrap; background:var(--ink-panel);
+    border:1px solid var(--line); border-radius:12px; padding:14px 18px;
+  }
+  .sum-item{ min-width:140px; }
+  .sum-item .lbl{ font-size:.7rem; color:var(--text-soft); display:block; }
+  .sum-item .val{ font-family:'Cairo',sans-serif; font-weight:800; font-size:1.05rem; margin-top:2px; }
+  .sum-item.net .val.pos{ color:var(--revenue); }
+  .sum-item.net .val.neg{ color:var(--expense); }
+
+  /* ---------- modal ---------- */
+  .overlay{ position:fixed; inset:0; background:rgba(6,12,17,0.6); display:none; align-items:center; justify-content:center; z-index:50; backdrop-filter:blur(2px);}
+  .overlay.show{ display:flex; }
+  .modal{ background:var(--paper); color:var(--ink); border-radius:14px; padding:22px; width:320px; box-shadow:0 20px 50px rgba(0,0,0,0.5); }
+  .modal.wide{ width:420px; max-width:92vw; }
+  .modal h4{ margin:0 0 12px; font-family:'Cairo',sans-serif; }
+  .modal p{ margin:0 0 14px; font-size:.86rem; color:#4a4534;}
+  .modal label{ display:block; font-size:.78rem; font-weight:700; color:#4a4534; margin-bottom:5px; }
+  .modal input, .modal textarea{ width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--paper-dim); font-family:'Tajawal',sans-serif; font-size:.9rem; margin-bottom:14px; resize:vertical;}
+  .modal input:focus, .modal textarea:focus{ outline:2px solid var(--brass); }
+  .modal .summary-preview{ background:var(--paper-dim); border-radius:8px; padding:10px 12px; font-size:.78rem; margin-bottom:14px; line-height:1.8; }
+  .modal-actions{ display:flex; gap:8px; justify-content:flex-end; }
+  .btn{ padding:9px 16px; border-radius:8px; border:none; cursor:pointer; font-family:'Tajawal',sans-serif; font-weight:700; font-size:.84rem;}
+  .btn.primary{ background:var(--ink); color:var(--paper); }
+  .btn.ghost{ background:transparent; color:#6b6247; }
+  .btn.danger{ background:var(--expense); color:#fff; }
+
+  .empty-state{ text-align:center; padding:60px 20px; color:var(--text-soft); }
+  .empty-state .display{ font-size:1.2rem; color:var(--paper); margin-bottom:8px; }
+  footer.saved{ text-align:center; color:var(--text-soft); font-size:.72rem; margin-top:30px; transition:color .2s; }
+  footer.saved.save-error{ color:var(--expense); font-weight:700; }
+  .load-warning{
+    background:var(--ink-panel); border:1px solid var(--expense); border-right:3px solid var(--expense);
+    color:var(--paper); border-radius:8px; padding:12px 16px; margin-bottom:18px; font-size:.82rem;
+  }
+
+  .chip.chip-all{ border-color:var(--brass-soft); }
+  .chip.chip-all.active{ border-color:var(--brass); }
+  .chip.chip-all::before{ display:none; }
+
+  .view-tabs{ display:flex; gap:6px; margin-bottom:16px; background:var(--ink-panel); border:1px solid var(--line); border-radius:10px; padding:4px; width:fit-content; }
+  .vtab{ background:transparent; border:none; color:var(--text-soft); font-family:'Tajawal',sans-serif; font-weight:700; font-size:.82rem; padding:7px 16px; border-radius:7px; cursor:pointer; }
+  .vtab.active{ background:var(--brass); color:var(--ink); }
+  .vtab:not(.active):hover{ color:var(--paper); }
+
+  .filter-bar{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; background:var(--ink-panel); border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:14px; }
+  .filter-bar input[type="text"], .filter-bar select, .filter-bar input[type="date"]{
+    background:var(--ink); color:var(--paper); border:1px solid var(--line); border-radius:7px;
+    padding:7px 10px; font-family:'Tajawal',sans-serif; font-size:.8rem;
+  }
+  .filter-bar input[type="text"]{ flex:1 1 160px; min-width:140px; }
+  .filter-bar input[type="date"]{ color-scheme:dark; }
+  .filter-bar .fb-sep{ color:var(--text-soft); font-size:.78rem; }
+  .filter-bar .spacer{ flex:1 1 auto; }
+
+  .ledger-panel{ background:var(--paper); color:var(--ink); border-radius:14px; overflow-x:auto; box-shadow:0 10px 30px rgba(0,0,0,0.28); }
+  table.ledger-table{ width:100%; min-width:640px; border-collapse:collapse; font-size:.82rem; }
+  table.ledger-table th{ text-align:right; font-weight:700; color:var(--brass-soft); padding:9px 10px; border-bottom:1px solid var(--paper-dim); font-size:.72rem; position:sticky; top:0; background:var(--paper);}
+  table.ledger-table td{ padding:9px 10px; border-bottom:1px solid var(--paper-dim); vertical-align:middle; }
+  table.ledger-table tr:last-child td{ border-bottom:none; }
+  table.ledger-table tr:hover td{ background:rgba(0,0,0,0.025); }
+  .tbadge{ display:inline-block; font-size:.68rem; font-weight:800; padding:3px 9px; border-radius:20px; color:#fff; font-family:'Cairo',sans-serif; }
+  .tbadge.rev{ background:var(--revenue); }
+  .tbadge.exp{ background:var(--expense); }
+  .amt-cell{ font-family:'Cairo',sans-serif; font-weight:800; white-space:nowrap; text-align:left; }
+  .amt-cell.rev{ color:var(--revenue-deep); }
+  .amt-cell.exp{ color:var(--expense-deep); }
+  .bal-cell{ font-family:'Cairo',sans-serif; font-weight:700; white-space:nowrap; text-align:left; color:#5b543c; }
+  .bal-cell.neg{ color:var(--expense-deep); }
+  .proj-tag{ font-size:.72rem; color:#7a7050; background:var(--paper-dim); padding:2px 8px; border-radius:10px; }
+  .ledger-empty{ padding:40px 16px; text-align:center; color:#8b806a; font-size:.85rem; }
+
+  .import-bar{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .import-bar .hint{ font-size:.74rem; color:var(--text-soft); }
+  .toast-wrap{ position:fixed; bottom:24px; right:24px; z-index:80; display:flex; flex-direction:column; gap:8px; }
+  .toast-msg{
+    background:var(--ink-panel-2); border:1px solid var(--brass-soft); color:var(--paper);
+    padding:10px 16px; border-radius:8px; font-size:.82rem; box-shadow:0 8px 24px rgba(0,0,0,0.4);
+    animation:toastIn .2s ease both;
+  }
+  .toast-msg.error{ border-color:var(--expense); }
+  @keyframes toastIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1><span class="pin"></span>دفتر التدفقات النقدية</h1>
+      <p>إدارة التدفقات الداخلة والخارجة لكل مشروع على حدة — الرياض</p>
+    </div>
+    <div class="stamps" id="grandStamps"></div>
+  </header>
+
+  <div class="import-bar">
+    <button class="icon-btn" id="btnImportExcel">⭱ استيراد من إكسل</button>
+    <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display:none;">
+    <span class="hint">الأعمدة المطلوبة بالملف: التاريخ، النوع (تدفق داخل/تدفق خارج)، المشروع، البيان، ملاحظات، المبلغ، و🧾 نسبة الضريبة (اختياري، للتدفقات الداخلة فقط) — نفس أعمدة تصدير CSV تماماً. العمليات المستوردة تُضاف لما هو موجود ولا تحذف أي شيء سابق.</span>
+  </div>
+
+  <div class="chips-row" id="chipsRow"></div>
+
+  <div id="projectDetail"></div>
+
+  <footer class="saved" id="savedFooter"></footer>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="/assets/azie-data.js"></script>
+<script src="/assets/azie-screens.js"></script>
+<script>
+// window.storage shim backed by the platform's per-app database blob
+// (server/routes/data.js). Like sales-pulse, this app always passes
+// persistent=false to window.storage.set but clearly intends its data
+// (projects, expenses, revenues) to persist, so every key here goes
+// through the shared database store regardless of that flag.
+window.storage = (function(){
+  const APP_ID = 'cashflow-riyadh';
+  let cache = null;
+  let ready = null;
+  function ensureLoaded(){
+    if(!ready){
+      ready = AzieData.load(APP_ID).then(data => { cache = data || {}; }).catch(err => {
+        console.error('cashflow-riyadh: فشل تحميل البيانات من الخادم', err);
+        cache = {};
+      });
+    }
+    return ready;
+  }
+  async function get(key){
+    await ensureLoaded();
+    if(!(key in cache)) return null;
+    return {value: JSON.stringify(cache[key])};
+  }
+  async function set(key, stringValue){
+    await ensureLoaded();
+    cache[key] = JSON.parse(stringValue);
+    AzieData.debouncedSave(APP_ID, () => cache);
+  }
+  return {get, set};
+})();
+</script>
+<script>
+const STORAGE_KEY = 'cashflow-app-state-v1';
+let state = null;
+let saveTimer = null;
+let viewMode = 'entry'; // 'entry' | 'ledger' — not persisted, resets to entry on reload
+let ledgerFilters = { type:'all', q:'', from:'', to:'', project:'all', sort:'desc' };
+
+function uid(){ return Math.random().toString(36).slice(2,10); }
+
+function fmt(n){
+  n = Number(n)||0;
+  return n.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function seedState(){
+  // Rebuilt from the uploaded ledger, split into projects.
+  // NOTE: only the revenue rows in the source file were tagged to a specific
+  // project (اعمال الجيبسوم / الدهانات / الزجاج). The expense rows had no
+  // project tag, so they are grouped under "مصروفات عامة" — move any entry
+  // into the right project from there whenever you can tell them apart.
+  const mk = (amount, date, desc, note='') => ({id:uid(), amount, date, desc, note});
+  const mkRev = (amount, date, desc, note='') => ({id:uid(), amount, taxRate:0.15, date, desc, note});
+
+  return {
+    activeId: null,
+    projects: [
+      {
+        id: uid(), name:'اعمال الجيبسوم',
+        expenses: [],
+        revenues: [
+          mkRev(44026.5, '2026-04-30', 'دفعة أولى تحويل من شركة بلاك نايت'),
+          mkRev(44026.5, '2026-05-17', 'دفعة ثانية تحويل من شركة بلاك نايت'),
+          mkRev(44026.5, '2026-06-24', 'دفعة ثالثة تحويل من شركة بلاك نايت'),
+          mkRev(14675.49, '2026-07-30', 'دفعة أخيرة تحويل من شركة بلاك نايت', 'متبقي ملحق للعقد'),
+        ]
+      },
+      {
+        id: uid(), name:'اعمال الدهانات',
+        expenses: [],
+        revenues: [
+          mkRev(33102, '2026-07-16', 'دفعة أولى تحويل من شركة بلاك نايت'),
+          mkRev(33109.826087, '2026-06-08', 'دفعة ثانية تحويل من شركة بلاك نايت'),
+        ]
+      },
+      {
+        id: uid(), name:'اعمال الزجاج',
+        expenses: [],
+        revenues: [
+          mkRev(53520, '2026-08-11', 'دفعة أولى تحويل من شركة بلاك نايت'),
+        ]
+      },
+      {
+        id: uid(), name:'مصروفات عامة (غير مخصصة)',
+        expenses: [
+          mk(20000, '2026-04-30', 'تحويل لحساب م. ابراهيم اسماعيل', 'من حساب م. حسن العمدة الشخصي'),
+          mk(20000, '2026-04-05', 'تحويل لحساب م. ابراهيم اسماعيل'),
+          mk(10000, '2026-05-14', 'تحويل لحساب م. ابراهيم اسماعيل'),
+          mk(5000, '2026-05-19', 'تحويل لحساب مدحت يسري'),
+          mk(5000, '2026-05-19', 'تحويل لحساب مدحت يسري'),
+          mk(5000, '2026-05-19', 'تحويل لحساب مدحت يسري'),
+          mk(5000, '2026-05-21', 'تحويل لحساب م. ابراهيم اسماعيل'),
+          mk(20000, '2026-06-21', 'تحويل لحساب م. ابراهيم اسماعيل من حساب الشركة'),
+          mk(6190, '2026-06-25', 'تحويل لشركة أجباس لتوريد مواد جبسية من حساب الشركة'),
+          mk(6000, '2026-08-07', 'سداد رسوم نقل كفالة م. ابراهيم'),
+          mk(3116, '2026-11-07', 'تحويل لشركة أجباس لتوريد مواد جبسية من حساب الشركة'),
+          mk(10000, '2026-07-20', 'عهدة - تحويل لمهندس ابراهيم'),
+          mk(5787.95, '2026-07-20', 'تحويل دهانات الجزيرة'),
+          mk(586.5, '2026-07-24', 'تحويل دهانات الجزيرة'),
+          mk(2430, '2026-07-27', 'تحويل لشركة أجباس لتوريد مواد جبسية من حساب الشركة'),
+          mk(3150, '2026-07-27', 'شراء بانل 5 سم مؤسسة الرشيدي'),
+          mk(10000, '2026-07-29', 'راتب شهر يوليو م. ابراهيم اسماعيل'),
+          mk(20000, '2026-06-08', 'عهدة - تحويل لمهندس ابراهيم'),
+          mk(1168.03, '2026-08-08', 'تحويل لمؤسسة عبدالله الرشيدي'),
+          mk(708.4, '2026-09-08', 'تحويل لشركة أجباس لتوريد مواد جبسية من حساب الشركة'),
+        ],
+        revenues: []
+      }
+    ]
+  };
+}
+
+async function loadState(){
+  let lastErr = null;
+  for(let attempt=0; attempt<3; attempt++){
+    try{
+      const res = await window.storage.get(STORAGE_KEY, false);
+      if(res && res.value){
+        state = JSON.parse(res.value);
+      }else{
+        state = seedState();
+        state.activeId = state.projects[0].id;
+        await persist(0);
+      }
+      return;
+    }catch(e){
+      lastErr = e;
+      const msg = String(e && e.message || e);
+      // A genuine "key does not exist" error means this is a first-ever run — safe to seed.
+      if(/not[ _]?found|404|no such key/i.test(msg)){
+        state = seedState();
+        state.activeId = state.projects[0].id;
+        await persist(0);
+        return;
+      }
+      // Otherwise this looks like a transient/server error — retry before giving up,
+      // so we never risk silently overwriting data that's actually still saved.
+      if(attempt < 2) await new Promise(r=>setTimeout(r, 900*(attempt+1)));
+    }
+  }
+  // All retries failed for an unclear reason. Use starter data in memory WITHOUT
+  // saving it, so any previously saved data on the server is left untouched.
+  console.error('could not load saved data after retries', lastErr);
+  state = seedState();
+  state.activeId = state.projects[0].id;
+  state._loadFailed = true;
+}
+
+async function persist(retryCount){
+  retryCount = retryCount || 0;
+  const f = document.getElementById('savedFooter');
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify(state), false);
+    const now = new Date();
+    f.textContent = 'آخر حفظ: ' + now.toLocaleTimeString('ar-SA');
+    f.classList.remove('save-error');
+  }catch(e){
+    console.error('storage error', e);
+    if(retryCount < 3){
+      f.textContent = 'جارٍ إعادة محاولة الحفظ…';
+      f.classList.add('save-error');
+      setTimeout(()=>persist(retryCount+1), 1500 * (retryCount+1));
+    }else{
+      f.textContent = '⚠ تعذّر حفظ آخر تعديل — تحقق من اتصالك، أو غيّر أي قيمة بسيطة لإعادة المحاولة.';
+      f.classList.add('save-error');
+    }
+  }
+}
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>persist(0), 500);
+}
+
+function calcExpTotal(p){ return p.expenses.reduce((s,e)=>s+(Number(e.amount)||0),0); }
+function calcRevTotals(p){
+  let pre=0, tax=0;
+  p.revenues.forEach(r=>{ const a=Number(r.amount)||0; const t=a*(Number(r.taxRate)||0); pre+=a; tax+=t; });
+  return {pre, tax, incl:pre+tax};
+}
+function calcNet(p){ const rev = calcRevTotals(p); return rev.pre - calcExpTotal(p); }
+
+function grandTotals(){
+  let exp=0, revPre=0;
+  state.projects.forEach(p=>{ exp += calcExpTotal(p); revPre += calcRevTotals(p).pre; });
+  return {exp, revPre, net:revPre-exp};
+}
+
+/* ---------------- render ---------------- */
+function render(){
+  renderStamps();
+  renderChips();
+  renderDetail();
+}
+
+function renderStamps(){
+  const g = grandTotals();
+  const el = document.getElementById('grandStamps');
+  el.innerHTML = `
+    <div class="stamp exp"><span class="lbl">إجمالي التدفقات الخارجة</span><span class="val tabular">${fmt(g.exp)}</span></div>
+    <div class="stamp rev"><span class="lbl">إجمالي التدفقات الداخلة</span><span class="val tabular">${fmt(g.revPre)}</span></div>
+    <div class="stamp net"><span class="lbl">صافي التدفق النقدي</span><span class="val tabular">${fmt(g.net)}</span></div>
+  `;
+}
+
+function isAllView(){ return state.activeId==='__all__'; }
+
+// A filter set while looking at one project/view (search text, date range,
+// type, or the combined-view's project dropdown) used to stay silently
+// applied after switching to a different project or to "كل الحركات" —
+// making it look like transactions had gone missing. Reset on every
+// deliberate navigation so the new view always starts showing everything.
+function resetLedgerFilters(){
+  ledgerFilters = { type:'all', q:'', from:'', to:'', project:'all', sort:'desc' };
+}
+
+function renderChips(){
+  const row = document.getElementById('chipsRow');
+  row.innerHTML = '';
+
+  if(state.projects.length){
+    const allChip = document.createElement('div');
+    allChip.className = 'chip chip-all' + (isAllView()?' active':'');
+    allChip.innerHTML = `<span class="name">📒 كل الحركات</span><span class="net tabular">كل المشاريع مجتمعة</span>`;
+    allChip.onclick = ()=>{ state.activeId = '__all__'; resetLedgerFilters(); render(); };
+    row.appendChild(allChip);
+  }
+
+  state.projects.forEach(p=>{
+    const net = calcNet(p);
+    const div = document.createElement('div');
+    div.className = 'chip' + (p.id===state.activeId?' active':'');
+    div.innerHTML = `<span class="name">${escapeHtml(p.name)}</span><span class="net tabular ${net>=0?'pos':'neg'}">${net>=0?'+':''}${fmt(net)} صافي</span>`;
+    div.onclick = ()=>{ state.activeId = p.id; resetLedgerFilters(); render(); };
+    row.appendChild(div);
+  });
+  const addChip = document.createElement('div');
+  addChip.className = 'chip-add';
+  addChip.textContent = '+ مشروع جديد';
+  addChip.onclick = openAddProjectModal;
+  row.appendChild(addChip);
+}
+
+function getActive(){ return state.projects.find(p=>p.id===state.activeId); }
+
+function renderDetail(){
+  const container = document.getElementById('projectDetail');
+  if(!state.projects.length){
+    container.innerHTML = `<div class="empty-state"><div class="display">لا توجد مشاريع بعد</div>ابدأ بإضافة أول مشروع لمتابعة تدفقاته النقدية.</div>`;
+    return;
+  }
+
+  if(isAllView()){
+    renderCombinedLedger(container);
+    return;
+  }
+
+  const p = getActive();
+  if(!p){ state.activeId = state.projects[0].id; return renderDetail(); }
+
+  const tabsHtml = `
+    <div class="view-tabs">
+      <button class="vtab ${viewMode==='entry'?'active':''}" data-vtab="entry">إدخال البيانات</button>
+      <button class="vtab ${viewMode==='ledger'?'active':''}" data-vtab="ledger">سجل الحركات</button>
+    </div>`;
+
+  container.innerHTML = `
+    <div class="proj-head">
+      <h2 class="display">${escapeHtml(p.name)}</h2>
+      <div class="proj-actions">
+        <button class="icon-btn" id="renameBtn">✎ إعادة تسمية</button>
+        <button class="icon-btn danger" id="deleteProjBtn">حذف المشروع</button>
+      </div>
+    </div>
+    ${tabsHtml}
+    ${p.name.includes('عامة') ? `<div class="assumption">ملاحظة: هذه التدفقات الخارجة لم تكن مربوطة بمشروع محدد في الملف الأصلي. انقلها لمشروعها الصحيح كلما استطعت تمييزها.</div>` : ''}
+    <div id="viewBody"></div>
+  `;
+
+  document.getElementById('renameBtn').onclick = ()=>openRenameModal(p);
+  document.getElementById('deleteProjBtn').onclick = ()=>openDeleteProjectModal(p);
+  container.querySelectorAll('.vtab').forEach(btn=>{
+    btn.onclick = ()=>{ viewMode = btn.dataset.vtab; renderDetail(); };
+  });
+
+  if(viewMode==='ledger'){
+    renderProjectLedger(document.getElementById('viewBody'), p);
+  }else{
+    renderEntryView(document.getElementById('viewBody'), p);
+  }
+}
+
+function renderEntryView(body, p){
+  const expTotal = calcExpTotal(p);
+  const rev = calcRevTotals(p);
+  const net = rev.pre - expTotal;
+  const margin = rev.pre>0 ? (net/rev.pre*100) : 0;
+
+  body.innerHTML = `
+    <div class="ledgers">
+      <div class="ledger exp">
+        <div class="lhead"><h3>التدفقات الخارجة</h3><span class="total tabular">${fmt(expTotal)} ر.س</span></div>
+        ${renderExpenseTable(p)}
+        <div class="add-row"><button data-action="add-exp">+ إضافة تدفق خارج</button></div>
+      </div>
+      <div class="ledger rev">
+        <div class="lhead"><h3>التدفقات الداخلة</h3><span class="total tabular">${fmt(rev.incl)} ر.س شامل 🧾 الضريبة</span></div>
+        ${renderRevenueTable(p)}
+        <div class="add-row"><button data-action="add-rev">+ إضافة تدفق داخل</button></div>
+      </div>
+    </div>
+    <div class="summary-bar">
+      <div class="sum-item"><span class="lbl">التدفقات الخارجة</span><span class="val tabular">${fmt(expTotal)}</span></div>
+      <div class="sum-item"><span class="lbl">التدفقات الداخلة (قبل الضريبة)</span><span class="val tabular">${fmt(rev.pre)}</span></div>
+      <div class="sum-item"><span class="lbl">🧾 ضريبة القيمة المضافة</span><span class="val tabular">${fmt(rev.tax)}</span></div>
+      <div class="sum-item"><span class="lbl">التدفقات الداخلة شاملة الضريبة</span><span class="val tabular">${fmt(rev.incl)}</span></div>
+      <div class="sum-item net"><span class="lbl">صافي التدفق النقدي</span><span class="val tabular ${net>=0?'pos':'neg'}">${fmt(net)}</span></div>
+      <div class="sum-item"><span class="lbl">هامش التدفق النقدي</span><span class="val tabular">${margin.toFixed(1)}%</span></div>
+    </div>
+  `;
+
+  body.querySelector('[data-action="add-exp"]').onclick = ()=>addExpense(p);
+  body.querySelector('[data-action="add-rev"]').onclick = ()=>addRevenue(p);
+
+  bindExpenseEvents(p);
+  bindRevenueEvents(p);
+}
+
+/* ---------------- transaction ledger (سجل الحركات) ---------------- */
+function buildLedgerRows(projects){
+  const rows = [];
+  projects.forEach(p=>{
+    p.expenses.forEach(e=>{
+      rows.push({ id:'e-'+e.id, projId:p.id, projName:p.name, type:'exp', date:e.date||'', amount:Number(e.amount)||0, desc:e.desc||'', note:e.note||'' });
+    });
+    p.revenues.forEach(r=>{
+      const amt = Number(r.amount)||0, tax = amt*(Number(r.taxRate)||0);
+      rows.push({ id:'r-'+r.id, projId:p.id, projName:p.name, type:'rev', date:r.date||'', amount:amt, tax, desc:r.desc||'', note:r.note||'' });
+    });
+  });
+  return rows;
+}
+
+function computeRunningBalances(rows){
+  const chrono = [...rows].sort((a,b)=> (a.date||'9999') < (b.date||'9999') ? -1 : (a.date||'9999') > (b.date||'9999') ? 1 : 0);
+  let bal = 0;
+  const map = {};
+  chrono.forEach(r=>{
+    bal += (r.type==='rev' ? r.amount : -r.amount);
+    map[r.id] = bal;
+  });
+  return map;
+}
+
+function applyLedgerFilters(rows){
+  let out = rows.filter(r=>{
+    if(ledgerFilters.type!=='all' && r.type!==ledgerFilters.type) return false;
+    if(ledgerFilters.project!=='all' && r.projId!==ledgerFilters.project) return false;
+    if(ledgerFilters.from && r.date && r.date < ledgerFilters.from) return false;
+    if(ledgerFilters.to && r.date && r.date > ledgerFilters.to) return false;
+    if(ledgerFilters.q){
+      const q = ledgerFilters.q.toLowerCase();
+      const hay = (r.desc+' '+r.note+' '+r.projName).toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  out.sort((a,b)=>{
+    const cmp = (a.date||'') < (b.date||'') ? -1 : (a.date||'') > (b.date||'') ? 1 : 0;
+    return ledgerFilters.sort==='asc' ? cmp : -cmp;
+  });
+  return out;
+}
+
+function isLedgerFilterActive(){
+  return ledgerFilters.type!=='all' || ledgerFilters.q!=='' || ledgerFilters.from!=='' ||
+    ledgerFilters.to!=='' || ledgerFilters.project!=='all';
+}
+
+function filterBarHtml(scopeProjects, includeProjectFilter, shownCount, totalCount){
+  const projectOptions = includeProjectFilter
+    ? `<select id="lgProject"><option value="all">كل المشاريع</option>${scopeProjects.map(p=>`<option value="${p.id}" ${ledgerFilters.project===p.id?'selected':''}>${escapeHtml(p.name)}</option>`).join('')}</select>`
+    : '';
+  const filterActive = isLedgerFilterActive();
+  return `
+    <div class="filter-bar">
+      <input type="text" id="lgSearch" placeholder="ابحث في البيان أو الملاحظات…" value="${escapeAttr(ledgerFilters.q)}">
+      <select id="lgType">
+        <option value="all" ${ledgerFilters.type==='all'?'selected':''}>كل الحركات</option>
+        <option value="rev" ${ledgerFilters.type==='rev'?'selected':''}>تدفقات داخلة فقط</option>
+        <option value="exp" ${ledgerFilters.type==='exp'?'selected':''}>تدفقات خارجة فقط</option>
+      </select>
+      ${projectOptions}
+      <input type="date" id="lgFrom" value="${ledgerFilters.from}">
+      <span class="fb-sep">إلى</span>
+      <input type="date" id="lgTo" value="${ledgerFilters.to}">
+      <button class="icon-btn" id="lgSortToggle">${ledgerFilters.sort==='asc'?'↑ الأقدم أولاً':'↓ الأحدث أولاً'}</button>
+      ${filterActive ? `<button class="icon-btn" id="lgClearFilters" style="color:var(--expense);border-color:var(--expense);">✕ مسح الفلاتر</button>` : ''}
+      <span class="fb-sep" style="${filterActive?'color:var(--brass);font-weight:700;':''}">${filterActive ? `يعرض ${shownCount} من ${totalCount} حركة (فلتر مُفعّل)` : `${totalCount} حركة إجمالاً`}</span>
+      <span class="spacer"></span>
+      <button class="icon-btn" id="lgExport">⭳ تصدير CSV</button>
+      <button class="icon-btn" id="lgPrint">🖶 طباعة</button>
+      <button class="icon-btn" id="lgEmail">📧 إرسال بالإيميل</button>
+    </div>`;
+}
+
+function ledgerTableHtml(rows, balMap, includeProjectCol){
+  if(!rows.length) return `<div class="ledger-empty">لا توجد حركات مطابقة لهذا البحث</div>`;
+  const body = rows.map(r=>{
+    const bal = balMap[r.id]||0;
+    return `<tr>
+      <td class="tabular">${r.date||'—'}</td>
+      <td><span class="tbadge ${r.type}">${r.type==='rev'?'تدفق داخل':'تدفق خارج'}</span></td>
+      ${includeProjectCol ? `<td><span class="proj-tag">${escapeHtml(r.projName)}</span></td>` : ''}
+      <td>${escapeHtml(r.desc)||'—'}</td>
+      <td>${escapeHtml(r.note)||'—'}</td>
+      <td class="amt-cell ${r.type}">${r.type==='rev'?'+':'-'}${fmt(r.amount)}</td>
+      <td class="bal-cell ${bal<0?'neg':''}">${fmt(bal)}</td>
+    </tr>`;
+  }).join('');
+  return `<table class="ledger-table">
+    <thead><tr>
+      <th>التاريخ</th><th>النوع</th>${includeProjectCol?'<th>المشروع</th>':''}<th>البيان</th><th>ملاحظات</th><th>المبلغ</th><th>الرصيد التراكمي</th>
+    </tr></thead>
+    <tbody>${body}</tbody></table>`;
+}
+
+function bindFilterBarEvents(scopeProjects, rerender){
+  const $ = id=>document.getElementById(id);
+  $('lgSearch').oninput = e=>{ ledgerFilters.q = e.target.value; rerender(); };
+  $('lgType').onchange = e=>{ ledgerFilters.type = e.target.value; rerender(); };
+  if($('lgProject')) $('lgProject').onchange = e=>{ ledgerFilters.project = e.target.value; rerender(); };
+  $('lgFrom').onchange = e=>{ ledgerFilters.from = e.target.value; rerender(); };
+  $('lgTo').onchange = e=>{ ledgerFilters.to = e.target.value; rerender(); };
+  $('lgSortToggle').onclick = ()=>{ ledgerFilters.sort = ledgerFilters.sort==='asc'?'desc':'asc'; rerender(); };
+  if($('lgClearFilters')) $('lgClearFilters').onclick = ()=>{ resetLedgerFilters(); rerender(); };
+  $('lgExport').onclick = ()=>exportLedgerCSV(reportRows(scopeProjects), scopeProjects.length===1?scopeProjects[0].name:'كل-الحركات');
+  $('lgPrint').onclick = ()=>printLedgerRows(
+    reportRows(scopeProjects),
+    computeRunningBalances(buildLedgerRows(scopeProjects)),
+    scopeProjects.length===1?scopeProjects[0].name:'كل المشاريع',
+    scopeProjects.length>1
+  );
+  $('lgEmail').onclick = ()=>openEmailReportModal(scopeProjects);
+}
+
+function renderProjectLedger(body, p){
+  const allRows = buildLedgerRows([p]);
+  const rows = applyLedgerFilters(allRows);
+  const balMap = computeRunningBalances(allRows);
+  body.innerHTML = `
+    ${filterBarHtml([p], false, rows.length, allRows.length)}
+    <div class="ledger-panel">${ledgerTableHtml(rows, balMap, false)}</div>
+  `;
+  bindFilterBarEvents([p], ()=>renderProjectLedger(body, p));
+}
+
+function renderCombinedLedger(container){
+  const allRows = buildLedgerRows(state.projects);
+  const rows = applyLedgerFilters(allRows);
+  const balMap = computeRunningBalances(allRows);
+  container.innerHTML = `
+    <div class="proj-head">
+      <h2 class="display">📒 كل الحركات — كل المشاريع</h2>
+    </div>
+    <div class="assumption">هذا سجل عرض فقط يجمع كل المشاريع مع رصيد تراكمي. للتعديل أو الإضافة، ادخل على المشروع المطلوب من الأعلى.</div>
+    ${filterBarHtml(state.projects, true, rows.length, allRows.length)}
+    <div class="ledger-panel">${ledgerTableHtml(rows, balMap, true)}</div>
+  `;
+  bindFilterBarEvents(state.projects, ()=>renderCombinedLedger(container));
+}
+
+// The exported/printed report reads chronologically regardless of whatever
+// the on-screen sort toggle happens to be set to — that toggle only affects
+// the live table, not the report itself.
+function reportRows(scopeProjects){
+  const rows = applyLedgerFilters(buildLedgerRows(scopeProjects));
+  return [...rows].sort((a,b)=> (a.date||'') < (b.date||'') ? -1 : (a.date||'') > (b.date||'') ? 1 : 0);
+}
+
+function buildLedgerCSVString(rows){
+  const headers = ['التاريخ','الحالة','المشروع','البيان','ملاحظات','المبلغ'];
+  const lines = [headers.join(',')];
+  rows.forEach(r=>{
+    const line = [
+      r.date||'', r.type==='rev'?'وارد':'منصرف', r.projName,
+      '"'+(r.desc||'').replace(/"/g,'""')+'"',
+      '"'+(r.note||'').replace(/"/g,'""')+'"',
+      (r.type==='rev'?'':'-')+r.amount
+    ];
+    lines.push(line.join(','));
+  });
+  return '\uFEFF' + lines.join('\n');
+}
+
+function summarizeRows(rows){
+  let incoming = 0, outgoing = 0;
+  rows.forEach(r=>{ if(r.type==='rev') incoming += r.amount; else outgoing += r.amount; });
+  return { incoming, outgoing, net: incoming - outgoing, count: rows.length };
+}
+
+function exportLedgerCSV(rows, label){
+  const csv = buildLedgerCSVString(rows);
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'سجل-حركات-' + label.replace(/[^\w\u0600-\u06FF]+/g,'-') + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+function printLedgerRows(rows, balMap, title, includeProjectCol){
+  const w = window.open('', '_blank');
+  if(!w) return;
+  const body = rows.map(r=>`<tr>
+    <td>${r.date||''}</td>
+    <td><span class="status-badge ${r.type==='rev'?'status-in':'status-out'}">${r.type==='rev'?'وارد':'منصرف'}</span></td>
+    ${includeProjectCol?`<td>${escapeHtml(r.projName)}</td>`:''}
+    <td>${escapeHtml(r.desc)}</td><td>${escapeHtml(r.note)}</td>
+    <td>${r.type==='rev'?'+':'-'}${fmt(r.amount)}</td>
+    <td>${fmt(balMap[r.id]||0)}</td>
+  </tr>`).join('');
+  w.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>
+  <style>
+    body{font-family:Tahoma,Arial,sans-serif; padding:24px; color:#111;}
+    h1{font-size:1.2rem;} table{width:100%; border-collapse:collapse; margin-top:14px; font-size:.82rem;}
+    th,td{border:1px solid #ccc; padding:6px 8px; text-align:right;}
+    th{background:#eee;}
+    .status-badge{display:inline-block; padding:2px 10px; border-radius:12px; font-size:.72rem; font-weight:700; color:#fff;}
+    .status-in{background:#3D8361;}
+    .status-out{background:#B0503B;}
+  </style></head><body>
+  <h1>سجل الحركات — ${escapeHtml(title)}</h1>
+  <p>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-SA')} — مرتّب حسب التاريخ (الأقدم أولاً)</p>
+  <table><thead><tr><th>التاريخ</th><th>الحالة</th>${includeProjectCol?'<th>المشروع</th>':''}<th>البيان</th><th>ملاحظات</th><th>المبلغ</th><th>الرصيد التراكمي</th></tr></thead>
+  <tbody>${body}</tbody></table>
+  </body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(()=>w.print(), 300);
+}
+
+function renderExpenseTable(p){
+  if(!p.expenses.length) return `<div class="empty-note">لا توجد تدفقات خارجة مسجلة بعد</div>`;
+  const rows = p.expenses.map((e,i)=>`
+    <tr data-id="${e.id}">
+      <td class="no">${i+1}</td>
+      <td style="width:100px"><input type="date" class="f-date" value="${e.date||''}"></td>
+      <td style="width:90px"><input type="text" class="f-amount amount" value="${e.amount}" inputmode="decimal"></td>
+      <td><input type="text" class="f-desc" value="${escapeAttr(e.desc)}" placeholder="البيان"></td>
+      <td style="width:120px"><input type="text" class="f-note" value="${escapeAttr(e.note||'')}" placeholder="ملاحظات"></td>
+      <td class="del-cell"><button class="del-btn" data-del="${e.id}">✕</button></td>
+    </tr>`).join('');
+  return `<table class="entries">
+    <thead><tr><th>م</th><th>التاريخ</th><th>المبلغ</th><th>البيان</th><th>ملاحظات</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+}
+
+function renderRevenueTable(p){
+  if(!p.revenues.length) return `<div class="empty-note">لا توجد تدفقات داخلة مسجلة بعد</div>`;
+  const rows = p.revenues.map((r,i)=>{
+    const amt = Number(r.amount)||0, rate=Number(r.taxRate)||0;
+    const tax = amt*rate, total = amt+tax;
+    return `
+    <tr data-id="${r.id}">
+      <td class="no">${i+1}</td>
+      <td style="width:100px"><input type="date" class="f-date" value="${r.date||''}"></td>
+      <td style="width:90px"><input type="text" class="f-amount amount" value="${r.amount}" inputmode="decimal"></td>
+      <td class="derived tabular" data-derived>${fmt(total)}<br><span style="font-size:.66rem;font-weight:400;color:#8b806a;">🧾 ${(rate*100).toFixed(0)}%</span></td>
+      <td><input type="text" class="f-desc" value="${escapeAttr(r.desc)}" placeholder="البيان"></td>
+      <td style="width:110px"><input type="text" class="f-note" value="${escapeAttr(r.note||'')}" placeholder="ملاحظات"></td>
+      <td class="del-cell"><button class="del-btn" data-del="${r.id}">✕</button></td>
+    </tr>`;
+  }).join('');
+  return `<table class="entries">
+    <thead><tr><th>م</th><th>التاريخ</th><th>المبلغ</th><th>🧾 شامل الضريبة</th><th>البيان</th><th>ملاحظات</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+}
+
+function bindExpenseEvents(p){
+  const table = document.querySelector('.ledger.exp table');
+  if(!table) return;
+  table.querySelectorAll('tr[data-id]').forEach(tr=>{
+    const id = tr.dataset.id;
+    const entry = p.expenses.find(x=>x.id===id);
+    tr.querySelector('.f-date').onchange = e=>{ entry.date=e.target.value; touchTotals(p); scheduleSave(); };
+    tr.querySelector('.f-amount').oninput = e=>{ entry.amount=parseFloat(e.target.value)||0; touchTotals(p); };
+    tr.querySelector('.f-amount').onchange = ()=>scheduleSave();
+    tr.querySelector('.f-desc').oninput = e=>{ entry.desc=e.target.value; };
+    tr.querySelector('.f-desc').onchange = ()=>scheduleSave();
+    tr.querySelector('.f-note').oninput = e=>{ entry.note=e.target.value; };
+    tr.querySelector('.f-note').onchange = ()=>scheduleSave();
+    tr.querySelector('.del-btn').onclick = ()=>{
+      p.expenses = p.expenses.filter(x=>x.id!==id);
+      renderDetail(); renderChips(); renderStamps(); scheduleSave();
+    };
+  });
+}
+
+function bindRevenueEvents(p){
+  const table = document.querySelector('.ledger.rev table');
+  if(!table) return;
+  table.querySelectorAll('tr[data-id]').forEach(tr=>{
+    const id = tr.dataset.id;
+    const entry = p.revenues.find(x=>x.id===id);
+    tr.querySelector('.f-date').onchange = e=>{ entry.date=e.target.value; touchTotals(p); scheduleSave(); };
+    tr.querySelector('.f-amount').oninput = e=>{
+      entry.amount=parseFloat(e.target.value)||0;
+      const amt=entry.amount, rate=entry.taxRate||0, tax=amt*rate;
+      tr.querySelector('[data-derived]').innerHTML = `${fmt(amt+tax)}<br><span style="font-size:.66rem;font-weight:400;color:#8b806a;">🧾 ${(rate*100).toFixed(0)}%</span>`;
+      touchTotals(p);
+    };
+    tr.querySelector('.f-amount').onchange = ()=>scheduleSave();
+    tr.querySelector('.f-desc').oninput = e=>{ entry.desc=e.target.value; };
+    tr.querySelector('.f-desc').onchange = ()=>scheduleSave();
+    tr.querySelector('.f-note').oninput = e=>{ entry.note=e.target.value; };
+    tr.querySelector('.f-note').onchange = ()=>scheduleSave();
+    tr.querySelector('.del-btn').onclick = ()=>{
+      p.revenues = p.revenues.filter(x=>x.id!==id);
+      renderDetail(); renderChips(); renderStamps(); scheduleSave();
+    };
+  });
+}
+
+// lightweight update of totals without a full re-render (keeps input focus while typing)
+function touchTotals(p){
+  const expTotal = calcExpTotal(p);
+  const rev = calcRevTotals(p);
+  const net = rev.pre - expTotal;
+  const margin = rev.pre>0 ? (net/rev.pre*100) : 0;
+
+  document.querySelector('.ledger.exp .total').textContent = fmt(expTotal) + ' ر.س';
+  document.querySelector('.ledger.rev .total').textContent = fmt(rev.incl) + ' ر.س شامل 🧾 الضريبة';
+
+  const sumVals = document.querySelectorAll('.summary-bar .sum-item .val');
+  if(sumVals.length===6){
+    sumVals[0].textContent = fmt(expTotal);
+    sumVals[1].textContent = fmt(rev.pre);
+    sumVals[2].textContent = fmt(rev.tax);
+    sumVals[3].textContent = fmt(rev.incl);
+    sumVals[4].textContent = fmt(net);
+    sumVals[4].className = 'val tabular ' + (net>=0?'pos':'neg');
+    sumVals[5].textContent = margin.toFixed(1) + '%';
+  }
+  renderStamps();
+  // also refresh the chip's net figure without a full chip rebuild
+  renderChips();
+}
+
+function addExpense(p){
+  p.expenses.push({id:uid(), amount:0, date:new Date().toISOString().slice(0,10), desc:'', note:''});
+  renderDetail(); scheduleSave();
+  const rows = document.querySelectorAll('.ledger.exp tr[data-id]');
+  if(rows.length) rows[rows.length-1].querySelector('.f-desc').focus();
+}
+function addRevenue(p){
+  p.revenues.push({id:uid(), amount:0, taxRate:0.15, date:new Date().toISOString().slice(0,10), desc:'', note:''});
+  renderDetail(); scheduleSave();
+  const rows = document.querySelectorAll('.ledger.rev tr[data-id]');
+  if(rows.length) rows[rows.length-1].querySelector('.f-desc').focus();
+}
+
+/* ---------------- modals ---------------- */
+function openModal(html){
+  document.getElementById('modalBox').innerHTML = html;
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal(){ document.getElementById('overlay').classList.remove('show'); }
+document.getElementById('overlay').addEventListener('click', (e)=>{ if(e.target.id==='overlay') closeModal(); });
+
+function openAddProjectModal(){
+  openModal(`
+    <h4>مشروع جديد</h4>
+    <p>أدخل اسم المشروع لبدء تتبع تدفقاته النقدية.</p>
+    <input id="mInput" type="text" placeholder="مثال: اعمال السيراميك">
+    <div class="modal-actions">
+      <button class="btn ghost" id="mCancel">إلغاء</button>
+      <button class="btn primary" id="mSave">إضافة</button>
+    </div>
+  `);
+  const input = document.getElementById('mInput');
+  input.focus();
+  document.getElementById('mCancel').onclick = closeModal;
+  document.getElementById('mSave').onclick = ()=>{
+    const name = input.value.trim();
+    if(!name) return;
+    const np = {id:uid(), name, expenses:[], revenues:[]};
+    state.projects.push(np);
+    state.activeId = np.id;
+    closeModal(); render(); scheduleSave();
+  };
+  input.onkeydown = e=>{ if(e.key==='Enter') document.getElementById('mSave').click(); };
+}
+
+function openRenameModal(p){
+  openModal(`
+    <h4>إعادة تسمية المشروع</h4>
+    <input id="mInput" type="text" value="${escapeAttr(p.name)}">
+    <div class="modal-actions">
+      <button class="btn ghost" id="mCancel">إلغاء</button>
+      <button class="btn primary" id="mSave">حفظ</button>
+    </div>
+  `);
+  const input = document.getElementById('mInput');
+  input.focus(); input.select();
+  document.getElementById('mCancel').onclick = closeModal;
+  document.getElementById('mSave').onclick = ()=>{
+    const name = input.value.trim();
+    if(!name) return;
+    p.name = name;
+    closeModal(); render(); scheduleSave();
+  };
+  input.onkeydown = e=>{ if(e.key==='Enter') document.getElementById('mSave').click(); };
+}
+
+function openDeleteProjectModal(p){
+  openModal(`
+    <h4>حذف المشروع؟</h4>
+    <p>سيتم حذف "${escapeHtml(p.name)}" وكل ما يحتويه من تدفقات داخلة وخارجة نهائيًا.</p>
+    <div class="modal-actions">
+      <button class="btn ghost" id="mCancel">إلغاء</button>
+      <button class="btn danger" id="mDel">حذف نهائي</button>
+    </div>
+  `);
+  document.getElementById('mCancel').onclick = closeModal;
+  document.getElementById('mDel').onclick = ()=>{
+    state.projects = state.projects.filter(x=>x.id!==p.id);
+    if(state.activeId===p.id){
+      state.activeId = state.projects.length ? state.projects[0].id : null;
+    }
+    closeModal(); render(); scheduleSave();
+  };
+}
+
+function utf8ToBase64(str){
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  bytes.forEach(b => { binary += String.fromCharCode(b); });
+  return btoa(binary);
+}
+
+function arrayBufferToBase64(buffer){
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for(let i=0;i<bytes.length;i+=chunkSize){
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i+chunkSize));
+  }
+  return btoa(binary);
+}
+
+function buildLedgerXLSXBase64(rows){
+  const data = rows.map(r=>({
+    'التاريخ': r.date||'',
+    'الحالة': r.type==='rev' ? 'وارد' : 'منصرف',
+    'المشروع': r.projName,
+    'البيان': r.desc||'',
+    'ملاحظات': r.note||'',
+    'المبلغ': (r.type==='rev'?1:-1) * (r.amount||0),
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws['!cols'] = [{wch:12},{wch:10},{wch:22},{wch:34},{wch:26},{wch:14}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'الحركات');
+  return XLSX.write(wb, {bookType:'xlsx', type:'base64'});
+}
+
+// Rendered off-screen as real HTML (so Arabic text shapes correctly) then
+// rasterized into the PDF — jsPDF's built-in fonts can't shape Arabic script.
+async function buildReportPDFBase64(rows, summary, label){
+  const rowsHtml = rows.map(r=>`<tr>
+    <td style="border:1px solid #ccc;padding:6px 8px;">${r.date||''}</td>
+    <td style="border:1px solid #ccc;padding:6px 8px;"><span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:${r.type==='rev'?'#3D8361':'#B0503B'};">${r.type==='rev'?'وارد':'منصرف'}</span></td>
+    <td style="border:1px solid #ccc;padding:6px 8px;">${escapeHtml(r.projName)}</td>
+    <td style="border:1px solid #ccc;padding:6px 8px;">${escapeHtml(r.desc)}</td>
+    <td style="border:1px solid #ccc;padding:6px 8px;">${escapeHtml(r.note)}</td>
+    <td style="border:1px solid #ccc;padding:6px 8px;">${r.type==='rev'?'+':'-'}${fmt(r.amount)}</td>
+  </tr>`).join('');
+
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed; top:0; left:-99999px; width:800px; background:#fff; padding:24px; font-family:Tahoma,Arial,sans-serif; color:#111;';
+  container.innerHTML = `
+    <div dir="rtl" style="text-align:right;">
+      <h1 style="font-size:18px;margin:0 0 4px;">تقرير التدفق النقدي — ${escapeHtml(label)}</h1>
+      <p style="font-size:12px;color:#555;margin:0 0 16px;">تاريخ التقرير: ${new Date().toLocaleDateString('ar-SA')} — مرتّب حسب التاريخ (الأقدم أولاً)</p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px;"><tr>
+        <td style="width:33%;padding:12px;background:#eaf5ef;border-radius:8px;text-align:center;">
+          <div style="font-size:11px;color:#3D8361;font-weight:700;">🟢 التدفقات الداخلة</div>
+          <div style="font-size:16px;font-weight:800;margin-top:4px;">${fmt(summary.incoming)} ر.س</div>
+        </td>
+        <td style="width:4%;"></td>
+        <td style="width:33%;padding:12px;background:#fbeeea;border-radius:8px;text-align:center;">
+          <div style="font-size:11px;color:#B0503B;font-weight:700;">🔴 التدفقات الخارجة</div>
+          <div style="font-size:16px;font-weight:800;margin-top:4px;">${fmt(summary.outgoing)} ر.س</div>
+        </td>
+        <td style="width:4%;"></td>
+        <td style="width:33%;padding:12px;background:#fdf3df;border-radius:8px;text-align:center;">
+          <div style="font-size:11px;color:#8a6d1d;font-weight:700;">💰 صافي التدفق النقدي</div>
+          <div style="font-size:16px;font-weight:800;margin-top:4px;">${fmt(summary.net)} ر.س</div>
+        </td>
+      </tr></table>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead><tr style="background:#eee;">
+          <th style="border:1px solid #ccc;padding:6px 8px;">التاريخ</th>
+          <th style="border:1px solid #ccc;padding:6px 8px;">الحالة</th>
+          <th style="border:1px solid #ccc;padding:6px 8px;">المشروع</th>
+          <th style="border:1px solid #ccc;padding:6px 8px;">البيان</th>
+          <th style="border:1px solid #ccc;padding:6px 8px;">ملاحظات</th>
+          <th style="border:1px solid #ccc;padding:6px 8px;">المبلغ</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>`;
+  document.body.appendChild(container);
+  try{
+    const canvas = await html2canvas(container, {scale:1.5, backgroundColor:'#ffffff'});
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({unit:'pt', format:'a4'});
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    // px-per-pt ratio, used to slice the source canvas into page-sized chunks —
+    // embedding the same oversized image once per page (just shifted) would
+    // multiply the PDF's file size by the page count.
+    const ratio = canvas.width / pageWidth;
+    const pageSliceHeight = Math.floor(pageHeight * ratio);
+    const sliceCanvas = document.createElement('canvas');
+    sliceCanvas.width = canvas.width;
+    const sliceCtx = sliceCanvas.getContext('2d');
+
+    let renderedPx = 0, first = true;
+    while(renderedPx < canvas.height){
+      const sliceHeight = Math.min(pageSliceHeight, canvas.height - renderedPx);
+      sliceCanvas.height = sliceHeight;
+      sliceCtx.fillStyle = '#ffffff';
+      sliceCtx.fillRect(0, 0, sliceCanvas.width, sliceHeight);
+      sliceCtx.drawImage(canvas, 0, renderedPx, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+      const imgData = sliceCanvas.toDataURL('image/jpeg', 0.92);
+      if(!first) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, sliceHeight / ratio);
+      renderedPx += sliceHeight;
+      first = false;
+    }
+    return arrayBufferToBase64(pdf.output('arraybuffer'));
+  } finally {
+    container.remove();
+  }
+}
+
+function buildReportEmailHtml({label, summary, note, count}){
+  const dateStr = new Date().toLocaleDateString('ar-SA');
+  return `
+  <div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;background:#f4f1ea;padding:24px;color:#1a1a1a;">
+    <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e0d3;">
+      <div style="background:#0F1E29;padding:20px 24px;">
+        <div style="font-size:18px;font-weight:800;color:#fff;">💵 المنصة الموحدة</div>
+        <div style="font-size:12px;color:#c9c2ac;margin-top:2px;">دفتر التدفقات النقدية — الرياض</div>
+      </div>
+      <div style="padding:24px;">
+        <p style="font-size:15px;margin:0 0 4px;">مرحبًا 👋</p>
+        <p style="font-size:14px;line-height:1.9;color:#333;margin:0 0 18px;">
+          نُرفق لكم تقرير التدفق النقدي لـ"<strong>${escapeHtml(label)}</strong>" بتاريخ ${dateStr}،
+          ويشمل ${count} حركة مسجّلة، بالإضافة إلى نسخة Excel ونسخة PDF لسهولة المراجعة والأرشفة.
+        </p>
+        ${note ? `<div style="background:#f4f1ea;border-radius:8px;padding:12px 14px;font-size:13px;color:#444;margin-bottom:18px;">${escapeHtml(note)}</div>` : ''}
+        <table style="width:100%;border-collapse:collapse;margin-bottom:20px;"><tr>
+          <td style="width:33.3%;padding:6px;">
+            <div style="background:#eaf5ef;border-radius:10px;padding:14px 8px;text-align:center;">
+              <div style="font-size:11px;color:#3D8361;font-weight:700;">🟢 داخلة</div>
+              <div style="font-size:15px;font-weight:800;color:#1a1a1a;margin-top:4px;">${fmt(summary.incoming)}</div>
+              <div style="font-size:10px;color:#888;">ر.س</div>
+            </div>
+          </td>
+          <td style="width:33.3%;padding:6px;">
+            <div style="background:#fbeeea;border-radius:10px;padding:14px 8px;text-align:center;">
+              <div style="font-size:11px;color:#B0503B;font-weight:700;">🔴 خارجة</div>
+              <div style="font-size:15px;font-weight:800;color:#1a1a1a;margin-top:4px;">${fmt(summary.outgoing)}</div>
+              <div style="font-size:10px;color:#888;">ر.س</div>
+            </div>
+          </td>
+          <td style="width:33.3%;padding:6px;">
+            <div style="background:#fdf3df;border-radius:10px;padding:14px 8px;text-align:center;">
+              <div style="font-size:11px;color:#8a6d1d;font-weight:700;">💰 الصافي</div>
+              <div style="font-size:15px;font-weight:800;color:#1a1a1a;margin-top:4px;">${fmt(summary.net)}</div>
+              <div style="font-size:10px;color:#888;">ر.س</div>
+            </div>
+          </td>
+        </tr></table>
+        <p style="font-size:12px;color:#888;margin:0;">التفاصيل الكاملة لكل حركة مرفقة بملفي Excel وPDF المرفقين بهذه الرسالة.</p>
+      </div>
+      <div style="background:#faf8f2;padding:14px 24px;border-top:1px solid #eee;font-size:11px;color:#999;text-align:center;">
+        جميع الحقوق محفوظة © عبدالله إسماعيل — للاستفسار والتواصل: 0509726204
+      </div>
+    </div>
+  </div>`;
+}
+
+function openEmailReportModal(scopeProjects){
+  const rows = reportRows(scopeProjects);
+  const summary = summarizeRows(rows);
+  const label = scopeProjects.length===1 ? scopeProjects[0].name : 'كل المشاريع';
+
+  openModal(`
+    <h4>إرسال التقرير بالإيميل</h4>
+    <p>سيتم إرفاق تقرير الحركات (${summary.count} حركة) لـ"${escapeHtml(label)}" كنسخة Excel ونسخة PDF، مع ملخص للتدفقات بنص الرسالة.</p>
+    <div class="summary-preview">
+      🟢 إجمالي التدفقات الداخلة: ${fmt(summary.incoming)} ر.س<br>
+      🔴 إجمالي التدفقات الخارجة: ${fmt(summary.outgoing)} ر.س<br>
+      💰 صافي التدفق النقدي: ${fmt(summary.net)} ر.س
+    </div>
+    <label>البريد الإلكتروني للمستلم</label>
+    <input id="mEmailTo" type="email" placeholder="name@example.com">
+    <label>ملاحظة إضافية (اختياري)</label>
+    <textarea id="mEmailNote" rows="3" placeholder="أي تعليق يضاف لنص الرسالة..."></textarea>
+    <div class="modal-actions">
+      <button class="btn ghost" id="mCancel">إلغاء</button>
+      <button class="btn primary" id="mSend">📧 إرسال</button>
+    </div>
+  `);
+  document.getElementById('modalBox').classList.add('wide');
+  const toInput = document.getElementById('mEmailTo');
+  toInput.focus();
+
+  const closeEmailModal = ()=>{ document.getElementById('modalBox').classList.remove('wide'); closeModal(); };
+  document.getElementById('mCancel').onclick = closeEmailModal;
+
+  document.getElementById('mSend').onclick = async ()=>{
+    const to = toInput.value.trim();
+    if(!to || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)){ alert('أدخل بريد إلكتروني صحيح'); return; }
+    const note = document.getElementById('mEmailNote').value.trim();
+    const sendBtn = document.getElementById('mSend');
+    sendBtn.disabled = true; sendBtn.textContent = 'جارٍ تجهيز الملفات...';
+    try{
+      const safeName = 'تقرير-تدفقات-' + label.replace(/[^\w؀-ۿ]+/g,'-');
+      const xlsxBase64 = buildLedgerXLSXBase64(rows);
+      const pdfBase64 = await buildReportPDFBase64(rows, summary, label);
+
+      const bodyLines = [
+        `تقرير التدفق النقدي — ${label}`,
+        '',
+        note ? note + '\n' : '',
+        'ملخص الفترة:',
+        `- إجمالي التدفقات الداخلة: ${fmt(summary.incoming)} ر.س`,
+        `- إجمالي التدفقات الخارجة: ${fmt(summary.outgoing)} ر.س`,
+        `- صافي التدفق النقدي: ${fmt(summary.net)} ر.س`,
+        `- عدد الحركات: ${summary.count}`,
+        '',
+        'التفاصيل الكاملة لكل حركة مرفقة بنسختي Excel وPDF.',
+      ];
+      const html = buildReportEmailHtml({ label, summary, note, count: summary.count });
+
+      sendBtn.textContent = 'جارٍ الإرسال...';
+      const res = await fetch('/api/email/send', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          appId: 'cashflow-riyadh',
+          to,
+          subject: `تقرير التدفق النقدي — ${label}`,
+          text: bodyLines.join('\n'),
+          html,
+          attachments: [
+            {
+              filename: safeName + '.xlsx',
+              contentBase64: xlsxBase64,
+              mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            },
+            {
+              filename: safeName + '.pdf',
+              contentBase64: pdfBase64,
+              mimeType: 'application/pdf',
+            },
+          ],
+        }),
+      });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok) throw new Error(data.error || 'تعذّر الإرسال');
+      closeEmailModal();
+      toast('✔ تم إرسال التقرير إلى ' + to);
+    }catch(e){
+      alert('تعذّر الإرسال: ' + e.message);
+      sendBtn.disabled = false; sendBtn.textContent = '📧 إرسال';
+    }
+  };
+}
+
+function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s){ return escapeHtml(s); }
+
+/* ---------------- toast ---------------- */
+function toast(msg, isError){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast-msg' + (isError ? ' error' : '');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(), 5000);
+}
+
+/* ---------------- excel import ---------------- */
+// Column layout mirrors exportLedgerCSV()'s headers exactly, so a file
+// exported from here re-imports cleanly, and users building their own file
+// from scratch only need to match those same column names.
+function normalizeImportDate(v){
+  if(v instanceof Date && !isNaN(v)) return v.toISOString().slice(0,10);
+  const s = String(v==null?'':v).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d = new Date(s);
+  if(!isNaN(d)) return d.toISOString().slice(0,10);
+  return new Date().toISOString().slice(0,10);
+}
+
+function importRowsIntoState(rows){
+  let added = 0, skipped = 0;
+  rows.forEach(row=>{
+    const typeRaw = String(row['النوع']||'').trim();
+    // Accept both the current labels and the old "إيراد/مصروف" wording so a
+    // file exported before the rename (or typed from habit) still imports.
+    const isRev = typeRaw==='تدفق داخل' || typeRaw==='إيراد' || /^rev/i.test(typeRaw);
+    const isExp = typeRaw==='تدفق خارج' || typeRaw==='مصروف' || /^exp/i.test(typeRaw);
+    const amount = Math.abs(parseFloat(row['المبلغ']));
+    if((!isRev && !isExp) || !amount || isNaN(amount)){ skipped++; return; }
+
+    const projName = String(row['المشروع']||'').trim() || 'مستورد من إكسل';
+    let proj = state.projects.find(p=>p.name===projName);
+    if(!proj){
+      proj = {id:uid(), name:projName, expenses:[], revenues:[]};
+      state.projects.push(proj);
+    }
+    const date = normalizeImportDate(row['التاريخ']);
+    const desc = String(row['البيان']||'').trim();
+    const note = String(row['ملاحظات']||'').trim();
+
+    if(isExp){
+      proj.expenses.push({id:uid(), amount, date, desc, note});
+    }else{
+      const taxPct = parseFloat(row['نسبة الضريبة']);
+      const taxRate = isNaN(taxPct) ? 0.15 : taxPct/100;
+      proj.revenues.push({id:uid(), amount, taxRate, date, desc, note});
+    }
+    added++;
+  });
+  return {added, skipped};
+}
+
+async function handleExcelImport(file){
+  try{
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array', cellDates:true});
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, {defval:''});
+    if(!rows.length){ toast('الملف فارغ أو غير مقروء', true); return; }
+
+    const {added, skipped} = importRowsIntoState(rows);
+    if(!state.activeId && state.projects.length) state.activeId = state.projects[0].id;
+    render();
+    scheduleSave();
+    if(added){
+      toast(`تم استيراد ${added} عملية بنجاح${skipped ? ` (تم تجاهل ${skipped} صف غير صالح)` : ''}`);
+    }else{
+      toast('لم يتم استيراد أي عملية — تحقق من أعمدة الملف (النوع، المبلغ)', true);
+    }
+  }catch(e){
+    console.error('excel import error', e);
+    toast('تعذّر قراءة ملف الإكسل — تأكد من الصيغة (xlsx/xls/csv)', true);
+  }
+}
+
+document.getElementById('btnImportExcel').addEventListener('click', ()=>{
+  document.getElementById('excelFileInput').click();
+});
+document.getElementById('excelFileInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(file) handleExcelImport(file);
+  e.target.value = '';
+});
+
+/* ---------------- boot ---------------- */
+(async function init(){
+  let allowed = [];
+  try{
+    allowed = await AzieScreens.fetchAllowed('cashflow-riyadh');
+  }catch(err){
+    console.error(err);
+  }
+  if(allowed.length === 0){
+    AzieScreens.renderNoAccess(document.body, 'دفتر التدفقات النقدية');
+    return;
+  }
+  await loadState();
+  if(!state.activeId && state.projects.length) state.activeId = state.projects[0].id;
+  render();
+  if(state._loadFailed){
+    const warn = document.createElement('div');
+    warn.className = 'load-warning';
+    warn.textContent = '⚠ تعذّر الاتصال بالتخزين المحفوظ، فبدأنا لك ببيانات تجريبية مؤقتة. أي بيانات سبق حفظها ما زالت موجودة على السيرفر — أعد تحميل الصفحة بدل ما تكمل التعديل هنا حتى لا يتم استبدالها.';
+    const wrap = document.querySelector('.wrap');
+    wrap.insertBefore(warn, document.getElementById('chipsRow'));
+  }
+})();
+</script>
+</body>
+</html>
