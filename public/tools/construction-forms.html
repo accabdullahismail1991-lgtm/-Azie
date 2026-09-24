@@ -1830,8 +1830,6 @@ function openForm(formId, savedData=null, savedRecord=null){
   // Auto-number new forms (not when loading saved)
   if(!savedData){
     setTimeout(()=>{ setFormNumField(formId); updateFormBankDropdowns(); }, 60);
-  } else {
-    setTimeout(()=>updateFormBankDropdowns(), 80);
   }
 
   // Load saved data — use setTimeout to ensure DOM is ready
@@ -1839,6 +1837,11 @@ function openForm(formId, savedData=null, savedRecord=null){
     // Use requestAnimationFrame for better timing than setTimeout
     requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{
+        // Rebuild the bank/fund dropdowns FIRST so a saved selection (e.g.
+        // a "صندوق عهدة") already exists as an <option> before we try to
+        // match it below — otherwise the match silently fails and the
+        // field falls back to whichever option happens to be first.
+        updateFormBankDropdowns();
         _restoreFormData(savedData);
         recalcAllForms();
         if(currentFormId==='petty-cash' && typeof pcSettle==='function') pcSettle();
@@ -4638,11 +4641,29 @@ function updateFormBankDropdowns(){
   const baseOpts = isEn
     ? `<option value="Cash from Petty Cash">💵 Cash from Petty Cash</option><option value="Cash">💵 Cash</option><option value="Bank Transfer">🏦 Bank Transfer</option><option value="Cheque">📝 Cheque</option>`
     : `<option value="نقداً من الصندوق">💵 نقداً من الصندوق</option><option value="نقداً">💵 نقداً</option><option value="تحويل بنكي">🏦 تحويل بنكي</option><option value="شيك">📝 شيك</option>`;
-  // Update all payment method selects in current form
+  // Update all payment method selects in current form — preserve any value
+  // already set (e.g. restored from a saved draft) instead of resetting to
+  // the first option whenever the bank/fund list is rebuilt, regardless of
+  // whether this runs before or after the draft's data was restored.
   ['f-pv-method','f-rv-method','f-payment-method','f-pc-method','f-pc-method-exp'].forEach(id=>{
     try{
       const el=document.getElementById(id);
-      if(el) el.innerHTML=baseOpts+bankOpts;
+      if(!el) return;
+      const prevValue = el.value;
+      el.innerHTML=baseOpts+bankOpts;
+      if(prevValue){
+        el.value = prevValue;
+        // Saved value no longer matches any option (fund renamed/deleted
+        // since the draft was saved) — keep showing the saved name instead
+        // of silently reverting to whatever option now happens to be first.
+        if(el.value !== prevValue){
+          const opt = document.createElement('option');
+          opt.value = prevValue;
+          opt.textContent = prevValue;
+          el.appendChild(opt);
+          el.value = prevValue;
+        }
+      }
     } catch(e){ /* element may not exist in current form */ }
   });
 }
