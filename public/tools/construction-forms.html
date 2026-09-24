@@ -3395,7 +3395,7 @@ function sig3(s1,s2,s3){
   const boxes = [s1,s2,s3].map(function(lbl){
     return '<div style="border:1.5px solid #ddd;border-radius:8px;padding:12px 10px;text-align:center;">'
       +'<div style="font-size:11px;font-weight:700;color:'+c+';margin-bottom:30px;">'+(lbl||'—')+'</div>'
-      +'<div style="border-top:1px solid #ddd;padding-top:6px;font-size:10px;color:#aaa;">'+sigLabel+'</div>'
+      +'<div style="border-top:1.5px solid #000;padding-top:6px;font-size:11px;font-weight:600;color:#000;">'+sigLabel+'</div>'
       +'</div>';
   }).join('');
   return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:26px;direction:'+(isEn?'ltr':'rtl')+';">'+boxes+'</div>';
@@ -3411,7 +3411,7 @@ function sig4(s1,s2,s3,s4){
   const boxes = [s1,s2,s3,s4].map(function(lbl){
     return '<div style="border:1.5px solid #ddd;border-radius:8px;padding:12px 10px;text-align:center;">'
       +'<div style="font-size:11px;font-weight:700;color:'+c+';margin-bottom:30px;">'+(lbl||'—')+'</div>'
-      +'<div style="border-top:1px solid #ddd;padding-top:6px;font-size:10px;color:#aaa;">'+sigLabel+'</div>'
+      +'<div style="border-top:1.5px solid #000;padding-top:6px;font-size:11px;font-weight:600;color:#000;">'+sigLabel+'</div>'
       +'</div>';
   }).join('');
   return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:26px;direction:'+(isEn?'ltr':'rtl')+';">'+boxes+'</div>';
@@ -3657,7 +3657,7 @@ FORM_PREVIEWS['payment-voucher'] = function(){
     : sig3(t('sigCashier'), t('sigFin'), t('sigBeneficiary'));
   return `<div style="background:${c};color:white;border-radius:8px;padding:10px 16px;display:flex;justify-content:space-between;margin-bottom:12px;">
     <span style="font-weight:900;font-size:15px">📤 ${t('pvTitle')}</span>
-    <span style="font-size:12px;opacity:.85">${t('pvNum')}: ${v('f-pv-num')||'—'} | ${v('f-pv-date')||'—'}</span>
+    <span style="font-size:12px;opacity:.85">${t('pvNum')}: ${v('f-pv-num')||'—'} | ${t('pvDate')}: ${v('f-pv-date')||'—'}</span>
   </div>`
   + infoGrid3(
     [t('pvPayee'), v('f-pv-payee')],  [t('pvId'), v('f-pv-id')],
@@ -3675,7 +3675,7 @@ FORM_PREVIEWS['receipt-voucher'] = function(){
   const c = '#059669';
   return `<div style="background:${c};color:white;border-radius:8px;padding:10px 16px;display:flex;justify-content:space-between;margin-bottom:12px;">
     <span style="font-weight:900;font-size:15px">📥 ${t('rvTitle')}</span>
-    <span style="font-size:12px;opacity:.85">${t('rvNum')}: ${v('f-rv-num')||'—'} | ${v('f-rv-date')||'—'}</span>
+    <span style="font-size:12px;opacity:.85">${t('rvNum')}: ${v('f-rv-num')||'—'} | ${t('rvDate')}: ${v('f-rv-date')||'—'}</span>
   </div>`
   + infoGrid3(
     [t('rvPayer'), v('f-rv-payer')],     [t('rvId'), v('f-rv-id')],
