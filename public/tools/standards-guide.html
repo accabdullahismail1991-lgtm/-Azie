@@ -1,254 +1,1080 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>دليل معايير المراجعة والتأكيد</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#f3f5f9; --panel:#ffffff; --text:#1c2534; --muted:#67728a; --border:#e1e6ef;
-  --primary:#1a3a5c; --primary-l:#e7edf6; --accent:#b8862c; --accent-l:#f7ecd8;
-  --shadow:0 2px 10px rgba(20,35,60,.06); --r:14px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.hdr{position:sticky;top:0;z-index:20;background:var(--primary);color:#fff;padding:18px 26px;box-shadow:var(--shadow)}
-.hdr-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.hdr h1{font-size:19px;font-weight:900;display:flex;align-items:center;gap:8px}
-.hdr .sub{font-size:12px;opacity:.75;margin-top:2px}
-.search-wrap{flex:1;min-width:220px;position:relative}
-.search-wrap input{
-  width:100%;padding:11px 40px 11px 14px;border-radius:10px;border:none;
-  font-family:inherit;font-size:14px;background:rgba(255,255,255,.12);color:#fff;
-}
-.search-wrap input::placeholder{color:rgba(255,255,255,.65)}
-.search-wrap input:focus{outline:2px solid var(--accent);background:rgba(255,255,255,.18)}
-.search-wrap .ic{position:absolute;right:13px;top:50%;transform:translateY(-50%);opacity:.7;pointer-events:none}
-.count-pill{background:rgba(255,255,255,.14);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap}
-
-.wrap{max-width:1280px;margin:0 auto;padding:20px 26px 60px}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
-.chip{
-  padding:8px 16px;border-radius:20px;font-size:12.5px;font-weight:700;cursor:pointer;
-  border:1.5px solid var(--border);background:var(--panel);color:var(--muted);transition:.15s;
-}
-.chip:hover{border-color:var(--primary);color:var(--primary)}
-.chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-
-.cat-section{margin-bottom:28px}
-.cat-title{
-  font-size:14px;font-weight:800;color:var(--primary);margin-bottom:12px;
-  display:flex;align-items:center;gap:8px;
-}
-.cat-title .n{background:var(--primary-l);color:var(--primary);border-radius:10px;padding:1px 9px;font-size:11px;font-weight:800}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-.card{
-  background:var(--panel);border:1px solid var(--border);border-radius:var(--r);
-  padding:16px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;
-}
-.card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.code-badge{
-  background:var(--accent-l);color:var(--accent);font-weight:900;font-size:12.5px;
-  padding:4px 12px;border-radius:8px;white-space:nowrap;
-}
-.pages{font-size:11px;color:var(--muted);white-space:nowrap}
-.card-title{font-size:13.5px;font-weight:700;line-height:1.6;color:var(--text);flex:1}
-.card-actions{display:flex;gap:8px;margin-top:2px}
-.btn{
-  flex:1;text-align:center;padding:9px 10px;border-radius:9px;font-size:12.5px;font-weight:700;
-  cursor:pointer;border:none;font-family:inherit;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;
-}
-.btn-view{background:var(--primary);color:#fff}
-.btn-view:hover{background:#132c47}
-.btn-dl{background:var(--primary-l);color:var(--primary);border:1.5px solid var(--border)}
-.btn-dl:hover{border-color:var(--primary)}
-
-.empty{text-align:center;padding:60px 20px;color:var(--muted)}
-.empty .ei{font-size:40px;margin-bottom:10px}
-
-.footer{
-  text-align:center;padding:22px;color:var(--muted);font-size:11.5px;
-  border-top:1px solid var(--border);margin-top:20px;
-}
-
-#no-access{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:999}
-
-@media(max-width:640px){
-  .hdr{padding:14px 16px}
-  .wrap{padding:16px 16px 40px}
-  .grid{grid-template-columns:1fr}
-}
-</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 </head>
 <body>
+<title>دليل المعايير 2026</title>
+<meta name="description" content="دليل تعليمي للمعايير الدولية للتقرير المالي ومعايير المراجعة المعتمدة في المملكة — طبعة 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: two-ledger handbook — a book switcher on top, a filter rail, then a single reading column of standard cards; each card opens into marked sections and links to the exact pages of the source book. */
+:root{
+  --paper:#f4f5f1; --sheet:#ffffff; --ink:#1b2320; --muted:#5d6863; --rule:#dde1db; --rule-strong:#c4cac2;
+  --ifrs:#1f4e79; --ifrs-soft:#e6eef6; --isa:#2d6a57; --isa-soft:#e3f0ea;
+  --gold:#a8741a; --gold-soft:#f6ecd8;
+  --m-obj:#1f4e79; --m-why:#6b3f8f; --m-key:#3f4a46; --m-ex:#a8741a; --m-tip:#2d6a57; --m-out:#2e7d32;
+  --new:#b3261e; --new-soft:#fbe9e7; --upd:#a8741a; --local:#2d6a57;
+  --f-display:"Reem Kufi","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-body:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#121615; --sheet:#1a201e; --ink:#e7ebe8; --muted:#9aa5a0; --rule:#2b3330; --rule-strong:#3a4440;
+  --ifrs:#8fb8e3; --ifrs-soft:#1b2a3a; --isa:#86c9b1; --isa-soft:#18302a; --gold:#e0b35e; --gold-soft:#34291a;
+  --m-obj:#8fb8e3; --m-why:#c7a3e6; --m-key:#c2ccc7; --m-ex:#e0b35e; --m-tip:#86c9b1; --m-out:#8fd694;
+  --new:#ff8a80; --new-soft:#3a1f1d; --upd:#e0b35e; --local:#86c9b1; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --paper:#121615; --sheet:#1a201e; --ink:#e7ebe8; --muted:#9aa5a0; --rule:#2b3330; --rule-strong:#3a4440;
+  --ifrs:#8fb8e3; --ifrs-soft:#1b2a3a; --isa:#86c9b1; --isa-soft:#18302a; --gold:#e0b35e; --gold-soft:#34291a;
+  --m-obj:#8fb8e3; --m-why:#c7a3e6; --m-key:#c2ccc7; --m-ex:#e0b35e; --m-tip:#86c9b1; --m-out:#8fd694;
+  --new:#ff8a80; --new-soft:#3a1f1d; --upd:#e0b35e; --local:#86c9b1; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important}}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.8;direction:rtl}
+.wrap{max-width:1080px;margin-inline:auto;padding-inline:16px;padding-block:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.35;margin:0}
+.mono{font-family:var(--f-mono);direction:ltr;unicode-bidi:isolate}
 
-<div class="hdr">
-  <div class="hdr-inner">
-    <div>
-      <h1>📚 دليل معايير المراجعة والتأكيد</h1>
-      <div class="sub">الإصدارات المعتمدة من الهيئة السعودية للمراجعين والمحاسبين (SOCPA) — طبعة 2026</div>
+/* masthead */
+.mast{border-bottom:1px solid var(--rule);background:var(--sheet)}
+.mast .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding-block:14px}
+.brand{display:flex;gap:12px;align-items:center}
+.seal{width:42px;height:42px;border-radius:50%;border:2px solid var(--ifrs);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;color:var(--ifrs);font-size:13px;flex:none}
+.brand b{font-family:var(--f-display);font-size:20px;display:block;line-height:1.2}
+.brand small{color:var(--muted);font-size:13px}
+.navlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px}
+.navlinks a{text-decoration:none;color:var(--muted)}
+.navlinks a:hover{color:var(--ink)}
+
+/* hero */
+.hero{padding-block:36px 8px}
+.hero h1{font-size:clamp(28px,4.6vw,44px);font-weight:700;max-width:22ch}
+.hero p.lead{color:var(--muted);max-width:68ch;margin:12px 0 0;font-size:17px}
+.books{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px;margin-top:28px}
+.book{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);padding:20px;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;text-align:start;cursor:pointer;transition:border-color .2s, transform .2s}
+.book:hover{border-color:var(--rule-strong);transform:translateY(-2px)}
+.book[aria-pressed="true"]{border-color:currentColor}
+.book.ifrs{color:var(--ifrs)} .book.isa{color:var(--isa)}
+.spine{width:54px;height:76px;border-radius:3px 8px 8px 3px;background:currentColor;position:relative;box-shadow:inset -6px 0 0 rgba(0,0,0,.18)}
+.spine::after{content:"";position:absolute;inset:8px 10px auto 8px;height:2px;background:var(--sheet);opacity:.7;box-shadow:0 6px 0 var(--sheet),0 52px 0 var(--sheet)}
+.book .bt{display:block;font-family:var(--f-display);font-size:19px;line-height:1.4;color:var(--ink)}
+.book .meta,.book .count{display:block}
+.book .meta{color:var(--muted);font-size:13.5px;line-height:1.7;margin-top:6px}
+.book .count{display:inline-flex;gap:6px;align-items:baseline;margin-top:10px;color:currentColor;font-weight:600;font-size:14px}
+.book .count strong{font-family:var(--f-display);font-size:26px}
+
+/* legend */
+section.block{margin-top:40px}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.sec-h h2{font-size:24px}
+.sec-h p{margin:0;color:var(--muted);font-size:14px}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px}
+.lg{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--rule);border-radius:var(--r);background:var(--sheet)}
+.lg p{margin:0;font-size:14px;color:var(--muted);line-height:1.65}
+.lg b{color:var(--ink);display:block;font-size:15px}
+.mk{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;flex:none;color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent)}
+.mk svg{width:17px;height:17px}
+
+/* updates strip */
+.updates{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.up{display:block;text-decoration:none;padding:12px 14px;border-radius:var(--r);background:var(--sheet);border:1px solid var(--rule);border-inline-start:4px solid var(--c)}
+.up:hover{border-color:var(--rule-strong);border-inline-start-color:var(--c)}
+.up .mono{font-size:13px;color:var(--c)}
+.up b{display:block;font-size:14.5px;line-height:1.5;margin-top:2px}
+.up span{display:block;font-size:13px;color:var(--muted);margin-top:4px}
+
+/* toolbar */
+.toolbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);padding-block:12px;border-bottom:1px solid var(--rule);display:grid;gap:10px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{border:1px solid var(--rule-strong);background:var(--sheet);border-radius:999px;padding:6px 14px;cursor:pointer;font-size:14px;font-weight:500}
+.tab[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.search{flex:1 1 260px;min-width:0;display:flex;align-items:center;gap:8px;background:var(--sheet);border:1px solid var(--rule-strong);border-radius:8px;padding:0 12px}
+.search input{border:0;background:transparent;font:inherit;color:var(--ink);padding:9px 0;width:100%;min-width:0;outline:none}
+.search svg{width:18px;height:18px;color:var(--muted);flex:none}
+select{font:inherit;font-size:14px;color:var(--ink);background:var(--sheet);border:1px solid var(--rule-strong);border-radius:8px;padding:8px 10px;max-width:100%}
+.chip{border:1px solid var(--rule-strong);background:transparent;border-radius:6px;padding:4px 10px;font-size:13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--gold-soft);border-color:var(--gold);color:var(--ink)}
+.resultline{font-size:13px;color:var(--muted)}
+
+/* cards */
+.group-h{font-family:var(--f-display);font-size:18px;margin:28px 0 10px;display:flex;align-items:center;gap:10px}
+.group-h::after{content:"";flex:1;height:1px;background:var(--rule)}
+.group-h .bk{font-family:var(--f-body);font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent)}
+.card{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);margin-bottom:10px;scroll-margin-top:170px}
+.card.ifrs{--c:var(--ifrs)} .card.isa{--c:var(--isa)}
+.card>summary{list-style:none;cursor:pointer;padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 14px;align-items:start}
+.card>summary::-webkit-details-marker{display:none}
+.code{font-family:var(--f-mono);font-size:13px;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:6px;padding:3px 8px;white-space:nowrap;direction:ltr;unicode-bidi:isolate;margin-top:3px}
+.card h3{font-size:17px;font-weight:600}
+.card .obj1{grid-column:2/3;margin:0;color:var(--muted);font-size:14.5px;line-height:1.7}
+.card[open] .obj1{display:none}
+.chev{width:22px;height:22px;color:var(--muted);transition:transform .2s;margin-top:4px}
+.card[open] .chev{transform:rotate(180deg)}
+.tags{display:inline-flex;gap:6px;flex-wrap:wrap;vertical-align:middle;margin-inline-start:6px}
+.tag{font-family:var(--f-body);font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:4px;line-height:1.7}
+.tag.new{color:var(--new);background:var(--new-soft)} .tag.updated{color:var(--upd);background:var(--gold-soft)}
+.tag.core{color:var(--ink);background:color-mix(in srgb,var(--ink) 8%,transparent)} .tag.local{color:var(--local);background:var(--isa-soft)}
+.body{padding:0 16px 16px;display:grid;gap:12px}
+.part{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;padding-top:12px;border-top:1px dashed var(--rule)}
+.part h4{margin:0 0 2px;font-size:14px;color:var(--c2);font-weight:700;letter-spacing:.2px}
+.part p{margin:0;max-width:75ch}
+.part ul{margin:0;padding-inline-start:18px;max-width:75ch}
+.part li+li{margin-top:4px}
+.part.ex .txt{background:var(--gold-soft);border-radius:8px;padding:10px 14px}
+.refbar{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:8px;background:color-mix(in srgb,var(--c) 8%,transparent);margin-top:4px}
+.refbar .src{font-size:13.5px;color:var(--muted);line-height:1.6}
+.refbar .src b{color:var(--ink);font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--c);color:var(--sheet);font-weight:600;font-size:14px;padding:8px 14px;border-radius:8px;cursor:pointer;text-decoration:none}
+.btn svg{width:17px;height:17px}
+.btn.ghost{background:transparent;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 50%,transparent)}
+.rel{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
+.rel a{font-family:var(--f-mono);font-size:12px;text-decoration:none;padding:2px 8px;border-radius:4px;border:1px solid var(--rule-strong);color:var(--ink);direction:ltr;unicode-bidi:isolate}
+.rel a:hover{border-color:var(--gold)}
+.empty{padding:40px 16px;text-align:center;color:var(--muted);border:1px dashed var(--rule-strong);border-radius:var(--r)}
+
+/* crosswalk */
+.tblwrap{overflow-x:auto;border:1px solid var(--rule);border-radius:var(--r);background:var(--sheet)}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:14.5px}
+th,td{padding:10px 14px;text-align:start;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--f-display);font-weight:600;font-size:14px;background:color-mix(in srgb,var(--ink) 4%,transparent)}
+tr:last-child td{border-bottom:0}
+td .rel a{margin:2px 0}
+td.c-ifrs .rel a{border-color:color-mix(in srgb,var(--ifrs) 50%,transparent)} td.c-isa .rel a{border-color:color-mix(in srgb,var(--isa) 50%,transparent)}
+
+/* sources */
+.sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}
+.cite{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);padding:16px 18px;font-size:14.5px}
+.cite h3{font-size:16px;margin-bottom:6px}
+.cite dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:8px 0 0}
+.cite dt{color:var(--muted)} .cite dd{margin:0}
+.note{margin-top:14px;padding:12px 16px;border-radius:var(--r);background:var(--gold-soft);font-size:14px;line-height:1.75}
+footer{margin-top:48px;border-top:1px solid var(--rule);padding-block:20px 40px;color:var(--muted);font-size:13px}
+
+/* viewer */
+.viewer{position:fixed;inset:0;z-index:50;background:color-mix(in srgb,#000 55%,transparent);display:flex;align-items:stretch;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 12px) 12px calc(env(safe-area-inset-bottom,0px) + 12px)}
+.vbox{background:var(--sheet);border-radius:12px;width:min(980px,100%);display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.vhead{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--rule)}
+.vhead b{font-family:var(--f-display);font-size:16px}
+.vhead .src{font-size:12.5px;color:var(--muted)}
+.vctrl{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ib{border:1px solid var(--rule-strong);background:var(--sheet);border-radius:8px;min-width:36px;height:34px;padding:0 10px;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:var(--ink)}
+.ib svg{width:16px;height:16px}
+.pgin{width:64px;height:34px;border:1px solid var(--rule-strong);border-radius:8px;background:var(--sheet);color:var(--ink);text-align:center;font:inherit;font-size:14px}
+.vstage{flex:1;overflow:auto;background:color-mix(in srgb,var(--ink) 6%,var(--paper));display:flex;justify-content:center;align-items:flex-start;padding:14px;min-height:0}
+.vstage canvas{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.18);max-width:none}
+.vmsg{margin:auto;text-align:center;color:var(--muted);max-width:44ch;font-size:14.5px}
+.vmsg .btn{--c:var(--ifrs);margin-top:12px}
+@media (max-width:560px){.card>summary{grid-template-columns:1fr auto}.card .code{grid-column:1/2;justify-self:start}.card .chev{grid-row:1;grid-column:2}.card h3,.card .obj1{grid-column:1/3}.part{grid-template-columns:1fr}.part .mk{display:none}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-obj" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></symbol>
+  <symbol id="i-why" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 9a3 3 0 1 1 4.2 2.8c-.8.4-1.2 1-1.2 1.9V15"/><circle cx="12" cy="18.5" r=".8" fill="currentColor"/><circle cx="12" cy="12" r="10"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-ex" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 21V9l9-6 9 6v12z"/><path d="M9 21v-7h6v7"/></symbol>
+  <symbol id="i-tip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></symbol>
+</svg>
+
+<header class="mast">
+  <div class="wrap">
+    <div class="brand"><div class="seal" aria-hidden="true">2026</div><div><b>دليل المعايير 2026</b><small>التقرير المالي والمراجعة — شرح تعليمي وتطبيقي للمحاسبين</small></div></div>
+    <nav class="navlinks" aria-label="أقسام الصفحة">
+      <a href="#legend">العلامات التنويهية</a><a href="#updates">مستجدات 2026</a><a href="#standards">المعايير</a><a href="#crosswalk">الربط بين الكتابين</a><a href="#sources">المصادر</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>كتابان في دليل واحد: من القيد المحاسبي إلى رأي المراجع</h1>
+    <p class="lead">شرح مبسط لكل معيار في الإصدارين الرسميين للهيئة السعودية للمراجعين والمحاسبين لعام 2026: ما هدفه، ولماذا وُضع، وما أهم متطلباته، ومثال من بيئة العمل في المملكة، وتوجيه عملي، والنتائج المرجوة من تطبيقه. تحت كل معيار زر يفتح صفحاته من الكتاب الأصلي لتقرأ النص المعتمد.</p>
+    <div class="books">
+      <button class="book ifrs" type="button" data-book="ifrs" aria-pressed="false">
+        <span class="spine" aria-hidden="true"></span>
+        <span><span class="bt">المعايير الدولية للتقرير المالي المعتمدة في المملكة</span>
+        <span class="meta">والمعايير والإصدارات الأخرى المكملة، ومعيار التقرير المالي على أساس التصفية — طبعة 2026م</span>
+        <span class="count"><strong id="n-ifrs">0</strong> معيارًا وتفسيرًا وإصدارًا</span></span>
+      </button>
+      <button class="book isa" type="button" data-book="isa" aria-pressed="false">
+        <span class="spine" aria-hidden="true"></span>
+        <span><span class="bt">المعايير الدولية لإدارة الجودة والمراجعة والفحص والتأكيدات الأخرى والخدمات ذات العلاقة</span>
+        <span class="meta">والمعايير والإصدارات الأخرى المعتمدة من الهيئة — طبعة 2026م (موافقة لطبعة المعايير الدولية 2025)</span>
+        <span class="count"><strong id="n-isa">0</strong> معيارًا وإصدارًا</span></span>
+      </button>
     </div>
-    <div class="search-wrap">
-      <input type="text" id="search" placeholder="ابحث برقم المعيار أو الاسم...">
-      <span class="ic">🔍</span>
+  </section>
+
+  <section class="block" id="legend">
+    <div class="sec-h"><h2>العلامات التنويهية</h2><p>كل معيار مشروح بالعلامات نفسها وبالترتيب نفسه</p></div>
+    <div class="legend" id="legendGrid"></div>
+  </section>
+
+  <section class="block" id="updates">
+    <div class="sec-h"><h2>مستجدات تحتاج انتباهك في 2026 و2027</h2><p>معايير جديدة أو محدثة في الطبعتين</p></div>
+    <div class="updates" id="updGrid"></div>
+  </section>
+
+  <section class="block" id="standards">
+    <div class="toolbar">
+      <div class="tabs" role="group" aria-label="اختيار الكتاب">
+        <button class="tab" type="button" data-tab="all" aria-pressed="true">الكتابان</button>
+        <button class="tab" type="button" data-tab="ifrs" aria-pressed="false">التقرير المالي</button>
+        <button class="tab" type="button" data-tab="isa" aria-pressed="false">المراجعة والتأكيد</button>
+      </div>
+      <div class="row">
+        <label class="search" for="q"><svg><use href="#i-search"/></svg><input id="q" type="search" placeholder="ابحث برقم المعيار أو كلمة: إيراد، 315، مخزون، زكاة…" autocomplete="off"></label>
+        <select id="grp" aria-label="المجموعة"><option value="">كل المجموعات</option></select>
+      </div>
+      <div class="row">
+        <button class="chip" type="button" data-f="core" aria-pressed="false">الأساسية للممارس</button>
+        <button class="chip" type="button" data-f="new" aria-pressed="false">جديد</button>
+        <button class="chip" type="button" data-f="updated" aria-pressed="false">محدث</button>
+        <button class="chip" type="button" data-f="local" aria-pressed="false">محلي سعودي</button>
+        <span class="resultline" id="count" aria-live="polite"></span>
+      </div>
     </div>
-    <div class="count-pill" id="countPill">57 مستنداً</div>
+    <div id="list"></div>
+  </section>
+
+  <section class="block" id="crosswalk">
+    <div class="sec-h"><h2>الربط بين الكتابين</h2><p>المحاسب يطبق معيار التقرير المالي، والمراجع يختبره بمعيار المراجعة المقابل</p></div>
+    <div class="tblwrap"><table>
+      <thead><tr><th>مجال العمل</th><th>ما يطبقه المحاسب</th><th>ما يطبقه المراجع</th><th>السؤال المشترك</th></tr></thead>
+      <tbody id="cw"></tbody>
+    </table></div>
+  </section>
+
+  <section class="block" id="sources">
+    <div class="sec-h"><h2>المصادر</h2><p>أرقام الصفحات في الدليل هي أرقام الصفحات المطبوعة في كل كتاب</p></div>
+    <div class="sources">
+      <div class="cite" style="--c:var(--ifrs)">
+        <h3>الكتاب الأول: التقرير المالي</h3>
+        <div>الهيئة السعودية للمراجعين والمحاسبين (1447هـ). <em>المعايير الدولية للتقرير المالي المعتمدة في المملكة العربية السعودية، والمعايير والإصدارات الأخرى المكملة للمعايير الدولية المعتمدة من الهيئة، ومعيار التقرير المالي على أساس التصفية</em>. طبعة 2026م. الرياض.</div>
+        <dl><dt>رقم الإيداع</dt><dd class="mono">1447/17007</dd><dt>ردمك</dt><dd class="mono">978-603-8500-13-2</dd><dt>عدد الصفحات</dt><dd>1461 صفحة</dd><dt>الترجمة</dt><dd>بموجب اتفاقية مع مؤسسة المعايير الدولية للتقرير المالي ©</dd></dl>
+      </div>
+      <div class="cite" style="--c:var(--isa)">
+        <h3>الكتاب الثاني: المراجعة والتأكيد</h3>
+        <div>الهيئة السعودية للمراجعين والمحاسبين (1447هـ). <em>المعايير الدولية لإدارة الجودة والمراجعة والفحص والتأكيدات الأخرى والخدمات ذات العلاقة والمعايير والإصدارات الأخرى المعتمدة من الهيئة</em>. طبعة 2026م (موافقة لطبعة المعايير الدولية لعام 2025). الرياض.</div>
+        <dl><dt>رقم الإيداع</dt><dd class="mono">1447/15247</dd><dt>ردمك</dt><dd class="mono">978-603-8500-11-8</dd><dt>عدد الصفحات</dt><dd>1765 صفحة</dd><dt>الأصل</dt><dd>إصدارات مجلس المعايير الدولية للمراجعة والتأكيد (IAASB)</dd></dl>
+      </div>
+    </div>
+    <div class="note"><b>تنبيه:</b> هذا الدليل شرح تعليمي مبسط لا يغني عن النص المعتمد. عند أي اختلاف فالنص الوارد في الكتابين هو المرجع. الأمثلة افتراضية لأغراض التعلم، وأسماء المنشآت فيها غير حقيقية. الكتابان متاحان للاستخدام الشخصي غير التجاري من موقع الهيئة: <span class="mono">www.socpa.org.sa</span></div>
+  </section>
+</main>
+<footer><div class="wrap">دليل تعليمي أُعد من طبعتي 2026 الصادرتين عن الهيئة السعودية للمراجعين والمحاسبين. زر «اقرأ نص المعيار» يعرض الصفحات المطابقة من الكتاب نفسه.</div></footer>
+
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-labelledby="vTitle">
+  <div class="vbox">
+    <div class="vhead">
+      <div><b id="vTitle"></b><div class="src" id="vSrc"></div></div>
+      <div class="vctrl">
+        <button class="ib" type="button" id="vPrev" aria-label="الصفحة السابقة">السابقة</button>
+        <input class="pgin" id="vPage" type="number" min="1" aria-label="رقم الصفحة في الكتاب">
+        <span class="src" id="vOf"></span>
+        <button class="ib" type="button" id="vNext" aria-label="الصفحة التالية">التالية</button>
+        <button class="ib" type="button" id="vZoomOut" aria-label="تصغير">−</button>
+        <button class="ib" type="button" id="vZoomIn" aria-label="تكبير">+</button>
+        <a class="ib" id="vOpen" href="#" target="_blank" rel="noopener"><svg><use href="#i-ext"/></svg>نافذة جديدة</a>
+        <button class="ib" type="button" id="vClose" aria-label="إغلاق">✕</button>
+      </div>
+    </div>
+    <div class="vstage" id="vStage"></div>
   </div>
 </div>
 
-<div class="wrap">
-  <div class="chips" id="chips"></div>
-  <div id="results"></div>
-</div>
+<script>window.PAGES={"sa-endorse":[11,79,772],"framework":[80,147,512],"ifrs1":[148,181,317],"ifrs2":[182,210,374],"ifrs3":[211,247,383],"ifrs5":[248,262,218],"ifrs6":[263,269,143],"ifrs7":[270,317,444],"ifrs8":[318,327,129],"ifrs9":[328,453,1304],"ifrs10":[454,494,445],"ifrs11":[495,513,265],"ifrs12":[514,533,244],"ifrs13":[534,566,421],"ifrs14":[567,581,206],"ifrs15":[582,622,424],"ifrs16":[623,657,346],"ifrs17":[658,727,569],"ifrs18":[728,784,456],"ifrs19":[785,841,434],"ias1":[842,874,315],"ias2":[875,881,132],"ias7":[882,896,215],"ias8":[897,907,186],"ias8b":[908,923,215],"ias10":[924,929,128],"ias12":[930,959,351],"ias16":[960,976,242],"ias19":[977,1012,456],"ias20":[1013,1019,148],"ias21":[1020,1038,236],"ias23":[1039,1044,116],"ias24":[1045,1052,137],"ias26":[1053,1061,134],"ias27":[1062,1068,115],"ias28":[1069,1079,194],"ias29":[1080,1086,128],"ias32":[1087,1114,350],"ias33":[1115,1131,245],"ias34":[1132,1144,206],"ias36":[1145,1178,351],"ias37":[1179,1192,208],"ias38":[1193,1215,289],"ias40":[1216,1232,236],"ias41":[1233,1242,147],"ifric1":[1243,1246,107],"ifric2":[1247,1255,149],"ifric5":[1256,1259,101],"ifric6":[1260,1262,91],"ifric7":[1263,1265,81],"ifric10":[1266,1268,77],"ifric12":[1269,1276,131],"ifric14":[1277,1282,112],"ifric16":[1283,1292,192],"ifric17":[1293,1296,100],"ifric19":[1297,1300,86],"ifric20":[1301,1305,113],"ifric21":[1306,1309,101],"ifric22":[1310,1313,86],"ifric23":[1314,1320,149],"sic10":[1321,1322,79],"sic25":[1323,1325,80],"sic29":[1326,1328,82],"sic32":[1329,1333,111],"ifrs-glossary":[1334,1412,813],"zakat":[1414,1418,101],"bankruptcy":[1419,1432,259],"sa-opinions":[1433,1460,956],"liquidation":[1461,1492,386],"isa-preface":[39,43,197],"isqm1":[44,103,495],"isqm2":[104,119,183],"isa200":[120,141,239],"isa210":[142,159,192],"isa220":[160,191,307],"isa230":[192,202,186],"isa240":[203,236,306],"isa250":[237,250,210],"isa260":[251,271,244],"isa265":[272,280,153],"isa300":[281,290,181],"isa315":[291,379,736],"isa320":[380,387,181],"isa330":[388,406,228],"isa402":[407,422,203],"isa450":[423,432,163],"isa500":[433,448,243],"isa501":[449,457,153],"isa505":[458,467,192],"isa510":[468,478,196],"isa520":[479,485,140],"isa530":[486,497,196],"isa540":[498,548,457],"isa550":[549,568,233],"isa560":[569,577,158],"isa570":[578,597,259],"isa580":[598,609,173],"isa600":[610,664,487],"isa610":[665,680,222],"isa620":[681,696,200],"isa700":[697,735,418],"isa701":[736,751,220],"isa705":[752,774,251],"isa706":[775,789,186],"isa710":[790,805,289],"isa720":[806,842,354],"isa800":[843,860,257],"isa805":[861,882,268],"isa810":[883,905,234],"isa570r":[906,1026,880],"isre2400":[1030,1091,469],"isre2410":[1092,1117,267],"isae3000":[1118,1175,467],"isae3400":[1176,1183,151],"isae3402":[1184,1219,319],"isae3410":[1220,1279,516],"isae3420":[1280,1304,274],"isrs4400":[1305,1333,333],"isrs4410":[1334,1363,281],"issa5000":[1364,1555,1382],"iapn1000":[1558,1601,441],"aqf":[1602,1645,582],"assurance-fw":[1646,1668,246],"isa-glossary":[1669,1720,658],"forensic":[1722,1760,634],"isa-clarif":[1761,1766,138]};
+// المحتوى التعليمي — المعايير الدولية للتقرير المالي المعتمدة في المملكة (طبعة 2026)
+// المفاتيح: code الرمز، t العنوان، g المجموعة، tags الوسوم، obj الهدف، why المقصود/المشكلة التي يعالجها،
+// key أهم المتطلبات، ex مثال من الواقع، tip توجيه للمحاسب، out النتائج المرجوة، rel معايير مرتبطة
+window.IFRS_GROUPS = {
+  base: "الإطار والتحول والتطبيق المحلي",
+  pres: "العرض والإفصاح",
+  rev: "الإيرادات والمخزون والأصول",
+  fin: "الأدوات المالية والقيمة العادلة",
+  grp: "المجموعات والاستثمارات وتجميع الأعمال",
+  emp: "الموظفون والضرائب والعملات",
+  spec: "الصناعات والمعاملات المتخصصة",
+  int: "التفسيرات (IFRIC / SIC)",
+  local: "الإصدارات السعودية المكملة"
+};
 
-<div class="footer">
-  دليل مرجعي للاطلاع والتنزيل فقط — لا يُعدّ بديلاً عن الرجوع للنص الرسمي الصادر عن الهيئة عند التطبيق.<br>
-  جميع الحقوق محفوظة © عبدالله إسماعيل — للاستفسار والتواصل: 0509726204
-</div>
+window.IFRS_DATA = [
+{ id:"sa-endorse", code:"وثيقة الاعتماد", t:"وثيقة اعتماد المعايير الدولية للتقرير المالي في المملكة", g:"base", tags:["local","updated"],
+  obj:"توضيح قرار الهيئة السعودية للمراجعين والمحاسبين باعتماد المعايير الدولية، وبيان المتطلبات والإفصاحات الإضافية التي أضافتها الهيئة لتلائم البيئة النظامية في المملكة.",
+  why:"المعيار الدولي كما صدر عن مجلس المعايير الدولية للمحاسبة قد لا يعالج أمورًا محلية مثل الزكاة، فالوثيقة تحدد ما يُطبق كما هو وما أُضيف إليه.",
+  key:["تطبيق النسخة الكاملة على المنشآت المدرجة من 2017/1/1 وعلى غيرها من 2018/1/1.","المنشآت غير الخاضعة للمساءلة العامة يجوز لها تطبيق النسخة الكاملة بدل معيار المنشآت الصغيرة والمتوسطة، وإذا اختارتها تستمر عليها.","الوثيقة محدَّثة حتى 2025/12/24م لتضمين آخر قرارات الاعتماد."],
+  ex:"شركة مساهمة مقفلة في جدة تسأل: هل يلزمها تطبيق النسخة الكاملة؟ ترجع إلى الوثيقة: إن لم تكن خاضعة للمساءلة العامة فلها الخيار، وإن اختارت النسخة الكاملة لا ترجع للمعيار المبسط إلا في حالات محددة.",
+  tip:["اقرأ هذه الوثيقة قبل أي معيار؛ فهي تحدد النسخة الملزمة لك.","راجع قائمة الإفصاحات الإضافية المحلية عند إعداد الإيضاحات."],
+  out:["تحديد الإطار المحاسبي الصحيح للمنشأة من البداية.","اتساق القوائم مع متطلبات الجهات الرقابية في المملكة."], rel:["framework","zakat","isa-clarif"] },
 
-<div id="no-access"></div>
+{ id:"framework", code:"الإطار المفاهيمي", t:"إطار مفاهيم التقرير المالي", g:"base", tags:["core"],
+  obj:"وصف هدف التقرير المالي للأغراض العامة والمفاهيم التي تُبنى عليها المعايير: الخصائص النوعية، وتعريف عناصر القوائم، والإثبات والقياس والعرض.",
+  why:"يعطي المحاسب مرجعًا للتفكير حين لا يوجد معيار يعالج معاملة بعينها، ويساعد على فهم منطق المعايير بدل حفظها.",
+  key:["هدف التقرير المالي: توفير معلومات مفيدة للمستثمرين والمقرضين والدائنين لاتخاذ قرارات تخص تقديم الموارد للمنشأة.","الخصائص الأساسية: الملاءمة والتمثيل الصادق، والخصائص المعززة: القابلية للمقارنة والتحقق والتوقيت المناسب والقابلية للفهم.","الأصل: مورد اقتصادي حالي تسيطر عليه المنشأة نتيجة أحداث سابقة. الالتزام: واجب حالي بتحويل مورد اقتصادي نتيجة أحداث سابقة.","الإطار ليس معيارًا ولا يتجاوز أي معيار."],
+  ex:"مؤسسة ناشئة في الرياض تعاقدت على برنامج ولاء جديد لا يوجد له معيار واضح. يستخدم المحاسب تعريف الالتزام في الإطار ليقرر هل يوجد واجب حالي تجاه العملاء يستوجب الإثبات.",
+  tip:["عند أي معالجة غير واضحة: اسأل هل البند يحقق تعريف الأصل أو الالتزام؟ ثم هل إثباته يوفر معلومات ملائمة وتمثيلًا صادقًا؟","الإطار يُستخدم مع معيار المحاسبة الدولي 8 عند غياب معيار محدد."],
+  out:["أحكام محاسبية متسقة ومبررة.","قوائم مالية تخدم قرارات المستثمرين والمقرضين."], rel:["ias8","ias1","ifrs18","isa200"] },
 
-<script>
-'use strict';
-const STANDARDS_CATS = ["ISQM", "ISA", "ISRE", "ISAE", "ISRS", "ISSA", "IAPN", "FW", "REF", "CS"];
-const STANDARDS_CAT_LABELS = {"ISQM": "معايير إدارة الجودة الدولية (ISQM)", "ISA": "معايير المراجعة الدولية (ISA)", "ISRE": "معايير ارتباطات الفحص (ISRE)", "ISAE": "معايير ارتباطات التأكيد (ISAE)", "ISRS": "معايير الخدمات ذات العلاقة (ISRS)", "ISSA": "معيار تأكيد معلومات الاستدامة (ISSA)", "IAPN": "مذكرات ممارسات المراجعة الدولية (IAPN)", "FW": "الأُطر الدولية (Frameworks)", "REF": "مراجع عامة", "CS": "الخدمات الاستشارية"};
-const STANDARDS = [
-  {id:'isa-preface',cat:'ISA',code:'Preface',title:'التمهيد لإصدارات المعايير الدولية لإدارة الجودة والمراجعة والفحص والتأكيدات الأخرى والخدمات ذات العلاقة',pages:5},
-  {id:'isqm1',cat:'ISQM',code:'ISQM 1',title:'المعيار الدولي لإدارة الجودة (1): إدارة الجودة للمكاتب التي تنفذ ارتباطات مراجعة أو فحص القوائم المالية أو ارتباطات التأكيد الأخرى أو ارتباطات الخدمات ذات العلاقة',pages:60},
-  {id:'isqm2',cat:'ISQM',code:'ISQM 2',title:'المعيار الدولي لإدارة الجودة (2): فحوصات جودة الارتباطات',pages:16},
-  {id:'isa200',cat:'ISA',code:'ISA 200',title:'معيار المراجعة (200): الأهداف العامة للمراجع المستقل والقيام بالمراجعة وفقاً للمعايير الدولية للمراجعة',pages:22},
-  {id:'isa210',cat:'ISA',code:'ISA 210',title:'معيار المراجعة (210): الاتفاق على شروط ارتباطات المراجعة',pages:18},
-  {id:'isa220',cat:'ISA',code:'ISA 220',title:'معيار المراجعة (220) (المحدَّث): إدارة الجودة لمراجعة القوائم المالية',pages:32},
-  {id:'isa230',cat:'ISA',code:'ISA 230',title:'معيار المراجعة (230): توثيق أعمال المراجعة',pages:11},
-  {id:'isa240',cat:'ISA',code:'ISA 240',title:'معيار المراجعة (240): مسؤوليات المراجع ذات العلاقة بالغش عند مراجعة القوائم المالية',pages:34},
-  {id:'isa250',cat:'ISA',code:'ISA 250',title:'معيار المراجعة (250) (المحدَّث): مراعاة الأنظمة واللوائح عند مراجعة القوائم المالية',pages:14},
-  {id:'isa260',cat:'ISA',code:'ISA 260',title:'معيار المراجعة (260): الاتصال بالمكلفين بالحوكمة',pages:21},
-  {id:'isa265',cat:'ISA',code:'ISA 265',title:'معيار المراجعة (265): إبلاغ أوجه القصور في الرقابة الداخلية للمكلفين بالحوكمة والإدارة',pages:9},
-  {id:'isa300',cat:'ISA',code:'ISA 300',title:'معيار المراجعة (300): التخطيط لمراجعة القوائم المالية',pages:10},
-  {id:'isa315',cat:'ISA',code:'ISA 315',title:'معيار المراجعة (315) (المحدَّث في عام 2019): التعرف على مخاطر التحريف الجوهري وتقييمها',pages:89},
-  {id:'isa320',cat:'ISA',code:'ISA 320',title:'معيار المراجعة (320): الأهمية النسبية عند تخطيط وتنفيذ المراجعة',pages:8},
-  {id:'isa330',cat:'ISA',code:'ISA 330',title:'معيار المراجعة (330): استجابات المراجع للمخاطر المقيَّمة',pages:19},
-  {id:'isa402',cat:'ISA',code:'ISA 402',title:'معيار المراجعة (402): اعتبارات المراجعة ذات العلاقة بمنشأة تستخدم منشأة خدمية',pages:16},
-  {id:'isa450',cat:'ISA',code:'ISA 450',title:'معيار المراجعة (450): تقويم التحريفات المُكتشفة خلال المراجعة',pages:10},
-  {id:'isa500',cat:'ISA',code:'ISA 500',title:'معيار المراجعة (500): أدلة المراجعة',pages:16},
-  {id:'isa501',cat:'ISA',code:'ISA 501',title:'معيار المراجعة (501): أدلة المراجعة – اعتبارات محددة لبنود مختارة',pages:9},
-  {id:'isa505',cat:'ISA',code:'ISA 505',title:'معيار المراجعة (505): المصادقات الخارجية',pages:10},
-  {id:'isa510',cat:'ISA',code:'ISA 510',title:'معيار المراجعة (510): ارتباطات المراجعة لأول مرة – الأرصدة الافتتاحية',pages:11},
-  {id:'isa520',cat:'ISA',code:'ISA 520',title:'معيار المراجعة (520): الإجراءات التحليلية',pages:7},
-  {id:'isa530',cat:'ISA',code:'ISA 530',title:'معيار المراجعة (530): العينات في المراجعة',pages:12},
-  {id:'isa540',cat:'ISA',code:'ISA 540',title:'معيار المراجعة (540) (المحدَّث): مراجعة التقديرات الحاسبية وما يتعلق بها من إفصاحات',pages:51},
-  {id:'isa550',cat:'ISA',code:'ISA 550',title:'معيار المراجعة (550): الأطراف ذات العلاقة',pages:20},
-  {id:'isa560',cat:'ISA',code:'ISA 560',title:'معيار المراجعة (560): الأحداث اللاحقة',pages:9},
-  {id:'isa570',cat:'ISA',code:'ISA 570',title:'معيار المراجعة (570): الاستمرارية',pages:20},
-  {id:'isa570r',cat:'ISA',code:'ISA 570 (2024)',title:'معيار المراجعة (570) (المحدَّث في عام 2024): الاستمرارية',pages:121},
-  {id:'isa580',cat:'ISA',code:'ISA 580',title:'معيار المراجعة (580): الإفادات المكتوبة',pages:12},
-  {id:'isa600',cat:'ISA',code:'ISA 600',title:'المعيار الدولي للمراجعة (600) (المُحدَّث): اعتبارات خاصة — عمليات مراجعة القوائم المالية للمجموعات (بما في ذلك عمل مراجعي مكونات المجموعة)',pages:55},
-  {id:'isa610',cat:'ISA',code:'ISA 610',title:'معيار المراجعة (610): استخدام عمل المراجعين الداخليين',pages:16},
-  {id:'isa620',cat:'ISA',code:'ISA 620',title:'معيار المراجعة (620): استخدام عمل خبير استعان به المراجع',pages:16},
-  {id:'isa700',cat:'ISA',code:'ISA 700',title:'معيار المراجعة (700): تكوين الرأي والتقرير عن القوائم المالية',pages:39},
-  {id:'isa701',cat:'ISA',code:'ISA 701',title:'معيار المراجعة (701): الإبلاغ عن الأمور الرئيسة للمراجعة في تقرير المراجع المستقل',pages:16},
-  {id:'isa705',cat:'ISA',code:'ISA 705',title:'معيار المراجعة (705): التعديلات على الرأي في تقرير المراجع المستقل',pages:23},
-  {id:'isa706',cat:'ISA',code:'ISA 706',title:'معيار المراجعة (706): فقرات لفت الانتباه، وفقرات أمور أخرى في تقرير المراجع المستقل',pages:15},
-  {id:'isa710',cat:'ISA',code:'ISA 710',title:'معيار المراجعة (710): المعلومات المقارنة – الأرقام المقابلة والقوائم المالية المقارنة',pages:16},
-  {id:'isa720',cat:'ISA',code:'ISA 720',title:'معيار المراجعة (720): مسؤوليات المراجع ذات العلاقة بالمعلومات الأخرى',pages:37},
-  {id:'isa800',cat:'ISA',code:'ISA 800',title:'معيار المراجعة (800): اعتبارات خاصة – عمليات مراجعة القوائم المالية المُعدة وفقاً لأطر ذات غرض خاص',pages:18},
-  {id:'isa805',cat:'ISA',code:'ISA 805',title:'معيار المراجعة (805): اعتبارات خاصة – عمليات مراجعة قائمة مالية واحدة، وعناصر أو حسابات أو بنود محددة في قائمة مالية',pages:22},
-  {id:'isa810',cat:'ISA',code:'ISA 810',title:'معيار المراجعة (810): الارتباطات لإعداد التقارير عن القوائم المالية الملخصة',pages:23},
-  {id:'isre2400',cat:'ISRE',code:'ISRE 2400',title:'معيار ارتباطات الفحص (2400): الارتباطات لفحص القوائم المالية التاريخية',pages:62},
-  {id:'isre2410',cat:'ISRE',code:'ISRE 2410',title:'معيار ارتباطات الفحص (2410): فحص المعلومات المالية الأولية المُنفَّذ من قبل المراجع المستقل للمنشأة',pages:26},
-  {id:'isae3000',cat:'ISAE',code:'ISAE 3000',title:'معيار ارتباطات التأكيد (3000): ارتباطات التأكيد الأخرى بخلاف عمليات مراجعة أو فحص المعلومات المالية التاريخية',pages:58},
-  {id:'isae3400',cat:'ISAE',code:'ISAE 3400',title:'معيار ارتباطات التأكيد (3400): اختبار المعلومات المالية المستقبلية',pages:8},
-  {id:'isae3402',cat:'ISAE',code:'ISAE 3402',title:'معيار ارتباطات التأكيد (3402): تقارير التأكيد عن أدوات الرقابة في المنشأة الخدمية',pages:36},
-  {id:'isae3410',cat:'ISAE',code:'ISAE 3410',title:'معيار ارتباطات التأكيد (3410): ارتباطات التأكيد عن قوائم غازات الاحتباس الحراري',pages:60},
-  {id:'isae3420',cat:'ISAE',code:'ISAE 3420',title:'معيار ارتباطات التأكيد (3420): ارتباطات التأكيد لإعداد تقرير عن تجميع المعلومات المالية التصورية المُضمنة في نشرات الاكتتاب',pages:25},
-  {id:'isrs4400',cat:'ISRS',code:'ISRS 4400',title:'المعيار الدولي للخدمات ذات العلاقة (4400) (المحدَّث): ارتباطات الإجراءات المتفق عليها',pages:29},
-  {id:'isrs4410',cat:'ISRS',code:'ISRS 4410',title:'معيار الخدمات ذات العلاقة (4410): ارتباطات التجميع',pages:30},
-  {id:'issa5000',cat:'ISSA',code:'ISSA 5000',title:'معيار تأكيد معلومات الاستدامة (5000): المتطلبات العامة لارتباطات تأكيد معلومات الاستدامة',pages:192},
-  {id:'iapn1000',cat:'IAPN',code:'IAPN 1000',title:'مذكرة ممارسات المراجعة الدولية (1000): اعتبارات خاصة عند مراجعة الأدوات المالية',pages:44},
-  {id:'aqf',cat:'FW',code:'AQF',title:'إطار جودة المراجعة (Audit Quality Framework)',pages:44},
-  {id:'assurance-fw',cat:'FW',code:'ISAE FW',title:'الإطار الدولي لارتباطات التأكيد (International Framework for Assurance Engagements)',pages:23},
-  {id:'isa-glossary',cat:'REF',code:'Glossary',title:'مسرد المصطلحات (طبعة 2026)',pages:52},
-  {id:'isa-clarif',cat:'REF',code:'Clarification',title:'توضيحات من مجلس معايير المراجعة بشأن تاريخ تطبيق المعايير الدولية للمراجعة',pages:6},
-  {id:'forensic',cat:'CS',code:'Forensic Accounting',title:'معيار الخدمات الاستشارية: ارتباطات تقديم خدمات المحاسبة القضائية',pages:39},
+{ id:"ifrs1", code:"IFRS 1", t:"تطبيق المعايير الدولية للتقرير المالي لأول مرة", g:"base", tags:[],
+  obj:"ضمان أن تحتوي أول قوائم مالية تُعد وفق المعايير الدولية على معلومات عالية الجودة وشفافة وقابلة للمقارنة وتكون نقطة بداية مناسبة.",
+  why:"التحول من إطار محاسبي سابق إلى المعايير الدولية يثير أسئلة حول الأرصدة الافتتاحية؛ المعيار يحدد متى تُطبق المعايير بأثر رجعي ومتى تُمنح إعفاءات.",
+  key:["إعداد قائمة مركز مالي افتتاحية في تاريخ التحول.","التطبيق بأثر رجعي كأصل عام مع إعفاءات اختيارية (مثل التكلفة المفترضة للأصول الثابتة) واستثناءات إلزامية.","الإفصاح عن تسويات حقوق الملكية والدخل الشامل بين الإطار السابق والمعايير الدولية."],
+  ex:"شركة عائلية تنتقل من معيار المنشآت الصغيرة والمتوسطة إلى النسخة الكاملة تمهيدًا للإدراج. تستخدم إعفاء التكلفة المفترضة لقياس أرض مصنعها بالقيمة العادلة في تاريخ التحول بدل إعادة بناء التكلفة التاريخية.",
+  tip:["خطط لتاريخ التحول مبكرًا: هو بداية أقدم فترة مقارنة معروضة.","وثّق كل إعفاء اختياري استخدمته، فالمراجع سيطلبه."],
+  out:["رصيد افتتاحي موثوق.","فهم المستخدمين لأثر التحول عبر التسويات."], rel:["sa-opinions","isa510","ias16"] },
+
+{ id:"ifrs2", code:"IFRS 2", t:"الدفع على أساس الأسهم", g:"emp", tags:[],
+  obj:"تحديد التقرير المالي للمنشأة عندما تنفذ معاملة دفع على أساس الأسهم، بما في ذلك إثبات أثرها في الربح أو الخسارة والمركز المالي.",
+  why:"منح الموظفين أسهمًا أو خيارات أسهم هو مقابل خدمة له تكلفة حقيقية حتى لو لم تخرج نقدية.",
+  key:["المعاملات المسددة بحقوق الملكية تُقاس بالقيمة العادلة للأداة في تاريخ المنح، ولا يعاد قياسها.","المعاملات المسددة نقدًا تُقاس بالقيمة العادلة للالتزام ويعاد قياسها في كل تاريخ تقرير.","توزيع التكلفة على فترة الاستحقاق حسب شروط الخدمة والأداء."],
+  ex:"شركة تقنية مدرجة في تداول تمنح 50 مديرًا خيارات أسهم تستحق بعد 3 سنوات. القيمة العادلة للخيار 12 ريالًا و10,000 خيار لكل مدير، فالتكلفة الكلية 6 ملايين ريال تُحمَّل بنحو 2 مليون سنويًا مع تعديل عدد المتوقع بقاؤهم.",
+  tip:["احصل على تقييم مستقل للخيارات (نموذج بلاك-شولز أو ذات الحدين).","فرّق بين شروط السوق وشروط غير السوق؛ فمعالجتهما مختلفة."],
+  out:["إظهار تكلفة مكافآت الموظفين الحقيقية.","مقارنة عادلة بين شركات تكافئ نقدًا وأخرى تكافئ بالأسهم."], rel:["ias19","ias33","isa540"] },
+
+{ id:"ifrs3", code:"IFRS 3", t:"تجميع الأعمال", g:"grp", tags:["core"],
+  obj:"تحسين ملاءمة وموثوقية وقابلية مقارنة المعلومات التي تقدمها المنشأة عن تجميع الأعمال وآثاره.",
+  why:"عند الاستحواذ على منشأة يجب تحديد ما تم شراؤه فعلًا: أصول والتزامات بقيمها العادلة، وما يتبقى هو الشهرة.",
+  key:["تطبيق طريقة الاستحواذ: تحديد المستحوذ وتاريخ الاستحواذ.","إثبات الأصول المحددة والالتزامات المتحملة بالقيمة العادلة.","الشهرة = العوض المحول + الحصة غير المسيطرة + الحصة السابقة − صافي الأصول بالقيمة العادلة.","الشهرة لا تُستهلك وتُختبر للهبوط سنويًا."],
+  ex:"شركة أغذية تستحوذ على 100% من مصنع ألبان في القصيم مقابل 200 مليون ريال. القيمة العادلة لصافي الأصول 150 مليونًا منها علامة تجارية 30 مليونًا لم تكن مسجلة. تنشأ شهرة 50 مليونًا وتُثبت العلامة كأصل غير ملموس.",
+  tip:["ابحث عن الأصول غير الملموسة غير المسجلة: علامات، علاقات عملاء، عقود.","لديك فترة قياس حتى سنة لتعديل القيم المؤقتة."],
+  out:["إظهار حقيقة ما دُفع مقابله.","مساءلة الإدارة عن قرارات الاستحواذ عبر اختبار الهبوط."], rel:["ifrs10","ifrs13","ias36","isa600","sa-opinions"] },
+
+{ id:"ifrs5", code:"IFRS 5", t:"الأصول غير المتداولة المحتفظ بها للبيع والعمليات غير المستمرة", g:"pres", tags:[],
+  obj:"تحديد المحاسبة عن الأصول المحتفظ بها للبيع، وعرض العمليات غير المستمرة والإفصاح عنها.",
+  why:"المستخدم يحتاج أن يفصل بين الأنشطة التي ستستمر وتلك التي ستُباع أو أُغلقت ليتنبأ بالأرباح المستقبلية.",
+  key:["يُصنف الأصل محتفظًا به للبيع إذا كان متاحًا للبيع الفوري ومن المرجح جدًا بيعه خلال 12 شهرًا.","يُقاس بالأقل من القيمة الدفترية والقيمة العادلة ناقصًا تكاليف البيع، ويتوقف استهلاكه.","نتائج العمليات غير المستمرة تُعرض في بند مستقل."],
+  ex:"سلسلة مطاعم تقرر بيع فرعها في المنطقة الشرقية وتوقّع مذكرة تفاهم مع مشترٍ. تُعاد تصنيف أصول الفرع وتُعرض نتائجه منفصلة عن بقية النشاط.",
+  tip:["وثّق قرار الإدارة وخطة البيع النشطة؛ بدونها لا يجوز التصنيف.","أوقف الاستهلاك من تاريخ التصنيف."], out:["تنبؤ أفضل بالأرباح المستمرة.","شفافية قرارات التخارج."], rel:["ias16","ias36","ifrs18"] },
+
+{ id:"ifrs6", code:"IFRS 6", t:"استكشاف الموارد المعدنية وتقويمها", g:"spec", tags:[],
+  obj:"تحديد التقرير المالي عن نفقات استكشاف الموارد المعدنية وتقويمها.",
+  why:"قطاع التعدين يتوسع في المملكة، ونفقات الاستكشاف عالية وغير مؤكدة النتيجة؛ المعيار يسمح بالاستمرار في سياسة قائمة مع ضوابط للهبوط.",
+  key:["للمنشأة اختيار سياسة لرسملة نفقات الاستكشاف والتقويم وتطبيقها باتساق.","اختبار الهبوط عند وجود حقائق وظروف تدل عليه (مثل انتهاء رخصة الاستكشاف)."],
+  ex:"شركة تعدين حاصلة على رخصة استكشاف ذهب في الدرع العربي ترسمل تكاليف الحفر التجريبي، ثم تجري اختبار هبوط عند قرب انتهاء الرخصة دون خطة تجديد.",
+  tip:["افصل بوضوح بين مرحلة الاستكشاف ومرحلة التطوير."], out:["قابلية مقارنة شركات التعدين.","عدم تضخيم الأصول بنفقات فاشلة."], rel:["ias16","ias38","ias36","ifric20"] },
+
+{ id:"ifrs7", code:"IFRS 7", t:"الأدوات المالية: الإفصاحات", g:"fin", tags:["updated"],
+  obj:"أن تفصح المنشأة عما يمكّن المستخدمين من تقويم أهمية الأدوات المالية لمركزها وأدائها، وطبيعة ومدى المخاطر الناشئة عنها وكيفية إدارتها.",
+  why:"الأرقام وحدها لا تكشف مخاطر الائتمان والسيولة والسوق؛ الإفصاح يكمل الصورة.",
+  key:["إفصاحات عن مخاطر الائتمان والسيولة والسوق (أسعار الصرف والفائدة والأسعار الأخرى).","إفصاحات عن الخسائر الائتمانية المتوقعة وحركة المخصص.","تعديلات تسري في 1 يناير 2026 مرتبطة بتعديلات تصنيف وقياس الأدوات المالية."],
+  ex:"بنك محلي يعرض جدول استحقاق للالتزامات المالية يوضح أن 60% من الودائع تستحق خلال شهر، مع وصف خطته لإدارة السيولة.",
+  tip:["اربط إفصاحات المخاطر بما تفعله الإدارة فعلًا لا بنصوص نمطية.","راجع التعديلات الجديدة السارية في 2026 قبل إقفال السنة."], out:["فهم المستثمر لمخاطر المنشأة.","مساءلة الإدارة عن سياسات المخاطر."], rel:["ifrs9","ias32","ifrs13","iapn1000"] },
+
+{ id:"ifrs8", code:"IFRS 8", t:"القطاعات التشغيلية", g:"pres", tags:[],
+  obj:"الإفصاح عن معلومات تمكن المستخدمين من تقويم طبيعة أنشطة المنشأة وآثارها المالية والبيئات الاقتصادية التي تعمل فيها.",
+  why:"شركة تعمل في أكثر من نشاط أو منطقة؛ المستثمر يريد رؤيتها بعين الإدارة نفسها.",
+  key:["يُحدد القطاع وفق التقارير الداخلية المرفوعة لصانع القرار التشغيلي الرئيس.","حدود كمية 10% للإيراد أو الربح أو الأصول.","ينطبق على المنشآت المدرجة أو التي في طور الإدراج."],
+  ex:"مجموعة مدرجة لها قطاع أسمنت وقطاع عقارات. تفصح عن إيراد وربح كل قطاع كما يراه مجلس الإدارة شهريًا.",
+  tip:["ابدأ من التقارير التي يراجعها الرئيس التنفيذي أو المجلس فعليًا."], out:["شفافية مصادر الربح.","قرارات استثمار أدق."], rel:["ifrs18","ias34"] },
+
+{ id:"ifrs9", code:"IFRS 9", t:"الأدوات المالية", g:"fin", tags:["core","updated"],
+  obj:"وضع مبادئ التقرير المالي عن الأصول والالتزامات المالية بما يقدم معلومات ملائمة ومفيدة لتقويم مبالغ التدفقات النقدية المستقبلية وتوقيتها وعدم تأكدها.",
+  why:"تعالج ثلاث قضايا: كيف تُصنف وتُقاس الأدوات المالية، ومتى يُثبت مخصص الخسائر الائتمانية، وكيف تُحاسب التحوطات.",
+  key:["التصنيف حسب نموذج الأعمال وخصائص التدفقات النقدية: التكلفة المستنفدة، أو القيمة العادلة من خلال الدخل الشامل الآخر، أو من خلال الربح أو الخسارة.","نموذج الخسائر الائتمانية المتوقعة ذو المراحل الثلاث، والنهج المبسط للذمم التجارية.","محاسبة التحوط تربط بين إدارة المخاطر والقوائم.","تعديلات تسري في 1 يناير 2026 (تصنيف الأدوات وقياسها، وعقود الكهرباء المعتمدة على الطبيعة)."],
+  ex:"شركة توزيع أدوية لديها ذمم مدينة 80 مليون ريال على مستشفيات خاصة. تبني مصفوفة مخصص حسب أعمار الديون: 1% للجاري، 5% لـ 30-90 يومًا، 25% لما فوق 180 يومًا، مع تعديلها بمؤشرات اقتصادية مستقبلية.",
+  tip:["لا تنتظر وقوع التعثر؛ المعيار يطلب مخصصًا متوقعًا من اليوم الأول.","وثّق افتراضات النظرة المستقبلية؛ هي أكثر ما يسأل عنه المراجع."],
+  out:["إثبات الخسائر مبكرًا.","قياس يعكس طريقة إدارة الأموال فعلًا."], rel:["ifrs7","ias32","ifrs13","isa540","iapn1000"] },
+
+{ id:"ifrs10", code:"IFRS 10", t:"القوائم المالية الموحدة", g:"grp", tags:["core"],
+  obj:"وضع مبادئ عرض وإعداد القوائم الموحدة عندما تسيطر منشأة على منشأة أو أكثر.",
+  why:"السيطرة لا تعني دائمًا امتلاك أكثر من 50%؛ المعيار يعرف السيطرة بثلاثة عناصر.",
+  key:["السيطرة = سلطة على المستثمر فيها + تعرض لعوائد متغيرة + قدرة على استخدام السلطة للتأثير في العوائد.","توحيد البنود سطرًا بسطر واستبعاد المعاملات البينية.","عرض الحصص غير المسيطرة ضمن حقوق الملكية."],
+  ex:"شركة تملك 45% من شركة مقاولات والبقية موزعة على 200 مساهم صغير لا يحضرون الجمعيات، وتعين أغلب أعضاء المجلس. قد تكون لها سيطرة فعلية فيلزمها التوحيد.",
+  tip:["قيّم الحقوق الجوهرية لا الشكلية.","أعد التقييم عند تغير الحقائق."], out:["صورة المجموعة كوحدة اقتصادية واحدة.","منع إخفاء الالتزامات في شركات تابعة."], rel:["ifrs3","ifrs12","ias27","isa600"] },
+
+{ id:"ifrs11", code:"IFRS 11", t:"الترتيبات المشتركة", g:"grp", tags:[],
+  obj:"وضع مبادئ التقرير المالي للمنشآت التي لها حصص في ترتيبات تخضع لسيطرة مشتركة.",
+  why:"التحالفات شائعة في المقاولات والطاقة؛ المعيار يميز بين العملية المشتركة والمشروع المشترك.",
+  key:["العملية المشتركة: يُثبت كل طرف حصته من الأصول والالتزامات والإيرادات والمصروفات.","المشروع المشترك: يُحاسب بطريقة حقوق الملكية وفق معيار المحاسبة الدولي 28."],
+  ex:"تحالف بين مقاول سعودي وآخر أجنبي لتنفيذ جزء من مشروع طرق دون كيان مستقل، فيُعد عملية مشتركة ويثبت كل منهما نصيبه.",
+  tip:["اقرأ اتفاقية التحالف: من يتحمل الالتزامات فعليًا؟"], out:["عكس الحقوق والالتزامات الفعلية لكل شريك."], rel:["ias28","ifrs12"] },
+
+{ id:"ifrs12", code:"IFRS 12", t:"الإفصاح عن الحصص في منشآت أخرى", g:"grp", tags:[],
+  obj:"الإفصاح عن معلومات تمكن المستخدمين من تقويم طبيعة الحصص في المنشآت الأخرى والمخاطر المرتبطة بها وآثارها المالية.",
+  why:"يكشف الأحكام التي اتخذتها الإدارة في تحديد السيطرة، والمخاطر في الشركات التابعة والزميلة والمنشآت المهيكلة.",
+  key:["الإفصاح عن الأحكام الهامة في تحديد السيطرة أو التأثير.","معلومات عن الحصص غير المسيطرة الجوهرية.","المنشآت المهيكلة غير الموحدة."],
+  ex:"مجموعة تفصح أن لديها تابعة بنسبة 60% تمثل حصصها غير المسيطرة ربع حقوق الملكية، مع ملخص مالي لها.", tip:["اربط الإفصاح بقرارات السيطرة الموثقة."], out:["شفافية هيكل المجموعة."], rel:["ifrs10","ifrs11","ias28"] },
+
+{ id:"ifrs13", code:"IFRS 13", t:"قياس القيمة العادلة", g:"fin", tags:["core"],
+  obj:"تعريف القيمة العادلة ووضع إطار لقياسها وتحديد الإفصاحات المطلوبة عنها.",
+  why:"معايير عديدة تطلب القيمة العادلة؛ هذا المعيار يوحد طريقة قياسها.",
+  key:["القيمة العادلة: سعر البيع في معاملة منتظمة بين مشاركين في السوق في تاريخ القياس.","التسلسل الهرمي: المستوى 1 أسعار معلنة، المستوى 2 مدخلات يمكن رصدها، المستوى 3 مدخلات لا يمكن رصدها.","أساليب التقويم: السوق، والدخل، والتكلفة."],
+  ex:"شركة تمتلك عقارًا استثماريًا في حي تجاري بالرياض. يقيّمه مقيّم معتمد من هيئة المقيمين (تقييم) بأسلوب الدخل، فيُصنف في المستوى 3 مع الإفصاح عن معدل الرسملة المستخدم.",
+  tip:["استعن بمقيّم معتمد وراجع افتراضاته لا نتيجته فقط.","المستوى 3 يتطلب إفصاحًا عن الحساسية."], out:["قيم عادلة متسقة وموثوقة.","إدراك المستخدم لدرجة الاجتهاد في التقييم."], rel:["ias40","ifrs9","isa540","isa620"] },
+
+{ id:"ifrs14", code:"IFRS 14", t:"الحسابات المؤجلة لأسباب تنظيمية", g:"spec", tags:[],
+  obj:"تحديد متطلبات التقرير المالي عن أرصدة الحسابات المؤجلة التنظيمية عند تقديم منشأة خاضعة لتنظيم الأسعار لأول قوائم وفق المعايير الدولية.",
+  why:"معيار مؤقت يسمح لمن يطبق المعايير لأول مرة بالاستمرار في سياسته السابقة لهذه الأرصدة.",
+  key:["متاح فقط لمن يطبق المعايير الدولية لأول مرة.","تُعرض الأرصدة منفصلة عن بقية الأصول والالتزامات."],
+  ex:"منشأة مرافق تخضع لتعريفة منظمة تنتقل للمعايير الدولية وتستمر في إظهار فروق التعريفة المستحقة الاسترداد كبند منفصل.", tip:["تأكد من أهليتك قبل التطبيق."], out:["تسهيل التحول لقطاع المرافق."], rel:["ifrs1"] },
+
+{ id:"ifrs15", code:"IFRS 15", t:"الإيراد من العقود مع العملاء", g:"rev", tags:["core"],
+  obj:"وضع المبادئ التي تطبقها المنشأة للتقرير عن طبيعة الإيراد والتدفقات النقدية الناشئة عن العقد مع العميل ومبلغها وتوقيتها وعدم التأكد المحيط بها.",
+  why:"الإيراد هو أهم رقم في القوائم وأكثرها عرضة للتحريف؛ المعيار يضع نموذجًا واحدًا من خمس خطوات لكل الصناعات.",
+  key:["الخطوة 1: تحديد العقد مع العميل.","الخطوة 2: تحديد التزامات الأداء.","الخطوة 3: تحديد سعر المعاملة (بما فيه العوض المتغير).","الخطوة 4: توزيع السعر على التزامات الأداء.","الخطوة 5: إثبات الإيراد عند الوفاء بالتزام الأداء (في نقطة زمنية أو على مدى زمني)."],
+  ex:"شركة اتصالات تبيع جوالًا بقيمة 3,000 ريال مع باقة 24 شهرًا بـ 200 ريال شهريًا. هناك التزاما أداء: الجهاز (يُثبت إيراده عند التسليم) والخدمة (على مدى 24 شهرًا). يوزع إجمالي العقد 7,800 ريال بينهما حسب أسعار البيع المستقلة.",
+  tip:["في المقاولات: قِس التقدم بطريقة تعكس نقل السيطرة (غالبًا نسبة التكلفة المتكبدة).","الخصومات والحوافز والغرامات عوض متغير؛ قيّد تقديره بما يرجح عدم عكسه لاحقًا."],
+  out:["إيراد قابل للمقارنة بين الشركات والصناعات.","منع تسريع الإيراد قبل استحقاقه."], rel:["isa240","isa315","ifrs16","ifric22"] },
+
+{ id:"ifrs16", code:"IFRS 16", t:"عقود الإيجار", g:"rev", tags:["core"],
+  obj:"ضمان أن يقدم المستأجرون والمؤجرون معلومات ملائمة تمثل تلك المعاملات بصدق، لتقويم أثر عقود الإيجار على المركز المالي والأداء والتدفقات النقدية.",
+  why:"قبل المعيار كانت إيجارات تشغيلية ضخمة خارج قائمة المركز المالي؛ الآن يُثبت المستأجر أصل حق استخدام والتزام إيجار.",
+  key:["المستأجر يثبت أصل حق الاستخدام والتزام الإيجار لمعظم العقود.","إعفاءات للعقود قصيرة الأجل (12 شهرًا أو أقل) والأصول منخفضة القيمة.","المؤجر يستمر في التصنيف: تمويلي أو تشغيلي.","المصروف يصبح استهلاكًا وفائدة بدل مصروف إيجار."],
+  ex:"سلسلة صيدليات تستأجر 40 فرعًا بعقود 5 سنوات بإيجار سنوي 150 ألف ريال للفرع. بخصم 6% يُثبت التزام إيجار نحو 25.3 مليون ريال وأصل بالقيمة نفسها، فيرتفع إجمالي الأصول والديون وتتغير مؤشرات المديونية.",
+  tip:["احصر كل العقود بما فيها المخفية داخل عقود خدمات.","حدد معدل الاقتراض الإضافي بطريقة موثقة.","خيارات التمديد تُدرج إذا كان من المؤكد بدرجة معقولة ممارستها."],
+  out:["إظهار الالتزامات الحقيقية للمنشأة.","مقارنة عادلة بين من يملك ومن يستأجر."], rel:["ifrs15","ias36","isa540"] },
+
+{ id:"ifrs17", code:"IFRS 17", t:"عقود التأمين", g:"spec", tags:[],
+  obj:"ضمان أن تقدم المنشأة معلومات ملائمة تمثل عقود التأمين بصدق لتقويم أثرها على المركز والأداء والتدفقات.",
+  why:"يوحد محاسبة التأمين عالميًا ويظهر ربحية العقود على مدار التغطية.",
+  key:["النموذج العام: التدفقات النقدية للوفاء + تعديل المخاطر + هامش الخدمة التعاقدية.","نهج توزيع القسط المبسط للعقود قصيرة الأجل.","تجميع العقود في محافظ ومجموعات حسب الربحية والسنة."],
+  ex:"شركة تأمين تعاوني تبيع وثائق تأمين مركبات سنوية وتطبق نهج توزيع القسط، بينما تطبق النموذج العام على وثائق الحماية والادخار طويلة الأجل.", tip:["التنسيق بين الخبير الاكتواري والمحاسب شرط أساسي."], out:["شفافية ربحية شركات التأمين."], rel:["ifrs9","isa540","isa620"] },
+
+{ id:"ifrs18", code:"IFRS 18", t:"العرض والإفصاح في القوائم المالية", g:"pres", tags:["new","core"],
+  obj:"وضع متطلبات عرض المعلومات والإفصاح عنها في القوائم المالية للأغراض العامة بما يوفر معلومات ملائمة تمثل أصول المنشأة والتزاماتها وحقوق ملكيتها ودخلها ومصروفاتها بصدق.",
+  why:"يحل محل معيار المحاسبة الدولي 1، ويعالج ضعف قابلية مقارنة قائمة الدخل بين الشركات وكثرة المقاييس البديلة غير المنضبطة.",
+  key:["يسري على فترات التقرير السنوية التي تبدأ في 1 يناير 2027 أو بعده، مع جواز التطبيق المبكر.","فئات جديدة في قائمة الربح أو الخسارة: التشغيل، الاستثمار، التمويل، ضرائب الدخل، العمليات غير المستمرة.","مجاميع فرعية إلزامية: الربح التشغيلي، والربح قبل التمويل وضرائب الدخل.","إفصاح عن مقاييس الأداء المحددة من الإدارة وتسويتها.","إرشادات معززة للتجميع والتفصيل."],
+  ex:"شركة صناعية كانت تعرض 'الربح التشغيلي' بتعريفها الخاص وتستبعد منه خسارة بيع أصول. مع المعيار 18 يصبح الربح التشغيلي مجموعًا محددًا، وأي رقم معدل تعرضه في الإعلانات للمستثمرين (مثل EBITDA المعدل) يلزم الإفصاح عنه وتسويته في الإيضاحات.",
+  tip:["ابدأ الاستعداد في 2026: قوائم 2027 تتطلب أرقام مقارنة معاد عرضها لسنة 2026.","راجع بيانات مجلس الإدارة والعروض للمستثمرين لتحديد مقاييس الأداء المحددة من الإدارة.","حدّث دليل الحسابات لتصنيف كل بند في الفئة الصحيحة."],
+  out:["قوائم دخل قابلة للمقارنة بين الشركات.","انضباط المقاييس البديلة التي تعلنها الإدارة."], rel:["ias1","ias8b","ias7","ifrs19","isa700"] },
+
+{ id:"ifrs19", code:"IFRS 19", t:"المنشآت التابعة التي لا تخضع للمساءلة العامة: الإفصاحات", g:"pres", tags:["new"],
+  obj:"تحديد متطلبات إفصاح مخففة يجوز للمنشأة المؤهلة تطبيقها بدل متطلبات الإفصاح في المعايير الأخرى.",
+  why:"تابعة غير مدرجة تطبق المعايير الكاملة لأن الأم تطبقها، لكن مستخدمي قوائمها لا يحتاجون كل الإفصاحات.",
+  key:["اختياري للتابعة غير الخاضعة للمساءلة العامة التي تعد الأم لها قوائم موحدة وفق المعايير الدولية متاحة للعموم.","الإثبات والقياس يبقيان وفق المعايير الكاملة، والتخفيف في الإفصاح فقط.","يجوز تطبيقه لفترات التقرير التي تبدأ في 1 يناير 2027 أو بعده، مع جواز التطبيق المبكر."],
+  ex:"تابعة لوجستية مملوكة بالكامل لمجموعة مدرجة تختار المعيار 19 فتختصر إيضاحاتها كثيرًا مع بقاء أرقامها مطابقة لحزمة التوحيد.", tip:["تأكد من شرط إتاحة قوائم الأم الموحدة للعموم."], out:["تقليل تكلفة الإعداد دون المساس بجودة القياس."], rel:["ifrs18","ifrs10","sa-endorse"] },
+
+{ id:"ias1", code:"IAS 1", t:"عرض القوائم المالية", g:"pres", tags:["core"],
+  obj:"تحديد أساس عرض القوائم المالية للأغراض العامة لضمان القابلية للمقارنة مع قوائم الفترات السابقة وقوائم المنشآت الأخرى.",
+  why:"يحدد مكونات المجموعة الكاملة للقوائم ومبادئ العرض العامة، وسيحل محله المعيار 18 من 2027.",
+  key:["المجموعة الكاملة: المركز المالي، الربح أو الخسارة والدخل الشامل الآخر، التغيرات في حقوق الملكية، التدفقات النقدية، الإيضاحات.","العرض العادل، الاستمرارية، أساس الاستحقاق، الأهمية النسبية، عدم المقاصة.","تصنيف المتداول وغير المتداول (بما فيه تعديلات تصنيف الالتزامات والتعهدات)."],
+  ex:"شركة لديها قرض بنكي طويل الأجل خالفت أحد تعهداته قبل نهاية السنة ولم تحصل على إعفاء. يُصنف القرض متداولًا لأنها لا تملك حق التأجيل 12 شهرًا.",
+  tip:["راجع تعهدات القروض في تاريخ التقرير لا بعده.","يطبق حتى نهاية 2026 لمن لم يطبق المعيار 18 مبكرًا."], out:["قوائم مالية متكاملة وقابلة للمقارنة."], rel:["ifrs18","ias8","isa570"] },
+
+{ id:"ias2", code:"IAS 2", t:"المخزون", g:"rev", tags:["core"],
+  obj:"تحديد المعالجة المحاسبية للمخزون: مبلغ التكلفة المثبت كأصل حتى إثبات الإيراد المرتبط، وتخفيضه إلى صافي القيمة القابلة للتحقق.",
+  why:"المخزون يؤثر مباشرة على تكلفة المبيعات والربح، وتقييمه بأعلى من قيمته يضخم الأرباح.",
+  key:["القياس بالأقل من التكلفة وصافي القيمة القابلة للتحقق.","التكلفة تشمل الشراء والتحويل والتكاليف الأخرى لإيصاله لحالته الحالية.","المتوسط المرجح أو الوارد أولًا صادر أولًا، ولا يُسمح بالوارد أخيرًا صادر أولًا."],
+  ex:"موزع إلكترونيات لديه هواتف طراز قديم تكلفتها 2,000 ريال للوحدة، وسعر بيعها المتوقع بعد نزول الطراز الجديد 1,700 وتكلفة البيع 100. يُخفض المخزون إلى 1,600 ريال للوحدة.",
+  tip:["احضر الجرد الفعلي وراقب المخزون بطيء الحركة.","وزّع التكاليف الصناعية الثابتة على أساس الطاقة العادية."], out:["عدم تضخيم الأصول والأرباح."], rel:["isa501","isa500","ifrs15"] },
+
+{ id:"ias7", code:"IAS 7", t:"قائمة التدفقات النقدية", g:"pres", tags:["core"],
+  obj:"طلب تقديم معلومات عن التغيرات التاريخية في النقد وما في حكمه عبر قائمة تصنف التدفقات إلى تشغيلية واستثمارية وتمويلية.",
+  why:"الربح المحاسبي ليس نقدًا؛ المنشأة الرابحة قد تتعثر لنقص السيولة.",
+  key:["ثلاثة أنشطة: تشغيلية، استثمارية، تمويلية.","الطريقة المباشرة أو غير المباشرة للأنشطة التشغيلية.","إفصاحات ترتيبات تمويل الموردين، وتسوية التزامات التمويل."],
+  ex:"مقاول حقق ربحًا 12 مليون ريال لكن تدفقه التشغيلي سالب 8 ملايين لتأخر مستخلصات جهة حكومية. القائمة تكشف ذلك للبنك الممول.",
+  tip:["طابق النقد في القائمة مع كشوف البنوك.","الإفصاح عن ترتيبات تمويل الموردين مطلوب الآن."], out:["تقييم القدرة على توليد النقد والوفاء بالالتزامات."], rel:["ifrs18","ias1","isa570"] },
+
+{ id:"ias8", code:"IAS 8", t:"السياسات المحاسبية والتغيرات في التقديرات المحاسبية والأخطاء", g:"pres", tags:["core"],
+  obj:"تحديد ضوابط اختيار السياسات المحاسبية وتغييرها، والمعالجة المحاسبية والإفصاح عن التغيرات في السياسات والتقديرات وتصحيح الأخطاء.",
+  why:"يميز بين ثلاثة أمور تُعالج بشكل مختلف: تغيير سياسة (بأثر رجعي)، تغيير تقدير (بأثر مستقبلي)، تصحيح خطأ (بأثر رجعي بتعديل الأرقام المقارنة).",
+  key:["عند غياب معيار: تطوير سياسة بالرجوع لمعايير مشابهة ثم الإطار المفاهيمي.","التقدير المحاسبي: مبلغ نقدي يخضع لعدم تأكد في القياس.","الأخطاء الجوهرية للفترات السابقة تُصحح بأثر رجعي."],
+  ex:"اكتشفت شركة في 2026 أنها لم تستهلك مبنى إداريًا منذ 2024. هذا خطأ فترة سابقة يُصحح بإعادة عرض أرقام المقارنة، بخلاف تغيير العمر الإنتاجي لآلة الذي يُطبق مستقبلًا.",
+  tip:["اسأل: هل تغير أساس القياس (سياسة) أم مدخلات القياس (تقدير)؟","يتحول اسم المعيار إلى 'أساس إعداد القوائم المالية' مع تطبيق المعيار 18."], out:["اتساق المعالجات عبر الزمن.","شفافية الأخطاء وتصحيحها."], rel:["ias8b","framework","isa540","isa710"] },
+
+{ id:"ias8b", code:"IAS 8 (المعدل)", t:"أساس إعداد القوائم المالية", g:"pres", tags:["new"],
+  obj:"النسخة المعدلة من معيار المحاسبة الدولي 8 بعد صدور المعيار 18، وقد نُقلت إليه بعض المتطلبات العامة من معيار المحاسبة الدولي 1 (العرض العادل، الاستمرارية، أساس الاستحقاق، الالتزام بالمعايير).",
+  why:"مع إلغاء معيار المحاسبة الدولي 1، كان لا بد من مكان للمبادئ العامة لإعداد القوائم، فأصبح المعيار 8 يحمل هذا الاسم الجديد.",
+  key:["يسري مع المعيار 18 من 1 يناير 2027.","يضم متطلبات العرض العادل وتقييم الاستمرارية وأساس الاستحقاق.","يحتفظ بمتطلبات السياسات والتقديرات والأخطاء."],
+  ex:"عند إعداد قوائم 2027 يرجع المحاسب إلى هذا المعيار لتوثيق تقييم الإدارة للاستمرارية بدل معيار المحاسبة الدولي 1.", tip:["حدّث مراجع السياسات المحاسبية في الإيضاح الأول عند التحول."], out:["إطار متكامل مع المعيار 18."], rel:["ifrs18","ias8","isa570r"] },
+
+{ id:"ias10", code:"IAS 10", t:"الأحداث بعد فترة التقرير", g:"pres", tags:[],
+  obj:"تحديد متى تعدّل المنشأة قوائمها للأحداث بعد فترة التقرير، والإفصاحات عن تاريخ اعتماد القوائم وعن هذه الأحداث.",
+  why:"أحداث بين نهاية السنة وتاريخ اعتماد القوائم قد تغير الصورة؛ بعضها يستوجب التعديل وبعضها الإفصاح فقط.",
+  key:["أحداث معدِّلة: توفر دليلًا على ظروف كانت قائمة في نهاية الفترة (مثل إفلاس عميل كانت مشاكله قائمة).","أحداث غير معدِّلة: ظروف نشأت بعد الفترة (مثل حريق مستودع) تُفصح إذا كانت جوهرية.","التوزيعات المعلنة بعد الفترة لا تُثبت التزامًا."],
+  ex:"في فبراير 2027 صدر حكم نهائي في قضية عمالية قائمة منذ 2026 بمبلغ 2 مليون ريال. هذا حدث معدِّل يُحدِّث المخصص في قوائم 2026.", tip:["نسّق مع المراجع حتى تاريخ اعتماد القوائم."], out:["قوائم تعكس أحدث المعلومات المتاحة."], rel:["isa560","ias37"] },
+
+{ id:"ias12", code:"IAS 12", t:"ضرائب الدخل", g:"emp", tags:["core"],
+  obj:"تحديد المعالجة المحاسبية لضرائب الدخل الحالية والمؤجلة.",
+  why:"الفروق بين الربح المحاسبي والوعاء الضريبي تولد آثارًا ضريبية مستقبلية يجب إثباتها. في المملكة يطبق على حصة الشريك الأجنبي، بينما الزكاة لها معيار محلي.",
+  key:["الضريبة الحالية عن الربح الخاضع للفترة.","الضريبة المؤجلة عن الفروق المؤقتة بطريقة قائمة المركز المالي.","الأصل الضريبي المؤجل يُثبت عند احتمال وجود ربح خاضع كافٍ.","استثناء مؤقت إلزامي لضرائب الركيزة الثانية (الحد الأدنى العالمي)."],
+  ex:"شركة مختلطة (سعودي وأجنبي) تستهلك معدة ضريبيًا بمعدل أعلى من المحاسبي، فينشأ فرق مؤقت خاضع وتُثبت التزامًا ضريبيًا مؤجلًا بنسبة 20% على حصة الشريك الأجنبي.",
+  tip:["افصل بين الزكاة (معيار الزكاة المحلي) وضريبة الدخل.","راجع احتمالية استرداد الخسائر الضريبية المرحلة."], out:["إظهار العبء الضريبي الحقيقي للفترة."], rel:["zakat","ifric23","sa-opinions"] },
+
+{ id:"ias16", code:"IAS 16", t:"العقارات والآلات والمعدات", g:"rev", tags:["core"],
+  obj:"تحديد المعالجة المحاسبية للعقارات والآلات والمعدات: إثباتها وتحديد قيمها الدفترية ومصروف الاستهلاك وخسائر الهبوط.",
+  why:"أكبر الأصول في كثير من الشركات؛ خطأ الأعمار أو الرسملة يغير الأرباح لسنوات.",
+  key:["الإثبات بالتكلفة ثم نموذج التكلفة أو نموذج إعادة التقييم.","تجزئة الأصل إلى مكونات رئيسية لكل منها عمر مختلف.","مراجعة الأعمار الإنتاجية والقيمة المتبقية سنويًا على الأقل.","المتحصلات قبل الاستخدام المقصود تُثبت في الربح أو الخسارة لا تُخصم من التكلفة."],
+  ex:"شركة طيران داخلي تشتري طائرة بـ 180 مليون ريال: الهيكل 30 سنة، المحركات 10 سنوات، المقصورة 7 سنوات. يُستهلك كل مكون حسب عمره.",
+  tip:["حدّث سجل الأصول واطابقه ماديًا دوريًا.","راجع توضيحات الهيئة حول الأصول المستهلكة دفتريًا وتجزئة المكونات."], out:["استهلاك يعكس نمط استهلاك المنافع فعلًا."], rel:["ias36","ias23","ifrs16","sa-opinions","isa501"] },
+
+{ id:"ias19", code:"IAS 19", t:"منافع الموظفين", g:"emp", tags:["core"],
+  obj:"تحديد المحاسبة عن منافع الموظفين والإفصاح عنها.",
+  why:"مكافأة نهاية الخدمة وفق نظام العمل السعودي هي خطة منافع محددة تتطلب تقييمًا اكتواريًا.",
+  key:["منافع قصيرة الأجل تُثبت عند تقديم الخدمة.","خطط المنافع المحددة: طريقة وحدة الائتمان المتوقعة وخصم الالتزام.","إعادة القياس (المكاسب والخسائر الاكتوارية) في الدخل الشامل الآخر."],
+  ex:"شركة لديها 1,200 موظف. يقدّر الخبير الاكتواري التزام مكافأة نهاية الخدمة بـ 45 مليون ريال بافتراض زيادة رواتب 4% ومعدل خصم 5%. ارتفاع الخصم إلى 5.5% يخفض الالتزام وتُثبت المكاسب في الدخل الشامل الآخر.",
+  tip:["زوّد الخبير الاكتواري ببيانات موظفين دقيقة ومطابقة لكشف الرواتب.","راجع توضيح الهيئة للمنشآت الصغيرة والمتوسطة غير القادرة على تقييم اكتواري."], out:["إثبات التزامات الموظفين الحقيقية مبكرًا."], rel:["isa620","isa540","sa-opinions","ias26"] },
+
+{ id:"ias20", code:"IAS 20", t:"المحاسبة عن المنح الحكومية والإفصاح عن المساعدات الحكومية", g:"spec", tags:[],
+  obj:"المحاسبة عن المنح الحكومية والإفصاح عنها وعن أشكال المساعدات الحكومية الأخرى.",
+  why:"برامج الدعم الحكومي كثيرة (دعم التوظيف، القروض الميسرة من الصناديق التنموية)؛ المعيار يحدد متى وكيف تُثبت.",
+  key:["تُثبت المنحة عند وجود تأكيد معقول بالالتزام بشروطها واستلامها.","تُثبت في الربح أو الخسارة بشكل منتظم مقابل التكاليف التي تعوضها.","القرض الحكومي بفائدة أقل من السوق: الفرق منحة."],
+  ex:"مصنع يحصل على قرض من صندوق تنمية صناعي بدون فائدة 20 مليون ريال لـ 5 سنوات. يُقاس القرض بقيمته العادلة (مخصومة بسعر السوق) والفرق منحة تُوزع على عمر الأصل الممول.", tip:["تحقق من شروط الاسترداد في برامج دعم الرواتب."], out:["مطابقة الدعم مع التكاليف التي يغطيها."], rel:["ifrs9","sic10"] },
+
+{ id:"ias21", code:"IAS 21", t:"آثار التغيرات في أسعار صرف العملات الأجنبية", g:"emp", tags:["updated"],
+  obj:"تحديد كيفية إدراج المعاملات بعملات أجنبية والعمليات الأجنبية في القوائم، وكيفية ترجمة القوائم إلى عملة العرض.",
+  why:"ارتباط الريال بالدولار يقلل الفروقات مع الدولار، لكن المعاملات باليورو والين وغيرهما تولد فروقات يجب قياسها.",
+  key:["تحديد العملة الوظيفية حسب البيئة الاقتصادية الرئيسية.","البنود النقدية تُترجم بسعر الإقفال، وغير النقدية بالسعر التاريخي.","تعديلات تقدير سعر الصرف عند عدم القابلية للتبادل.","تعديلات تسري في 1 يناير 2027 لترجمة القوائم إلى عملة عرض لاقتصاد ذي تضخم جامح."],
+  ex:"شركة تستورد معدات من ألمانيا بمليون يورو على أجل 90 يومًا. ارتفاع اليورو قبل السداد يولد خسارة صرف تُثبت في الربح أو الخسارة.", tip:["راجع التعديلات الأخيرة إن كان لديك عمليات في دول ذات عملات مقيدة."], out:["قياس صحيح لمخاطر العملة."], rel:["ifric22","ias29","ifric16"] },
+
+{ id:"ias23", code:"IAS 23", t:"تكاليف الاقتراض", g:"rev", tags:[],
+  obj:"تحديد المعالجة المحاسبية لتكاليف الاقتراض.",
+  why:"تمويل إنشاء أصل يستغرق وقتًا طويلًا جزء من تكلفته.",
+  key:["رسملة تكاليف الاقتراض المرتبطة مباشرة باقتناء أو إنشاء أصل مؤهل.","بقية التكاليف مصروف.","التوقف عن الرسملة عند اكتمال الأصل."],
+  ex:"مطور عقاري يبني برجًا مكتبيًا لمدة 3 سنوات بتمويل مرابحة 100 مليون ريال بتكلفة 7%. تُرسمل تكلفة التمويل خلال فترة الإنشاء على تكلفة البرج.", tip:["التمويل الإسلامي (مرابحة، إجارة) تنطبق عليه المعالجة نفسها حسب جوهره."], out:["تكلفة أصل تعكس كامل تكلفة إعداده."], rel:["ias16","ias40"] },
+
+{ id:"ias24", code:"IAS 24", t:"الإفصاحات عن الأطراف ذات العلاقة", g:"pres", tags:["core"],
+  obj:"ضمان أن تحتوي القوائم على الإفصاحات اللازمة للفت الانتباه لاحتمال تأثر المركز والأرباح بوجود أطراف ذات علاقة ومعاملاتها وأرصدتها.",
+  why:"الشركات العائلية شائعة؛ المعاملات بين الشركة وأقارب الملاك أو شركاتهم قد لا تكون بشروط السوق.",
+  key:["تعريف الطرف ذي العلاقة: أفراد العائلة المقربون، موظفو الإدارة العليا، المنشآت المسيطر عليها.","الإفصاح عن طبيعة العلاقة والمعاملات والأرصدة.","الإفصاح عن تعويضات موظفي الإدارة الرئيسيين."],
+  ex:"شركة تستأجر مستودعًا من شركة يملكها رئيس المجلس بإيجار أعلى من السوق بـ 30%. يجب الإفصاح عن المعاملة وشروطها، ونظام الشركات يتطلب ترخيص الجمعية.", tip:["احتفظ بسجل محدث للأطراف ذات العلاقة وحدّثه بإقرارات سنوية.","اربط الإفصاح بمتطلبات نظام الشركات."], out:["حماية المساهمين الأقلية.","كشف المعاملات غير المتكافئة."], rel:["isa550","isa-clarif"] },
+
+{ id:"ias26", code:"IAS 26", t:"المحاسبة والتقرير من قبل خطط منافع التقاعد", g:"spec", tags:[],
+  obj:"تحديد القوائم التي تعدها خطط منافع التقاعد نفسها.", why:"الصندوق التقاعدي كيان يعد قوائمه للمستفيدين.",
+  key:["قائمة صافي الأصول المتاحة للمنافع.","القيمة الحالية الاكتوارية للمنافع الموعودة في خطط المنافع المحددة."],
+  ex:"صندوق ادخار خاص بموظفي شركة كبرى يعد قوائم سنوية توضح صافي أصوله المتاحة للمشتركين.", tip:["فرّق بينه وبين معيار 19 الذي يطبقه صاحب العمل."], out:["شفافية للمشتركين."], rel:["ias19"] },
+
+{ id:"ias27", code:"IAS 27", t:"القوائم المالية المنفصلة", g:"grp", tags:[],
+  obj:"تحديد المحاسبة والإفصاح عن الاستثمارات في التابعة والمشروعات المشتركة والزميلة عند إعداد قوائم منفصلة.",
+  why:"الشركة الأم في المملكة تعد عادة قوائم منفصلة إضافة للموحدة (لأغراض نظامية وزكوية).",
+  key:["الاستثمار بالتكلفة أو وفق المعيار 9 أو بطريقة حقوق الملكية.","توزيعات الأرباح تُثبت عند نشوء الحق."],
+  ex:"شركة قابضة تعد قوائم منفصلة تظهر فيها استثماراتها في 5 شركات تابعة بالتكلفة.", tip:["طبق السياسة نفسها على كل فئة استثمار."], out:["وضوح المركز المالي للأم منفردة."], rel:["ifrs10","ias28"] },
+
+{ id:"ias28", code:"IAS 28", t:"الاستثمارات في المنشآت الزميلة والمشروعات المشتركة", g:"grp", tags:[],
+  obj:"تحديد المحاسبة عن الاستثمارات في الزميلة ومتطلبات تطبيق طريقة حقوق الملكية.",
+  why:"التأثير الهام (غالبًا 20% إلى 50%) يعني مشاركة في القرارات دون سيطرة.",
+  key:["طريقة حقوق الملكية: التكلفة + الحصة في الأرباح − التوزيعات.","استبعاد الأرباح غير المحققة في المعاملات مع الزميلة.","اختبار الهبوط للاستثمار ككل."],
+  ex:"شركة تملك 30% من شركة تغليف ولها مقعدان في المجلس. أرباح الزميلة 10 ملايين، فتثبت حصتها 3 ملايين وتزيد قيمة الاستثمار.", tip:["احصل على قوائم الزميلة بتاريخ قريب ووحّد السياسات."], out:["إظهار الأداء الاقتصادي للاستثمارات المؤثرة."], rel:["ifrs11","ias27","ias36"] },
+
+{ id:"ias29", code:"IAS 29", t:"التقرير المالي في الاقتصادات ذات التضخم الجامح", g:"spec", tags:[],
+  obj:"تطبيق متطلبات محددة على المنشآت التي عملتها الوظيفية عملة اقتصاد ذي تضخم جامح.", why:"الأرقام التاريخية تفقد معناها في التضخم الجامح.",
+  key:["إعادة عرض القوائم بوحدة القياس الجارية في تاريخ التقرير.","مؤشرات التضخم الجامح: تضخم تراكمي يقارب أو يتجاوز 100% خلال 3 سنوات."],
+  ex:"مجموعة سعودية لها تابعة في دولة تضخمها التراكمي فوق 100% تعيد عرض قوائم التابعة قبل التوحيد.", tip:["تابع قوائم الدول المصنفة ذات تضخم جامح سنويًا."], out:["أرقام ذات معنى اقتصادي."], rel:["ias21","ifric7"] },
+
+{ id:"ias32", code:"IAS 32", t:"الأدوات المالية: العرض", g:"fin", tags:[],
+  obj:"وضع مبادئ عرض الأدوات المالية كالتزامات أو حقوق ملكية، ومقاصة الأصول والالتزامات المالية.", why:"تحديد هل الأداة دين أم حقوق ملكية يغير نسب المديونية.",
+  key:["الأداة التزام إذا تضمنت واجبًا تعاقديًا بتسليم نقد.","المقاصة فقط عند وجود حق نظامي حالي ونية التسوية بالصافي.","الأسهم المستردة من المالك (أسهم الخزينة) تُخصم من حقوق الملكية."],
+  ex:"شركة تصدر صكوكًا دائمة دون تاريخ استحقاق ولها حق تأجيل التوزيعات. قد تُصنف حقوق ملكية لعدم وجود التزام تعاقدي بالدفع.", tip:["اقرأ نشرة الإصدار بعناية؛ الشروط تحدد التصنيف لا المسمى."], out:["تصنيف صحيح للهيكل الرأسمالي."], rel:["ifrs9","ifrs7","ifric2","ifric19"] },
+
+{ id:"ias33", code:"IAS 33", t:"ربحية السهم", g:"pres", tags:[],
+  obj:"تحديد مبادئ احتساب وعرض ربحية السهم لتحسين المقارنة بين المنشآت والفترات.", why:"أكثر مؤشر يتابعه المستثمرون في تداول.",
+  key:["الربحية الأساسية = الربح العائد لحملة الأسهم العادية ÷ المتوسط المرجح للأسهم.","الربحية المخفضة تأخذ الأسهم المحتملة (الخيارات، القابلة للتحويل).","تعديل بأثر رجعي عند توزيع أسهم منحة أو تجزئة."],
+  ex:"شركة ربحها 50 مليون ريال ولديها 20 مليون سهم، ثم منحت سهمًا لكل 4 أسهم. تُحسب الربحية على 25 مليون سهم ويُعاد عرض المقارنة.", tip:["طبّق أثر أسهم المنحة على كل الفترات المعروضة."], out:["مقارنة عادلة لأداء السهم."], rel:["ifrs2","ifrs18"] },
+
+{ id:"ias34", code:"IAS 34", t:"التقرير المالي الأولي", g:"pres", tags:[],
+  obj:"تحديد الحد الأدنى لمحتوى التقرير المالي الأولي ومبادئ الإثبات والقياس فيه.", why:"الشركات المدرجة تنشر قوائم ربعية خلال مهلة قصيرة.",
+  key:["قوائم مختصرة وإيضاحات مختارة.","السياسات نفسها المطبقة سنويًا.","التركيز على الأحداث المهمة منذ آخر قوائم سنوية."],
+  ex:"شركة مدرجة تنشر قوائم الربع الثاني مع إيضاح عن قرض جديد وتغيير في تقدير مخصص.", tip:["التقديرات قد تعتمد على طرق أبسط لكن يجب أن تبقى موثوقة."], out:["معلومات دورية في الوقت المناسب."], rel:["isre2410","ifric10"] },
+
+{ id:"ias36", code:"IAS 36", t:"الهبوط في قيمة الأصول", g:"rev", tags:["core"],
+  obj:"وضع الإجراءات التي تضمن ألا تزيد القيمة الدفترية للأصول عن قيمتها القابلة للاسترداد.",
+  why:"الأصل لا يجوز أن يظهر بأكثر مما يمكن استرداده منه بالاستخدام أو البيع.",
+  key:["القيمة القابلة للاسترداد = الأعلى من القيمة العادلة ناقصًا تكاليف الاستبعاد وقيمة الاستخدام.","الاختبار عند وجود مؤشر، وسنويًا للشهرة والأصول غير الملموسة غير محددة العمر.","الوحدات المولدة للنقد عند تعذر الاختبار الفردي."],
+  ex:"مصنع بلاستيك انخفض الطلب على منتجه بسبب اشتراطات بيئية جديدة. قيمة الاستخدام المخصومة 70 مليون ريال مقابل قيمة دفترية 95 مليونًا، فتُثبت خسارة هبوط 25 مليونًا.",
+  tip:["مؤشرات الهبوط: تراجع الأداء، تغير التشريعات، القيمة السوقية أقل من صافي الأصول.","اجعل افتراضات التدفقات متسقة مع الموازنات المعتمدة."], out:["أصول غير مبالغ فيها.","مساءلة الإدارة عن الاستثمارات."], rel:["ifrs3","ias16","ias38","isa540"] },
+
+{ id:"ias37", code:"IAS 37", t:"المخصصات والالتزامات المحتملة والأصول المحتملة", g:"pres", tags:["core"],
+  obj:"ضمان تطبيق ضوابط إثبات وأسس قياس مناسبة على المخصصات والالتزامات والأصول المحتملة، والإفصاح الكافي عنها.",
+  why:"يمنع استخدام المخصصات لتمهيد الأرباح، ويضمن عدم إخفاء الالتزامات المحتملة.",
+  key:["المخصص يُثبت عند وجود التزام حالي (نظامي أو ضمني) واحتمال تدفق موارد وإمكانية تقدير موثوق.","الالتزام المحتمل يُفصح عنه ولا يُثبت.","الأصل المحتمل لا يُثبت إلا إذا أصبح شبه مؤكد."],
+  ex:"شركة مقاولات تتوقع غرامة تأخير 5 ملايين ريال في مشروع حكومي بنسبة احتمال 70%. تُثبت مخصصًا. أما دعوى مرفوعة ضدها باحتمال خسارة ضعيف فيُفصح عنها فقط.", tip:["احصل على رأي المحامي كتابيًا.","لا مخصص للخسائر التشغيلية المستقبلية."], out:["التزامات معروضة بصدق دون تمهيد للأرباح."], rel:["ias10","isa501","isa580","ifric21"] },
+
+{ id:"ias38", code:"IAS 38", t:"الأصول غير الملموسة", g:"rev", tags:[],
+  obj:"تحديد المعالجة المحاسبية للأصول غير الملموسة غير المعالجة في معيار آخر.", why:"البرمجيات والتراخيص والعلامات أصول مهمة في الاقتصاد الرقمي.",
+  key:["الإثبات عند قابلية التحديد والسيطرة والمنافع المستقبلية.","البحث مصروف، والتطوير يُرسمل عند استيفاء 6 شروط.","العمر المحدد يُستنفد، وغير المحدد يُختبر للهبوط."],
+  ex:"شركة تقنية مالية تطور تطبيق مدفوعات. تكاليف دراسة الجدوى بحث (مصروف)، وتكاليف البرمجة بعد إثبات الجدوى الفنية والتمويل تُرسمل.", tip:["حوسبة سحابية (SaaS) غالبًا مصروف خدمة لا أصل."], out:["أصول غير ملموسة موثوقة."], rel:["ias36","sic32","ifrs3"] },
+
+{ id:"ias40", code:"IAS 40", t:"العقارات الاستثمارية", g:"rev", tags:[],
+  obj:"تحديد المعالجة المحاسبية للعقارات الاستثمارية والإفصاحات المتعلقة بها.", why:"العقار المحتفظ به للإيجار أو لزيادة قيمته يختلف عن المستخدم في التشغيل.",
+  key:["نموذج التكلفة أو القيمة العادلة (التغيرات في الربح أو الخسارة).","تحويل التصنيف عند تغير الاستخدام فعلًا.","إفصاح القيمة العادلة حتى في نموذج التكلفة."],
+  ex:"شركة تملك مجمعًا تجاريًا تؤجر محلاته. تصنفه عقارًا استثماريًا وتفصح عن قيمته العادلة من مقيم معتمد.", tip:["راجع موقف الجهات الرقابية من نموذج القيمة العادلة قبل اختياره."], out:["فصل الاستثمار العقاري عن التشغيل."], rel:["ifrs13","ias16","ifrs16"] },
+
+{ id:"ias41", code:"IAS 41", t:"الزراعة", g:"spec", tags:[],
+  obj:"تحديد المعالجة المحاسبية والعرض والإفصاح للنشاط الزراعي.", why:"الأصول الحيوية (أغنام، دواجن، محاصيل) تنمو وتتغير قيمتها.",
+  key:["الأصل الحيوي يُقاس بالقيمة العادلة ناقصًا تكاليف البيع.","المنتج الزراعي عند الحصاد بالقيمة العادلة.","النباتات المثمرة (مثل النخيل) تُعالج وفق معيار 16."],
+  ex:"مزرعة دواجن في الخرج تقيس قطيع التسمين بسعر السوق ناقصًا تكاليف البيع، بينما تعالج أشجار النخيل في مزرعة تمور كأصول ثابتة.", tip:["فرّق بين النبات المثمر والمنتج الذي ينتجه."], out:["إظهار نمو الأصول الحيوية."], rel:["ifrs13","ias16","ias2"] },
+
+// التفسيرات
+{ id:"ifric1", code:"IFRIC 1", t:"التغيرات في التزامات الإزالة والإعادة إلى الحالة الأصلية", g:"int", tags:[], obj:"معالجة التغير في تقدير التزامات إزالة الأصول.", why:"تكاليف إزالة المنشآت (مثل محطات الوقود) تتغير تقديراتها.", key:["التغير يُضاف أو يُخصم من تكلفة الأصل في نموذج التكلفة."], ex:"محطة وقود ملزمة بإزالة الخزانات عند انتهاء عقد الأرض؛ ارتفاع تقدير التكلفة يزيد قيمة الأصل والمخصص.", tip:["راجع التقدير سنويًا."], out:["قياس واقعي لالتزامات الإزالة."], rel:["ias37","ias16"] },
+{ id:"ifric2", code:"IFRIC 2", t:"أسهم الأعضاء في المنشآت التعاونية والأدوات المشابهة", g:"int", tags:[], obj:"تصنيف أسهم أعضاء التعاونيات كالتزام أو حقوق ملكية.", why:"حق العضو في الاسترداد قد يجعلها التزامًا.", key:["حقوق ملكية إذا كان للمنشأة حق غير مشروط برفض الاسترداد."], ex:"جمعية تعاونية زراعية تراجع لائحتها لتحديد تصنيف حصص الأعضاء.", tip:["اللائحة النظامية هي الفيصل."], out:["تصنيف صحيح لرأس المال."], rel:["ias32"] },
+{ id:"ifric5", code:"IFRIC 5", t:"الحقوق في حصص صناديق الإزالة والإصلاح البيئي", g:"int", tags:[], obj:"معالجة الحصص في صناديق تمويل الإزالة البيئية.", why:"فصل الأصل (حق الاسترداد من الصندوق) عن الالتزام.", key:["لا مقاصة بين الالتزام والحصة في الصندوق."], ex:"شركة تعدين تساهم في صندوق للإصلاح البيئي وتثبت حصتها كأصل منفصل.", tip:["حدد نوع سيطرتك على الصندوق."], out:["عرض إجمالي للالتزامات البيئية."], rel:["ias37"] },
+{ id:"ifric6", code:"IFRIC 6", t:"الالتزامات الناشئة عن المشاركة في سوق محددة: نفايات الأجهزة الكهربائية", g:"int", tags:[], obj:"تحديد متى ينشأ التزام تكاليف إدارة النفايات.", why:"الحدث الملزم هو المشاركة في السوق خلال فترة القياس.", key:["الالتزام يرتبط بالمشاركة في السوق لا بإنتاج الأجهزة."], ex:"مورد أجهزة يثبت التزامه حسب حصته السوقية في فترة القياس المنظمة.", tip:["اقرأ التشريع المنظم لتحديد الحدث الملزم."], out:["توقيت صحيح للالتزام."], rel:["ias37"] },
+{ id:"ifric7", code:"IFRIC 7", t:"تطبيق منهج إعادة العرض بموجب معيار 29", g:"int", tags:[], obj:"كيفية التطبيق في السنة الأولى للتضخم الجامح.", why:"إعادة العرض كأن الاقتصاد كان دائمًا ذا تضخم جامح.", key:["إعادة عرض أرقام المقارنة والأرصدة الافتتاحية."], ex:"تابعة تدخل عملتها التضخم الجامح هذا العام فتعيد عرض رصيدها الافتتاحي.", tip:["نسّق مع معيار 21 عند الترجمة."], out:["اتساق المقارنات."], rel:["ias29"] },
+{ id:"ifric10", code:"IFRIC 10", t:"التقرير المالي الأولي والهبوط", g:"int", tags:[], obj:"منع عكس خسائر هبوط الشهرة المثبتة في فترة أولية.", why:"لضمان الاتساق بين الأولية والسنوية.", key:["خسارة هبوط الشهرة في فترة أولية لا تُعكس لاحقًا."], ex:"هبوط شهرة في الربع الأول لا يُعكس في الربع الرابع رغم تحسن الأداء.", tip:["انتبه لأثره على القوائم الربعية."], out:["عدم تلاعب في الأرباح الربعية."], rel:["ias34","ias36"] },
+{ id:"ifric12", code:"IFRIC 12", t:"ترتيبات امتياز الخدمة العامة", g:"int", tags:[], obj:"المحاسبة عن مشغلي البنية التحتية بعقود الامتياز من الجهات العامة.", why:"مشاريع الشراكة بين القطاعين العام والخاص تتوسع ضمن برامج التخصيص.", key:["المشغل لا يثبت البنية التحتية كأصل ثابت.","يثبت أصلًا ماليًا (مدفوعات مضمونة) أو غير ملموس (حق تحصيل رسوم)."], ex:"شركة تبني وتشغل محطة معالجة مياه لـ 25 عامًا وتتقاضى مبالغ مضمونة من الجهة الحكومية، فتثبت أصلًا ماليًا.", tip:["حلل من يسيطر على السعر والأصل في نهاية العقد."], out:["معالجة صحيحة لمشاريع التخصيص."], rel:["ifrs15","sic29","ias38"] },
+{ id:"ifric14", code:"IFRIC 14", t:"الحد على أصل المنافع المحددة ومتطلبات الحد الأدنى من التمويل", g:"int", tags:[], obj:"تحديد سقف أصل المنافع المحددة الممولة بفائض.", why:"الفائض لا يُثبت إلا بقدر المنافع المتاحة للمنشأة.", key:["قياس المنفعة الاقتصادية المتاحة كاسترداد أو تخفيض اشتراكات."], ex:"صندوق تقاعد ممول بفائض لا تستطيع الشركة استرداده، فيُحد الأصل.", tip:["نادر التطبيق محليًا لأن المكافأة غالبًا غير ممولة."], out:["عدم المبالغة في الأصول."], rel:["ias19"] },
+{ id:"ifric16", code:"IFRIC 16", t:"التحوطات لصافي استثمار في عملية أجنبية", g:"int", tags:[], obj:"تطبيق محاسبة التحوط على صافي الاستثمار في عملية أجنبية.", why:"مجموعات لها تابعات خارجية تتحوط من مخاطر العملة.", key:["البند المتحوط مقابله فروق العملة الوظيفية لا عملة العرض."], ex:"مجموعة لها تابعة في مصر تقترض بالجنيه للتحوط من صافي استثمارها.", tip:["وثّق علاقة التحوط من البداية."], out:["عكس استراتيجية إدارة مخاطر العملة."], rel:["ias21","ifrs9"] },
+{ id:"ifric17", code:"IFRIC 17", t:"توزيعات الأصول غير النقدية على المالك", g:"int", tags:[], obj:"معالجة توزيع أصول غير نقدية كأرباح.", why:"توزيع أرض أو حصص على المساهمين بدل النقد.", key:["التزام التوزيع يُقاس بالقيمة العادلة للأصول الموزعة."], ex:"شركة عائلية توزع أرضًا على الشركاء؛ الفرق بين قيمتها العادلة والدفترية يُثبت في الربح.", tip:["راجع رأي الهيئة حول معاملات الملاك."], out:["قياس عادل للتوزيعات."], rel:["sa-opinions","ifrs5"] },
+{ id:"ifric19", code:"IFRIC 19", t:"التخلص من الالتزامات المالية باستخدام أدوات حقوق الملكية", g:"int", tags:[], obj:"معالجة تسوية الديون بإصدار أسهم.", why:"إعادة هيكلة الديون عبر تحويلها لرأس مال شائعة في الإفلاس.", key:["الأسهم المصدرة تُقاس بقيمتها العادلة والفرق ربح أو خسارة."], ex:"شركة متعثرة تحوّل دينًا 30 مليون ريال إلى أسهم قيمتها العادلة 22 مليونًا، فتثبت مكسب 8 ملايين.", tip:["اربطه بمعيار الإفلاس المحلي."], out:["إظهار الأثر الحقيقي لإعادة الهيكلة."], rel:["ias32","bankruptcy"] },
+{ id:"ifric20", code:"IFRIC 20", t:"تكاليف إزالة الطبقة الصخرية في مرحلة الإنتاج من منجم سطحي", g:"int", tags:[], obj:"معالجة تكاليف كشط الطبقات خلال الإنتاج.", why:"بعضها يحسن الوصول لخام مستقبلي فيُرسمل.", key:["أصل نشاط الإزالة يُثبت عند تحسن الوصول لمكون محدد."], ex:"منجم فوسفات يرسمل جزءًا من تكاليف إزالة الأتربة.", tip:["حدد مكونات جسم الخام بدقة."], out:["مطابقة التكاليف بالمنافع."], rel:["ifrs6","ias16"] },
+{ id:"ifric21", code:"IFRIC 21", t:"الرسوم", g:"int", tags:[], obj:"تحديد توقيت إثبات الرسوم الحكومية.", why:"الرسوم (مثل رسوم تجديد التراخيص السنوية) تُثبت عند وقوع الحدث الملزم.", key:["الحدث الملزم هو النشاط الذي ينص عليه النظام."], ex:"رسم سنوي يستحق بمجرد مزاولة النشاط في 1 يناير يُثبت كاملًا في ذلك التاريخ.", tip:["اقرأ النص النظامي للرسم."], out:["توقيت صحيح للالتزامات الحكومية."], rel:["ias37"] },
+{ id:"ifric22", code:"IFRIC 22", t:"المعاملات بعملة أجنبية والعوض المستلم أو المدفوع مقدمًا", g:"int", tags:[], obj:"تحديد سعر الصرف عند وجود دفعة مقدمة.", why:"الدفعة المقدمة بند غير نقدي.", key:["تاريخ المعاملة هو تاريخ إثبات الدفعة المقدمة."], ex:"شركة دفعت 30% مقدمًا باليورو لمورد؛ يستخدم سعر الصرف في تاريخ الدفعة لذلك الجزء.", tip:["تتبع كل دفعة على حدة."], out:["قياس متسق."], rel:["ias21","ifrs15"] },
+{ id:"ifric23", code:"IFRIC 23", t:"عدم التأكد المحيط بمعالجات ضريبة الدخل", g:"int", tags:[], obj:"تطبيق معيار 12 عند وجود عدم تأكد حول المعالجة الضريبية.", why:"اختلاف محتمل مع هيئة الزكاة والضريبة والجمارك حول معالجة ما.", key:["افتراض أن السلطة ستفحص المعاملة بمعرفة كاملة.","استخدام المبلغ الأكثر احتمالًا أو القيمة المتوقعة."], ex:"شركة خصمت مصروفًا قد ترفضه الهيئة؛ تقدّر احتمال القبول وتعكسه في الضريبة المثبتة.", tip:["طبق المنهج نفسه عمليًا على الربوط الزكوية."], out:["مخصصات ضريبية واقعية."], rel:["ias12","zakat"] },
+{ id:"sic10", code:"SIC 10", t:"المساعدة الحكومية دون علاقة محددة بالأنشطة التشغيلية", g:"int", tags:[], obj:"اعتبار هذه المساعدات منحًا حكومية.", why:"حتى لو لم ترتبط بنشاط محدد.", key:["تُعالج وفق معيار 20 وتُثبت في الربح أو الخسارة."], ex:"دعم حكومي عام لمنشآت في منطقة نائية يُثبت كمنحة.", tip:[], out:["اتساق المعالجة."], rel:["ias20"] },
+{ id:"sic25", code:"SIC 25", t:"ضرائب الدخل: التغيرات في الوضع الضريبي للمنشأة أو مساهميها", g:"int", tags:[], obj:"معالجة أثر تغير الوضع الضريبي.", why:"مثل دخول شريك أجنبي فيصبح جزء من الربح خاضعًا للضريبة.", key:["الأثر في الربح أو الخسارة إلا إذا ارتبط ببند في حقوق الملكية."], ex:"دخول شريك أجنبي بنسبة 40% ينشئ ضرائب مؤجلة على حصته.", tip:["انظر رأي الهيئة حول الشركات المختلطة."], out:["إظهار الأثر فورًا."], rel:["ias12","zakat"] },
+{ id:"sic29", code:"SIC 29", t:"ترتيبات امتياز الخدمة العامة: الإفصاحات", g:"int", tags:[], obj:"الإفصاح عن ترتيبات الامتياز.", why:"مكمل لتفسير 12.", key:["وصف الترتيب وشروطه والحقوق والالتزامات."], ex:"مشغل مطار يفصح عن مدة الامتياز والتزامات الصيانة.", tip:[], out:["فهم الالتزامات طويلة الأجل."], rel:["ifric12"] },
+{ id:"sic32", code:"SIC 32", t:"الأصول غير الملموسة: تكاليف الموقع الإلكتروني", g:"int", tags:[], obj:"معالجة تكاليف تطوير الموقع الإلكتروني.", why:"متجر إلكتروني يولد إيرادات من موقعه.", key:["مرحلة التخطيط مصروف.","التطوير يُرسمل إذا حقق شروط معيار 38.","المحتوى الإعلاني مصروف."], ex:"متجر إلكتروني يرسمل تكلفة بناء بوابة الدفع وسلة الشراء.", tip:["الإعلانات والصور التسويقية ليست أصلًا."], out:["تمييز الاستثمار عن التسويق."], rel:["ias38"] },
+{ id:"ifrs-glossary", code:"مسرد", t:"مسرد مصطلحات المعايير الدولية للتقرير المالي", g:"base", tags:[], obj:"توحيد المصطلحات العربية المقابلة للإنجليزية.", why:"الترجمة الرسمية المعتمدة تمنع تعدد المسميات.", key:["مرجع للتعريفات الرسمية."], ex:"للتحقق من الترجمة المعتمدة لمصطلح 'Expected credit losses': الخسائر الائتمانية المتوقعة.", tip:["استخدم المصطلحات المعتمدة في الإيضاحات."], out:["لغة مهنية موحدة."], rel:["isa-glossary"] },
+
+// الإصدارات المحلية
+{ id:"zakat", code:"معيار الزكاة", t:"معيار محاسبة الزكاة (المعدل)", g:"local", tags:["local","core"],
+  obj:"تحديد المعالجة المحاسبية للزكاة وعرضها والإفصاح عنها في قوائم المنشآت الخاضعة لها في المملكة.",
+  why:"الزكاة التزام نظامي خاص بالمملكة لا يعالجه أي معيار دولي.",
+  key:["الزكاة تُثبت مصروفًا في قائمة الربح أو الخسارة (وليست توزيعًا من حقوق الملكية).","تُحتسب وفق لائحة الزكاة الصادرة عن هيئة الزكاة والضريبة والجمارك.","الفروقات الناتجة عن الربط النهائي تُعالج كتغير في التقدير في فترة الربط.","الإفصاح عن الوعاء الزكوي وحركة المخصص والموقف من الربوط."],
+  ex:"شركة وعاؤها الزكوي 200 مليون ريال فتحمل مصروف زكاة بنحو 5 ملايين ريال (2.5% تقريبًا للسنة الهجرية، و2.5775% للسنة الميلادية). بعد سنتين يصدر ربط إضافي بمليون ريال يُثبت في سنة الربط لا بتعديل القوائم السابقة.",
+  tip:["احتفظ بجدول مطابقة بين الوعاء الزكوي والقوائم.","في الشركات المختلطة راجع رأي الهيئة حول عرض أثر الزكاة والضريبة على حقوق الملاك."],
+  out:["عرض موحد للزكاة بين الشركات.","شفافية الموقف الزكوي أمام المستثمرين."], rel:["ias12","ifric23","sa-opinions"] },
+
+{ id:"bankruptcy", code:"معيار الإفلاس", t:"معيار التقرير المالي خلال إجراءات الإفلاس: التسوية الوقائية أو إعادة التنظيم المالي", g:"local", tags:["local"],
+  obj:"معالجة التقرير المالي للمنشأة خلال إجراءات نظام الإفلاس السعودي.", why:"نظام الإفلاس أتاح التسوية الوقائية وإعادة التنظيم؛ المنشأة تستمر ولكن بظروف خاصة.",
+  key:["استمرار أساس الاستمرارية ما لم تتحول الإجراءات إلى تصفية.","معالجة الالتزامات الخاضعة للتسوية وعرضها.","إفصاحات عن الإجراءات وآثارها."],
+  ex:"شركة مقاولات افتتحت إجراء إعادة تنظيم مالي. تفصح عن خطة المقترح والالتزامات المعلقة، وعند المصادقة على الخطة تُعدل قيم الديون.", tip:["نسّق مع أمين الإفلاس ومعيار المراجعة 570."], out:["شفافية وضع المنشأة المتعثرة للدائنين."], rel:["isa570","isa570r","ifric19","liquidation"] },
+
+{ id:"sa-opinions", code:"آراء وتوضيحات", t:"آراء وتوضيحات مجلس معايير المحاسبة", g:"local", tags:["local"],
+  obj:"الإجابة عن أسئلة تطبيقية تكررت في السوق السعودية.", why:"قضايا عملية لا يعالجها المعيار الدولي صراحة أو تختص بالبيئة المحلية.",
+  key:["معاملات الملاك مع المنشأة.","التحول من شكل نظامي لآخر، وتجميع المنشآت تحت سيطرة مشتركة.","عرض أثر الزكاة والضريبة على حقوق الملاك في الشركات المختلطة.","الشركات غير الربحية والأوقاف والجهات الحكومية.","التكلفة المفترضة والأصول المستهلكة دفتريًا، ومكافأة نهاية الخدمة للمنشآت الصغيرة، وتكاليف الإدراج."],
+  ex:"مؤسسة فردية تتحول إلى شركة ذات مسؤولية محدودة. يرجع المحاسب لرأي المجلس حول المعالجة المحاسبية للتحول من شكل نظامي لآخر لتحديد أساس نقل الأصول.", tip:["هذه الآراء ملزمة عمليًا في البيئة المحلية؛ اعتبرها جزءًا من الإطار."], out:["تطبيق موحد في المسائل المحلية."], rel:["zakat","ias19","ias16","ifrs3"] },
+
+{ id:"liquidation", code:"أساس التصفية", t:"معيار التقرير المالي على أساس التصفية", g:"local", tags:["local"],
+  obj:"وضع مبادئ الإثبات والقياس والعرض والإفصاح عندما يصبح أساس الاستمرارية غير مناسب وتتجه المنشأة للتصفية.",
+  why:"المعايير الدولية تفترض الاستمرارية ولا تحدد أساسًا بديلًا؛ هذا المعيار المحلي يسد الفراغ.",
+  key:["قياس الأصول بالمبالغ المتوقع تحصيلها عند التصفية.","قياس الالتزامات بالمبلغ التعاقدي المستحق للتسوية.","إثبات أصول لم تكن مثبتة سابقًا (مثل العلامات التجارية) إذا كان متوقعًا بيعها.","قائمة صافي الأصول المتاحة للتصفية."],
+  ex:"شركة تجارية قرر ملاكها تصفيتها. تتحول لأساس التصفية: المخزون بسعر البيع المتوقع في التصفية، ويُثبت التزام بتكاليف التصفية المتوقعة.", tip:["حدد تاريخ التحول بدقة: قرار التصفية وليس بداية التعثر."], out:["معلومات ملائمة للدائنين والملاك عند التصفية."], rel:["bankruptcy","isa570","isa800"] }
 ];
 
-let activeCat = '';
-let query = '';
+// المحتوى التعليمي — المعايير الدولية لإدارة الجودة والمراجعة والفحص والتأكيد المعتمدة في المملكة (طبعة 2026)
+window.ISA_GROUPS = {
+  q: "إدارة الجودة والتمهيد",
+  gen: "المبادئ العامة والمسؤوليات (200–299)",
+  risk: "تقييم المخاطر والاستجابة لها (300–499)",
+  ev: "أدلة المراجعة (500–599)",
+  oth: "استخدام عمل الآخرين (600–699)",
+  rep: "الاستنتاجات والتقرير (700–799)",
+  spec: "المجالات المتخصصة (800–899)",
+  eng: "الفحص والتأكيد والخدمات ذات العلاقة",
+  sus: "الاستدامة",
+  more: "إصدارات أخرى ومحلية"
+};
 
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+window.ISA_DATA = [
+{ id:"isa-preface", code:"التمهيد", t:"التمهيد لإصدارات المعايير الدولية لرقابة الجودة والمراجعة والفحص والتأكيد", g:"q", tags:[],
+  obj:"شرح نطاق إصدارات مجلس المعايير الدولية للمراجعة والتأكيد وسلطتها وطريقة تنظيمها.", why:"يوضح لأي ارتباط ينطبق كل معيار: مراجعة، فحص، تأكيد، خدمات ذات علاقة.",
+  key:["المعايير الدولية للمراجعة (ISA) لمراجعة المعلومات المالية التاريخية.","معايير الفحص (ISRE) ومعايير التأكيد (ISAE) ومعايير الخدمات ذات العلاقة (ISRS).","المعايير الدولية لإدارة الجودة (ISQM) على مستوى المكتب."],
+  ex:"عميل يطلب 'مراجعة سريعة' لقوائمه الربعية. يرجع المراجع إلى التمهيد ليفهم أن المطلوب فعليًا فحص وفق معيار 2410 لا مراجعة كاملة.", tip:["حدد نوع الارتباط أولًا ثم المعيار."], out:["اختيار المعيار الصحيح لكل ارتباط."], rel:["isa200","isre2410"] },
 
-function fileUrl(id){ return '/api/standards-files/' + id + '.pdf'; }
+{ id:"isqm1", code:"ISQM 1", t:"إدارة الجودة للمكاتب التي تنفذ ارتباطات المراجعة أو الفحص أو التأكيد أو الخدمات ذات العلاقة", g:"q", tags:["core"],
+  obj:"تصميم نظام لإدارة الجودة وتطبيقه وتشغيله يوفر للمكتب تأكيدًا معقولًا بأنه وموظفيه يفون بمسؤولياتهم المهنية، وأن التقارير الصادرة مناسبة في ظل الظروف.",
+  why:"انتقل من 'رقابة الجودة' بقواعد ثابتة إلى 'إدارة الجودة' القائمة على المخاطر: كل مكتب يحدد مخاطره ويصمم استجاباته.",
+  key:["ثمانية مكونات: عملية تقييم المخاطر، الحوكمة والقيادة، المتطلبات المسلكية، قبول العملاء واستمرارهم، أداء الارتباط، الموارد، المعلومات والاتصال، المتابعة والإصلاح.","تحديد أهداف الجودة ومخاطرها وتصميم الاستجابات.","تقييم سنوي للنظام من الشخص المسؤول نهائيًا."],
+  ex:"مكتب مراجعة متوسط في الدمام يلاحظ من فحوص الجودة أن ملفات قطاع المقاولات تفتقر لتوثيق التقديرات. يعد ذلك مخاطرة جودة، فيصمم استجابة: قائمة تحقق إلزامية وتدريب مخصص، ويتابع أثرها في الفحص التالي.",
+  tip:["ابدأ بسجل مخاطر الجودة للمكتب وحدّثه سنويًا.","وثّق تحليل السبب الجذري لكل قصور."], out:["جودة مراجعة مستدامة لا تعتمد على الأفراد.","ثقة الجهات الرقابية وأصحاب المصلحة."], rel:["isqm2","isa220","aqf"] },
 
-function renderChips(){
-  const chips = document.getElementById('chips');
-  const allChip = `<div class="chip${activeCat===''?' active':''}" data-cat="">الكل (${STANDARDS.length})</div>`;
-  const rest = STANDARDS_CATS.map(c=>{
-    const n = STANDARDS.filter(s=>s.cat===c).length;
-    return `<div class="chip${activeCat===c?' active':''}" data-cat="${c}">${STANDARDS_CAT_LABELS[c]} (${n})</div>`;
-  }).join('');
-  chips.innerHTML = allChip + rest;
-  chips.querySelectorAll('.chip').forEach(el=>{
-    el.onclick = ()=>{ activeCat = el.dataset.cat; render(); };
-  });
+{ id:"isqm2", code:"ISQM 2", t:"فحوصات جودة الارتباطات", g:"q", tags:[],
+  obj:"تعيين فاحص لجودة الارتباط وتوضيح أهليته، وتنفيذ الفحص وتوثيقه.", why:"رأي مستقل ثانٍ في الأحكام المهمة قبل إصدار التقرير، خصوصًا للمنشآت المدرجة.",
+  key:["فحص جودة الارتباط إلزامي للمنشآت المدرجة وما يحدده المكتب.","فترة تهدئة سنتان قبل أن يصبح شريك الارتباط فاحصًا لجودته.","لا يُؤرخ التقرير قبل إكمال الفحص."],
+  ex:"شريك آخر في المكتب يراجع حكم الفريق بشأن الاستمرارية لشركة مدرجة متعثرة قبل توقيع التقرير.", tip:["أشرك الفاحص مبكرًا في الأحكام الجوهرية."], out:["تقليل احتمال إصدار رأي غير مناسب."], rel:["isqm1","isa220"] },
+
+{ id:"isa200", code:"ISA 200", t:"الأهداف العامة للمراجع المستقل والقيام بالمراجعة وفقًا للمعايير الدولية للمراجعة", g:"gen", tags:["core"],
+  obj:"الحصول على تأكيد معقول بأن القوائم المالية ككل خالية من التحريف الجوهري سواء بسبب غش أو خطأ، لتمكين المراجع من إبداء رأيه، ثم التقرير وفقًا لنتائجه.",
+  why:"المعيار الأساس الذي يحدد فلسفة المراجعة: تأكيد معقول وليس مطلقًا، وحكم مهني، ونزعة شك مهني.",
+  key:["التأكيد المعقول مستوى عالٍ لكنه ليس مطلقًا بسبب القيود المتأصلة.","النزعة للشك المهني والحكم المهني طوال المراجعة.","الالتزام بالمتطلبات المسلكية بما فيها الاستقلال.","الالتزام بكل معيار ذي صلة."],
+  ex:"مراجع شركة تجارية يلاحظ أن الإدارة تقدم مستندات صحيحة شكلًا، لكن نمو المبيعات في آخر أسبوع من السنة غير معتاد. النزعة للشك تدفعه لفحص القطع ومرتجعات يناير بدل الاكتفاء بالمستندات.",
+  tip:["وثّق كيف مارست الشك المهني لا أنك مارسته فقط.","الحكم المهني يجب أن يكون مدعومًا بالحقائق والظروف."], out:["رأي موثوق يرفع ثقة المستخدمين بالقوائم."], rel:["framework","isa240","isa315","isa700"] },
+
+{ id:"isa210", code:"ISA 210", t:"الاتفاق على شروط ارتباطات المراجعة", g:"gen", tags:[],
+  obj:"قبول ارتباط المراجعة أو الاستمرار فيه فقط عند الاتفاق على الأساس الذي سيُنفذ عليه: وجود شروط مسبقة للمراجعة، وتفاهم مشترك مع الإدارة والمكلفين بالحوكمة.",
+  why:"كثير من الخلافات بين المراجع والعميل منشؤها عدم وضوح المسؤوليات من البداية.",
+  key:["التأكد من أن إطار التقرير المالي مقبول.","إقرار الإدارة بمسؤوليتها عن إعداد القوائم والرقابة الداخلية وتوفير المعلومات.","خطاب ارتباط مكتوب."],
+  ex:"عميل جديد يطلب تقليص الأتعاب مقابل عدم حضور الجرد. يرفض المراجع قيدًا يمنعه من أدلة كافية، ويوضح في خطاب الارتباط مسؤوليات الإدارة.", tip:["جدد خطاب الارتباط عند تغير الظروف أو الإدارة."], out:["وضوح المسؤوليات وتقليل فجوة التوقعات."], rel:["isa200","isa580"] },
+
+{ id:"isa220", code:"ISA 220 (المحدث)", t:"إدارة الجودة لمراجعة القوائم المالية", g:"gen", tags:["updated"],
+  obj:"إدارة الجودة على مستوى الارتباط للحصول على تأكيد معقول بأن المراجعة نُفذت وفقًا للمعايير وأن التقرير مناسب.", why:"ينقل مسؤولية الجودة بشكل واضح إلى شريك الارتباط ومشاركته الكافية.",
+  key:["مسؤولية شريك الارتباط الشاملة ومشاركته في كل مراحل المراجعة.","التوجيه والإشراف والفحص.","التعامل مع اختلاف الآراء."],
+  ex:"شريك ارتباط يخصص ساعات لمراجعة أوراق عمل التقديرات المحاسبية ويحضر اجتماع الاختتام مع لجنة المراجعة بنفسه.", tip:["وثّق مشاركة الشريك بتواريخ وأدلة."], out:["جودة متسقة على مستوى كل ملف."], rel:["isqm1","isqm2","isa230"] },
+
+{ id:"isa230", code:"ISA 230", t:"توثيق أعمال المراجعة", g:"gen", tags:["core"],
+  obj:"إعداد توثيق يوفر سجلًا كافيًا ومناسبًا لأساس تقرير المراجع، ودليلًا على أن المراجعة خُططت ونُفذت وفقًا للمعايير.",
+  why:"قاعدة 'ما لم يوثق لم يحدث' عند الفحص الرقابي.",
+  key:["التوثيق يكفي لمراجع خبير لم يشارك في الارتباط لفهم ما تم.","تجميع الملف النهائي خلال 60 يومًا من تاريخ التقرير عادة.","عدم حذف أو إتلاف التوثيق بعد تجميع الملف."],
+  ex:"أثناء فحص هيئة المراجعين والمحاسبين، لم يستطع الفريق إثبات أنه اختبر المصادقات لأن الردود لم تُحفظ. يُعد ذلك قصورًا رغم أن العمل ربما نُفذ.", tip:["اكتب الاستنتاج في كل ورقة عمل وليس الإجراء فقط."], out:["ملف قابل للدفاع أمام الفحص والمساءلة."], rel:["isa220","isa500"] },
+
+{ id:"isa240", code:"ISA 240", t:"مسؤوليات المراجع ذات العلاقة بالغش عند مراجعة القوائم المالية", g:"gen", tags:["core"],
+  obj:"التعرف على مخاطر التحريف الجوهري بسبب الغش وتقييمها، والحصول على أدلة كافية ومناسبة بشأنها، والاستجابة المناسبة للغش المحدد أو المشتبه فيه.",
+  why:"الغش متعمد ويصاحبه إخفاء، لذلك يتطلب إجراءات خاصة تتجاوز إجراءات الخطأ.",
+  key:["نوعان: التقرير المالي الاحتيالي، واختلاس الأصول.","افتراض وجود مخاطر غش في إثبات الإيراد (قابل للدحض بتبرير).","مخاطر تجاوز الإدارة للرقابة قائمة دائمًا: اختبار قيود اليومية، مراجعة التقديرات للتحيز، المعاملات غير المعتادة.","مثلث الغش: الدافع، الفرصة، التبرير."],
+  ex:"مدير مبيعات تحت ضغط تحقيق مستهدف مكافأته يسجل فواتير لعميل وهمي في ديسمبر. المراجع يحلل قيود اليومية المسجلة في آخر يوم من السنة خارج ساعات العمل، ويرسل مصادقات، ويفحص مرتجعات يناير.",
+  tip:["نفّذ اختبار قيود اليومية بمعايير واضحة: قيود ختامية، مستخدمون غير معتادين، أرقام مدورة.","ناقش الفريق حول كيف يمكن أن يحدث الغش في هذا العميل تحديدًا."], out:["اكتشاف مبكر للغش الجوهري.","ردع للتلاعب."], rel:["ifrs15","isa315","isa330","isa250"] },
+
+{ id:"isa250", code:"ISA 250 (المحدث)", t:"مراعاة الأنظمة واللوائح عند مراجعة القوائم المالية", g:"gen", tags:[],
+  obj:"الحصول على أدلة بشأن الالتزام بالأنظمة ذات الأثر المباشر، وتنفيذ إجراءات لتحديد حالات عدم الالتزام بالأنظمة الأخرى، والاستجابة لها.", why:"مخالفة الأنظمة (العمل، الزكاة، مكافحة غسل الأموال) قد تسبب غرامات أو إيقاف نشاط.",
+  key:["فئتان: أنظمة ذات أثر مباشر على المبالغ، وأنظمة أخرى أساسية للنشاط.","الاستفسار وفحص المراسلات مع الجهات الرقابية.","الإبلاغ عن المخالفات للمكلفين بالحوكمة وللجهات عند اقتضاء النظام."],
+  ex:"أثناء المراجعة يكتشف الفريق مراسلات من وزارة الموارد البشرية بغرامات لعدم الالتزام بنسب التوطين. يقيّم الأثر ويتأكد من المخصص والإفصاح.", tip:["اربط هذا بتوضيح الهيئة حول الإبلاغ عن مخالفات نظام الشركات."], out:["حماية المنشأة وأصحاب المصلحة من آثار المخالفات."], rel:["isa-clarif","ias37","isa240"] },
+
+{ id:"isa260", code:"ISA 260", t:"الاتصال بالمكلفين بالحوكمة", g:"gen", tags:["core"],
+  obj:"إبلاغ المكلفين بالحوكمة بمسؤوليات المراجع ونطاق المراجعة وتوقيتها والنتائج المهمة، وتعزيز الاتصال الفعال في الاتجاهين.", why:"لجنة المراجعة شريك في الإشراف على التقرير المالي؛ تحتاج معلومات المراجع في وقتها.",
+  key:["إبلاغ نطاق المراجعة وتوقيتها المخطط.","النتائج المهمة: الممارسات المحاسبية، الصعوبات، التحريفات غير المصححة.","بيان الاستقلال للمنشآت المدرجة."],
+  ex:"المراجع يعرض على لجنة المراجعة ملخص التحريفات غير المصححة وتقييمه لسياسة إثبات إيراد العقود طويلة الأجل.", tip:["اجعل الاتصال مكتوبًا للأمور المهمة."], out:["حوكمة أقوى ومساءلة الإدارة."], rel:["isa265","isa701","isa450"] },
+
+{ id:"isa265", code:"ISA 265", t:"إبلاغ أوجه القصور في الرقابة الداخلية للمكلفين بالحوكمة والإدارة", g:"gen", tags:[],
+  obj:"الإبلاغ المناسب عن أوجه القصور في الرقابة الداخلية التي حددها المراجع، والتي يرى أنها مهمة بما يكفي لتستحق انتباههم.", why:"المراجع ليس مسؤولًا عن تصميم الرقابة لكنه يرى نقاط الضعف ويجب أن ينبه لها.",
+  key:["القصور المهم يُبلغ كتابيًا للمكلفين بالحوكمة.","إبلاغ الإدارة بأوجه القصور الأخرى المهمة لها."],
+  ex:"موظف واحد يملك صلاحية إنشاء موردين وتنفيذ المدفوعات. يبلغه المراجع كقصور مهم في الفصل بين المهام.", tip:["أرفق توصية عملية لكل قصور."], out:["تحسين بيئة الرقابة."], rel:["isa315","isa260"] },
+
+{ id:"isa300", code:"ISA 300", t:"التخطيط لمراجعة القوائم المالية", g:"risk", tags:[],
+  obj:"التخطيط للمراجعة بحيث تُنفذ بطريقة فعالة.", why:"التخطيط الجيد يوجه الجهد إلى المناطق الأكثر خطرًا.",
+  key:["الاستراتيجية العامة: النطاق والتوقيت والاتجاه.","خطة المراجعة: طبيعة وتوقيت ومدى الإجراءات.","التخطيط عملية مستمرة تُحدث."],
+  ex:"لعميل تجزئة يخطط المراجع حضور الجرد في 5 فروع مختارة حسب المخاطر، وجدولة اختبارات الرقابة في الربع الثالث.", tip:["عقد اجتماع تخطيط مع الفريق يحضره الشريك."], out:["مراجعة فعالة من حيث التكلفة والجودة."], rel:["isa315","isa320"] },
+
+{ id:"isa315", code:"ISA 315 (المحدث 2019)", t:"التعرف على مخاطر التحريف الجوهري وتقييمها", g:"risk", tags:["core","updated"],
+  obj:"التعرف على مخاطر التحريف الجوهري وتقييمها على مستوى القوائم والإقرارات، بما يوفر أساسًا لتصميم الاستجابات.",
+  why:"قلب المراجعة القائمة على المخاطر؛ جودة كل ما بعدها تعتمد عليه.",
+  key:["فهم المنشأة وبيئتها وإطار التقرير المالي ونظام الرقابة الداخلية (بما فيه تقنية المعلومات).","عوامل الخطر المتأصلة: التعقيد، الذاتية، التغيير، عدم التأكد، التحيز.","طيف الخطر المتأصل، وتحديد المخاطر المهمة.","فهم أنشطة الرقابة ذات الصلة والضوابط العامة لتقنية المعلومات."],
+  ex:"شركة تطبق نظام ERP جديدًا منتصف السنة. يحدد المراجع مخاطرة في نقل الأرصدة وصلاحيات المستخدمين، ويشرك متخصص تقنية لفحص الضوابط العامة.",
+  tip:["اربط كل خطر بإقرار محدد وبرصيد محدد.","لا تكتفِ بقوائم نمطية؛ المعيار يطلب فهمًا فعليًا."], out:["إجراءات مركزة على ما يمكن أن يخطئ فعلًا."], rel:["isa330","isa240","isa320","isa540"] },
+
+{ id:"isa320", code:"ISA 320", t:"الأهمية النسبية عند تخطيط وتنفيذ المراجعة", g:"risk", tags:["core"],
+  obj:"تطبيق مفهوم الأهمية النسبية بشكل مناسب في تخطيط المراجعة وتنفيذها.", why:"تحدد الحد الذي يُعد التحريف فوقه مؤثرًا على قرارات المستخدمين.",
+  key:["الأهمية النسبية للقوائم ككل بنسبة من مؤشر مناسب (مثل 5% من الربح قبل الضريبة والزكاة، أو 1% من الإيراد).","الأهمية النسبية للتنفيذ أقل منها (غالبًا 50%–75%).","مستويات أقل لفئات معاملات معينة (مثل تعويضات الإدارة)."],
+  ex:"شركة ربحها قبل الزكاة 40 مليون ريال: أهمية نسبية 2 مليون (5%)، وأهمية تنفيذ 1.5 مليون، وحد التحريفات الواضحة الضآلة 100 ألف.", tip:["وثّق مبرر اختيار المؤشر والنسبة.","أعد النظر فيها إذا تغيرت الأرقام الفعلية."], out:["توجيه الجهد نحو ما يهم المستخدمين."], rel:["isa450","isa315","isa530"] },
+
+{ id:"isa330", code:"ISA 330", t:"استجابات المراجع للمخاطر المقيّمة", g:"risk", tags:["core"],
+  obj:"الحصول على أدلة كافية ومناسبة بشأن مخاطر التحريف الجوهري المقيّمة عبر تصميم استجابات مناسبة وتنفيذها.", why:"الربط بين الخطر المقيّم والإجراء؛ كلما ارتفع الخطر زادت قوة الأدلة المطلوبة.",
+  key:["استجابات عامة على مستوى القوائم (مثل عنصر عدم التنبؤ).","اختبارات الرقابة عند الاعتماد عليها.","إجراءات أساس لكل فئة جوهرية مهما كان تقييم الخطر.","المخاطر المهمة تتطلب إجراءات أساس محددة لها."],
+  ex:"خطر مرتفع في وجود المخزون: يحضر المراجع الجرد مفاجئًا في فروع لم يعلن عنها مسبقًا، ويختبر القطع.", tip:["وثّق الربط بين كل خطر والإجراء المستجيب له في مصفوفة."], out:["أدلة متناسبة مع الخطر."], rel:["isa315","isa500","isa530"] },
+
+{ id:"isa402", code:"ISA 402", t:"اعتبارات المراجعة ذات العلاقة بمنشأة تستخدم منشأة خدمية", g:"risk", tags:[],
+  obj:"فهم الخدمات التي تقدمها المنشأة الخدمية وأثرها على الرقابة، وتصميم إجراءات مستجيبة.", why:"الاستعانة بمصادر خارجية للرواتب أو الحوسبة السحابية تنقل جزءًا من الرقابة خارج المنشأة.",
+  key:["الحصول على تقرير نوع 1 أو نوع 2 من مراجع المنشأة الخدمية.","تقييم الضوابط المكملة لدى المنشأة المستخدمة."],
+  ex:"شركة تعتمد على مزود سحابي لنظام الرواتب؛ يطلب المراجع تقرير تأكيد نوع 2 ويتحقق من الضوابط المكملة داخل الشركة.", tip:["تحقق من فترة التقرير وتغطيتها لسنة المراجعة."], out:["فهم كامل للرقابة ولو كانت خارجية."], rel:["isae3402","isa315"] },
+
+{ id:"isa450", code:"ISA 450", t:"تقويم التحريفات المكتشفة خلال المراجعة", g:"risk", tags:[],
+  obj:"تقويم أثر التحريفات المكتشفة على المراجعة، وأثر التحريفات غير المصححة على القوائم.", why:"التحريفات الصغيرة تتراكم وقد تصبح جوهرية مجتمعة.",
+  key:["تجميع كل التحريفات عدا الضئيلة بوضوح.","مطالبة الإدارة بتصحيحها.","تقويم أثر غير المصححة كميًا ونوعيًا."],
+  ex:"مجموع التحريفات غير المصححة 1.8 مليون مقابل أهمية نسبية 2 مليون، لكن أحدها يحول الشركة من مخالفة تعهد قرض إلى ملتزمة؛ نوعيًا يُعد جوهريًا.", tip:["احصل على قائمة التحريفات غير المصححة موقعة ضمن خطاب الإفادات."], out:["رأي مبني على أثر التحريفات الكلي."], rel:["isa320","isa580","isa705"] },
+
+{ id:"isa500", code:"ISA 500", t:"أدلة المراجعة", g:"ev", tags:["core"],
+  obj:"تصميم وتنفيذ إجراءات مراجعة للحصول على أدلة كافية ومناسبة تمكن من التوصل إلى استنتاجات معقولة يُبنى عليها الرأي.", why:"يحدد ما الذي يجعل الدليل موثوقًا.",
+  key:["الكفاية (الكمية) والمناسبة (الملاءمة والموثوقية).","الأدلة من مصادر خارجية مستقلة أكثر موثوقية.","إجراءات: الفحص، الملاحظة، المصادقة، إعادة الاحتساب، إعادة الأداء، الإجراءات التحليلية، الاستفسار.","تقويم المعلومات المعدة من المنشأة (دقتها واكتمالها)."],
+  ex:"تقرير أعمار الذمم مستخرج من النظام. قبل استخدامه يختبر المراجع دقته واكتماله بمطابقة إجماليه مع الأستاذ العام وعينة من الفواتير.", tip:["الاستفسار وحده لا يكفي أبدًا."], out:["رأي مبني على أدلة قوية."], rel:["isa501","isa505","isa520","isa530"] },
+
+{ id:"isa501", code:"ISA 501", t:"أدلة المراجعة: اعتبارات محددة لبنود مختارة", g:"ev", tags:[],
+  obj:"الحصول على أدلة بشأن وجود المخزون وحالته، واكتمال الدعاوى القضائية، وعرض المعلومات القطاعية.", why:"بنود بعينها لها مخاطر خاصة تتطلب إجراءات محددة.",
+  key:["حضور الجرد الفعلي للمخزون الجوهري.","الاستفسار من المحامي الخارجي عن الدعاوى.","فحص المعلومات القطاعية."],
+  ex:"المراجع يحضر جرد مستودع قطع غيار ويختار عينة من السجلات إلى الرف ومن الرف إلى السجلات.", tip:["خطط لحضور الجرد في تاريخ نهاية السنة أو قريب منه."], out:["ثقة في وجود المخزون واكتمال الالتزامات."], rel:["ias2","ias37","ifrs8"] },
+
+{ id:"isa505", code:"ISA 505", t:"المصادقات الخارجية", g:"ev", tags:[],
+  obj:"تصميم إجراءات المصادقة الخارجية وتنفيذها للحصول على أدلة ملائمة وموثوقة.", why:"رد طرف ثالث مباشرة للمراجع من أقوى الأدلة.",
+  key:["سيطرة المراجع على إرسال واستلام المصادقات.","معالجة رفض الإدارة، وعدم الرد، والاستثناءات.","المصادقات الإيجابية والسلبية."],
+  ex:"يرسل المراجع مصادقات لأرصدة 30 عميلًا عبر البريد الإلكتروني الرسمي الذي تحقق منه بنفسه، ويتابع 4 لم يردوا بإجراءات بديلة (تحصيلات لاحقة).", tip:["تحقق من عناوين المصادقة بشكل مستقل."], out:["دليل قوي على الوجود والحقوق."], rel:["isa500","isa240"] },
+
+{ id:"isa510", code:"ISA 510", t:"ارتباطات المراجعة لأول مرة: الأرصدة الافتتاحية", g:"ev", tags:[],
+  obj:"الحصول على أدلة بأن الأرصدة الافتتاحية لا تحتوي تحريفات تؤثر جوهريًا على قوائم الفترة الحالية، وأن السياسات طُبقت باتساق.", why:"المراجع الجديد يرث أرصدة لم يراجعها.",
+  key:["فحص أوراق عمل المراجع السابق.","إجراءات على الأرصدة الافتتاحية نفسها.","أثر على الرأي عند عدم كفاية الأدلة."],
+  ex:"مكتب يُعيَّن لأول مرة لشركة كانت تراجع من مكتب آخر؛ يطلب أوراق عمل المراجع السابق ويختبر رصيد المخزون الافتتاحي بتحليل حركة المبيعات اللاحقة.", tip:["تواصل مع المراجع السابق مبكرًا."], out:["سلامة الأرصدة الافتتاحية."], rel:["ifrs1","isa710"] },
+
+{ id:"isa520", code:"ISA 520", t:"الإجراءات التحليلية", g:"ev", tags:[],
+  obj:"الحصول على أدلة ملائمة وموثوقة باستخدام الإجراءات التحليلية الأساسية، وتصميم إجراءات تحليلية قرب نهاية المراجعة.", why:"مقارنة ما هو متوقع بما هو مسجل تكشف الشذوذ بتكلفة منخفضة.",
+  key:["تطوير توقع مستقل بدقة كافية.","تحديد الفرق المقبول والتحقيق فيما يتجاوزه.","إجراء تحليلي ختامي إلزامي."],
+  ex:"فندق بـ 200 غرفة ومتوسط إشغال 70% وسعر 450 ريالًا: الإيراد المتوقع نحو 23 مليون ريال. الإيراد المسجل 27 مليونًا؛ الفرق يستوجب التحقيق.", tip:["استخدم بيانات غير مالية مستقلة لبناء التوقع."], out:["اكتشاف الانحرافات بكفاءة."], rel:["isa500","isa315"] },
+
+{ id:"isa530", code:"ISA 530", t:"العينات في المراجعة", g:"ev", tags:[],
+  obj:"توفير أساس معقول لاستخلاص استنتاجات عن المجتمع الذي سُحبت منه العينة.", why:"فحص كل البنود غير عملي؛ العينات تعطي نتيجة ممثلة.",
+  key:["العينات الإحصائية وغير الإحصائية.","تحديد حجم العينة حسب الخطر والتحريف المقبول.","تقدير التحريف في المجتمع وتقويم النتائج."],
+  ex:"مجتمع 12,000 فاتورة مصروفات. يختار المراجع عينة 60 فاتورة بالعينة بوحدة النقد، ويجد خطأ 5,000 ريال يسقطه على المجتمع.", tip:["التحليل الكامل للبيانات (Data analytics) قد يغني عن العينة أحيانًا."], out:["استنتاجات موثوقة بتكلفة معقولة."], rel:["isa500","isa320","isa330"] },
+
+{ id:"isa540", code:"ISA 540 (المحدث)", t:"مراجعة التقديرات المحاسبية وما يتعلق بها من إفصاحات", g:"ev", tags:["core","updated"],
+  obj:"الحصول على أدلة كافية ومناسبة بأن التقديرات المحاسبية والإفصاحات المتعلقة بها معقولة في سياق إطار التقرير المالي.",
+  why:"التقديرات (المخصصات، القيم العادلة، الهبوط) أكثر المناطق عرضة للتحيز والخطأ.",
+  key:["تقييم منفصل للخطر المتأصل والخطر الرقابي.","ثلاث طرق: اختبار طريقة الإدارة، تطوير تقدير المراجع أو نطاق، الأحداث حتى تاريخ التقرير.","الانتباه لمؤشرات تحيز الإدارة.","إفصاحات عدم التأكد في التقدير."],
+  ex:"مخصص الخسائر الائتمانية المتوقعة 12 مليون ريال. يختبر المراجع بيانات أعمار الذمم ومعدلات التعثر التاريخية ويطور نطاقًا من 11 إلى 15 مليونًا؛ تقدير الإدارة في الحد الأدنى باستمرار كل سنة، ما يثير مؤشر تحيز.",
+  tip:["قارن تقديرات السنة الماضية بالنتائج الفعلية (مراجعة بأثر رجعي).","اسأل: لماذا اختارت الإدارة هذا الافتراض دون غيره؟"], out:["تقديرات معقولة وإفصاح شفاف عن عدم التأكد."], rel:["ifrs9","ias36","ifrs13","ias19","isa620"] },
+
+{ id:"isa550", code:"ISA 550", t:"الأطراف ذات العلاقة", g:"ev", tags:[],
+  obj:"فهم علاقات ومعاملات الأطراف ذات العلاقة بما يكفي للتعرف على عوامل خطر الغش، والتوصل إلى استنتاج بأن القوائم تعرضها بعدل.", why:"معاملات الأطراف ذات العلاقة قناة شائعة للغش ونقل المنافع.",
+  key:["الاستفسار عن هوية الأطراف ذات العلاقة وحصرهم.","الانتباه للمعاملات خارج السياق العادي للنشاط.","معاملات مهمة غير مفصح عنها = خطر مهم."],
+  ex:"أثناء فحص كشف البنك يلاحظ المراجع تحويلات متكررة لشركة لم ترد في قائمة الأطراف ذات العلاقة؛ السجل التجاري يوضح أنها مملوكة لابن المدير التنفيذي.", tip:["قارن قائمة الأطراف مع السجلات التجارية ومحاضر المجلس."], out:["كشف المعاملات المستترة."], rel:["ias24","isa240"] },
+
+{ id:"isa560", code:"ISA 560", t:"الأحداث اللاحقة", g:"ev", tags:[],
+  obj:"الحصول على أدلة بأن الأحداث بين تاريخ القوائم وتاريخ التقرير عولجت بشكل مناسب، والاستجابة للحقائق المكتشفة بعد التقرير.", why:"مسؤولية المراجع لا تنتهي بنهاية السنة.",
+  key:["إجراءات تغطي الفترة حتى تاريخ التقرير.","الحقائق المكتشفة بعد التقرير وقبل الإصدار أو بعده."],
+  ex:"بعد توقيع التقرير وقبل نشر القوائم، يعلم المراجع بإفلاس أكبر عميل للشركة. يناقش الإدارة لتعديل القوائم وإعادة إصدار التقرير.", tip:["اجعل تاريخ التقرير قريبًا من تاريخ اعتماد القوائم."], out:["قوائم محدثة حتى تاريخ التقرير."], rel:["ias10","isa580"] },
+
+{ id:"isa570", code:"ISA 570", t:"الاستمرارية", g:"ev", tags:["core"],
+  obj:"الحصول على أدلة بشأن مناسبة استخدام الإدارة لأساس الاستمرارية والتوصل لاستنتاج بشأن وجود عدم تأكد جوهري، والتقرير وفقًا لذلك.",
+  why:"أكبر صدمة للمستخدمين أن تنهار منشأة بعد تقرير نظيف.",
+  key:["تقويم تقييم الإدارة لفترة 12 شهرًا على الأقل من تاريخ القوائم.","مؤشرات: خسائر متكررة، تدفقات سالبة، مخالفة تعهدات، فقدان عميل رئيس.","عدم تأكد جوهري مفصح عنه: قسم خاص في التقرير.","يحل محله المعيار المحدث في 2024 لفترات تبدأ في 15 ديسمبر 2026 أو بعده."],
+  ex:"شركة خسائرها المتراكمة تجاوزت نصف رأس المال وفق نظام الشركات، ولديها قرض يستحق خلال 6 أشهر. يطلب المراجع خطط الإدارة (إعادة جدولة، دعم الشركاء) ويقيّم قابليتها للتحقيق.", tip:["اطلب أدلة على خطط الإدارة (خطابات البنك، التزامات الشركاء)."], out:["إنذار مبكر للمستخدمين."], rel:["isa570r","ias1","bankruptcy","liquidation"] },
+
+{ id:"isa570r", code:"ISA 570 (المحدث 2024)", t:"الاستمرارية (المحدث في عام 2024)", g:"ev", tags:["new","core"],
+  obj:"تعزيز عمل المراجع بشأن الاستمرارية وزيادة الشفافية في تقريره.",
+  why:"جاء بعد انهيارات شركات كبرى عالميًا لتقوية تقييم المراجع وإبلاغ المستخدمين أكثر.",
+  key:["يسري على مراجعة القوائم للفترات التي تبدأ في 15 ديسمبر 2026 أو بعده.","فترة التقييم 12 شهرًا من تاريخ اعتماد القوائم (لا من تاريخ القوائم).","قسم إلزامي عن الاستمرارية في تقرير كل منشأة: استنتاج المراجع حول مناسبة الأساس ووجود عدم تأكد جوهري من عدمه.","تعزيز الشك المهني في تقويم خطط الإدارة وأدلة دعمها، والاتصال بالجهات المختصة."],
+  ex:"في تقرير مراجعة شركة سليمة ماليًا لعام 2027 يظهر قسم 'الاستمرارية' يذكر أن المراجع استنتج أن استخدام أساس الاستمرارية مناسب وأنه لم يحدد عدم تأكد جوهري. في شركة أخرى يُفصح عن عدم تأكد جوهري مع إشارة للإيضاح.",
+  tip:["ابدأ تحديث نماذج التقارير وقوائم التحقق للارتباطات التي تبدأ فتراتها في 15 ديسمبر 2026.","درّب الفريق على تقويم التدفقات النقدية المتوقعة لفترة تمتد من تاريخ الاعتماد."], out:["شفافية أعلى للمستخدمين حول مخاطر الاستمرارية.","جهد مراجعة أقوى في المناطق الحرجة."], rel:["isa570","ias8b","isa700","bankruptcy"] },
+
+{ id:"isa580", code:"ISA 580", t:"الإفادات المكتوبة", g:"ev", tags:[],
+  obj:"الحصول على إفادات مكتوبة من الإدارة بأنها وفت بمسؤولياتها، ودعم أدلة أخرى عند الحاجة.", why:"توثيق مسؤوليات الإدارة، لكنها ليست بديلًا عن الأدلة.",
+  key:["إفادة بإعداد القوائم وتقديم كل المعلومات وتسجيل كل المعاملات.","تاريخها قريب قدر الإمكان من تاريخ التقرير.","رفض تقديمها يؤدي إلى الامتناع عن إبداء الرأي غالبًا."],
+  ex:"الإدارة ترفض الإفادة بأنها أبلغت المراجع عن كل الأطراف ذات العلاقة؛ يثير ذلك شكًا في نزاهتها ويؤثر على الرأي.", tip:["الإفادات لا تغني عن الإجراءات."], out:["توثيق مسؤوليات الإدارة."], rel:["isa210","isa450","isa705"] },
+
+{ id:"isa600", code:"ISA 600 (المحدث)", t:"اعتبارات خاصة: مراجعة القوائم المالية للمجموعات (بما في ذلك عمل مراجعي المكونات)", g:"oth", tags:["updated"],
+  obj:"تطبيق نهج قائم على المخاطر لمراجعة المجموعة، مع مشاركة كافية لمراجع المجموعة في عمل مراجعي المكونات.", why:"المجموعات لها تابعات بمراجعين مختلفين ومواقع متعددة.",
+  key:["يسري على الفترات التي تبدأ في 15 ديسمبر 2023 أو بعده.","تحديد المكونات والمخاطر على مستوى المجموعة لا وفق حجم المكون فقط.","مسؤولية مراجع المجموعة الكاملة عن التوجيه والإشراف ومراجعة عمل مراجعي المكونات.","عدم الإشارة لمراجعي المكونات في التقرير."],
+  ex:"مجموعة سعودية لها تابعات في الإمارات ومصر. يصدر مراجع المجموعة تعليمات مكتوبة، ويحدد أهمية نسبية لكل مكون، ويراجع أوراق عمل مراجع التابعة المصرية عن بعد.", tip:["خطط لمراجعة أوراق عمل المكونات لا لتقاريرهم فقط."], out:["رأي موحد مدعوم بأدلة كافية من كل المجموعة."], rel:["ifrs10","ifrs3","isa220"] },
+
+{ id:"isa610", code:"ISA 610", t:"استخدام عمل المراجعين الداخليين", g:"oth", tags:[],
+  obj:"تحديد ما إذا كان يمكن استخدام عمل وظيفة المراجعة الداخلية أو الاستعانة المباشرة بهم ومداه.", why:"المراجعة الداخلية القوية توفر الجهد، بشرط موضوعيتها وكفاءتها.",
+  key:["تقويم الموضوعية والكفاءة والمنهج المنظم.","المسؤولية تبقى للمراجع الخارجي.","قيود على الاستعانة المباشرة."],
+  ex:"إدارة المراجعة الداخلية لبنك تتبع لجنة المراجعة ولديها منهجية موثقة؛ يستخدم المراجع الخارجي نتائج اختباراتها لضوابط الفروع مع إعادة أداء عينة.", tip:["لا تستخدم عملهم في المناطق عالية الحكم."], out:["كفاءة دون مساس بالجودة."], rel:["isa315","isa620"] },
+
+{ id:"isa620", code:"ISA 620", t:"استخدام عمل خبير استعان به المراجع", g:"oth", tags:[],
+  obj:"تحديد متى يستعان بخبير، وتقويم كفاية عمله لأغراض المراجع.", why:"التقييمات والاكتواريات والتقنية تحتاج خبرة خارج المحاسبة.",
+  key:["تقويم كفاءة الخبير وقدراته وموضوعيته.","الاتفاق على نطاق العمل.","تقويم ملاءمة نتائجه وافتراضاته."],
+  ex:"يستعين المراجع بمقيم عقاري مستقل لتقويم افتراضات تقييم العقارات الاستثمارية التي قدمتها الإدارة.", tip:["لا تذكر الخبير في تقرير رأي غير معدل."], out:["أدلة متخصصة موثوقة."], rel:["ifrs13","ias19","isa540"] },
+
+{ id:"isa700", code:"ISA 700", t:"تكوين الرأي والتقرير عن القوائم المالية", g:"rep", tags:["core"],
+  obj:"تكوين رأي في القوائم المالية بناءً على تقويم الاستنتاجات من الأدلة، والتعبير عنه بوضوح في تقرير مكتوب.", why:"يوحد شكل ومحتوى تقرير المراجع لتسهيل فهمه.",
+  key:["قسم الرأي أولًا ثم أساس الرأي.","الاستقلال والمتطلبات المسلكية.","الاستمرارية والأمور الرئيسة (للمدرجة) والمعلومات الأخرى.","مسؤوليات الإدارة والمراجع."],
+  ex:"تقرير لشركة مساهمة يبدأ بـ 'في رأينا، فإن القوائم المالية المرفقة تعرض بعدل من جميع الجوانب الجوهرية... وفقًا للمعايير الدولية للتقرير المالي المعتمدة في المملكة العربية السعودية والمعايير والإصدارات الأخرى المعتمدة من الهيئة'.", tip:["استخدم الصيغة المحلية المعتمدة لوصف الإطار."], out:["تقارير واضحة وقابلة للمقارنة."], rel:["isa701","isa705","isa706","isa720"] },
+
+{ id:"isa701", code:"ISA 701", t:"الإبلاغ عن الأمور الرئيسة للمراجعة في تقرير المراجع المستقل", g:"rep", tags:[],
+  obj:"تحديد الأمور الرئيسة للمراجعة والإبلاغ عنها في التقرير.", why:"يكشف للمستخدمين أين ركز المراجع جهده ولماذا.",
+  key:["إلزامي للمنشآت المدرجة.","تُختار من الأمور المبلغة للمكلفين بالحوكمة والتي تطلبت أكبر انتباه.","وصف الأمر وسبب اعتباره رئيسًا وكيف عولج."],
+  ex:"في شركة تطوير عقاري مدرجة، يكون إثبات الإيراد على مدى زمني من مبيعات الوحدات على الخارطة أمرًا رئيسًا، ويوضح المراجع إجراءاته لاختبار نسبة الإنجاز.", tip:["تجنب اللغة النمطية؛ اجعل الوصف خاصًا بالعميل."], out:["شفافية أعلى لقيمة المراجعة."], rel:["isa700","isa260"] },
+
+{ id:"isa705", code:"ISA 705", t:"التعديلات على الرأي في تقرير المراجع المستقل", g:"rep", tags:["core"],
+  obj:"التعبير بوضوح عن رأي معدل مناسب عند وجود تحريف جوهري أو عدم القدرة على الحصول على أدلة كافية.", why:"يحدد نوع الرأي حسب طبيعة المشكلة ومدى انتشارها.",
+  key:["رأي متحفظ: تحريف أو قيد جوهري غير منتشر.","رأي معارض: تحريف جوهري ومنتشر.","امتناع عن إبداء رأي: قيد جوهري ومنتشر."],
+  ex:"شركة ترفض إثبات هبوط 15 مليون ريال في استثمار (أهمية نسبية 3 ملايين) وأثره محصور في بند واحد: رأي متحفظ. لو امتد لمعظم القوائم: رأي معارض.", tip:["ارسم مصفوفة: طبيعة المشكلة × الانتشار."], out:["رسالة دقيقة للمستخدمين عن حجم المشكلة."], rel:["isa700","isa450","isa706"] },
+
+{ id:"isa706", code:"ISA 706", t:"فقرات لفت الانتباه وفقرات أمور أخرى في تقرير المراجع المستقل", g:"rep", tags:[],
+  obj:"لفت الانتباه إلى أمر معروض في القوائم مهم لفهمها، أو إلى أمر آخر ملائم لفهم المراجعة.", why:"إضافة توضيح دون تعديل الرأي.",
+  key:["لفت الانتباه: أمر مفصح عنه في القوائم (مثل حادثة كبيرة أو دعوى).","أمور أخرى: غير معروضة في القوائم (مثل أن المقارنات راجعها مراجع آخر)."],
+  ex:"مراجع يضيف فقرة لفت انتباه إلى الإيضاح الذي يصف حريقًا أتلف مصنعًا بعد نهاية السنة.", tip:["لا تستخدمها بديلًا عن تعديل الرأي."], out:["توجيه انتباه المستخدم للأهم."], rel:["isa705","isa710"] },
+
+{ id:"isa710", code:"ISA 710", t:"المعلومات المقارنة: الأرقام المقابلة والقوائم المالية المقارنة", g:"rep", tags:[], obj:"الحصول على أدلة بأن المعلومات المقارنة عرضت وفقًا للإطار، والتقرير عنها.", why:"أي خطأ في أرقام السنة السابقة يضلل المقارنة.", key:["الأرقام المقابلة جزء من قوائم السنة الحالية.","التعامل مع تحفظ سابق لم يُحل."], ex:"ظهر خطأ جوهري في مقارنات 2025؛ يتأكد المراجع من تصحيحه بأثر رجعي والإفصاح.", tip:["تحقق من اتساق التصنيفات بين السنتين."], out:["مقارنات موثوقة."], rel:["isa510","ias8"] },
+
+{ id:"isa720", code:"ISA 720", t:"مسؤوليات المراجع ذات العلاقة بالمعلومات الأخرى", g:"rep", tags:[], obj:"قراءة المعلومات الأخرى (مثل تقرير مجلس الإدارة) والنظر في وجود تعارض جوهري مع القوائم أو مع معرفة المراجع.", why:"المستخدم يقرأ التقرير السنوي كاملًا؛ التعارض يضعف المصداقية.", key:["قراءة ومقارنة، لا مراجعة.","قسم 'المعلومات الأخرى' في التقرير."], ex:"تقرير مجلس الإدارة يذكر نمو الإيرادات 20% بينما القوائم تظهر 12%. يطلب المراجع التصحيح.", tip:["اطلب مسودة التقرير السنوي مبكرًا."], out:["اتساق التقرير السنوي كله."], rel:["isa700","ifrs18"] },
+
+{ id:"isa800", code:"ISA 800", t:"اعتبارات خاصة: مراجعة القوائم المعدة وفقًا لأطر ذات غرض خاص", g:"spec", tags:[], obj:"معالجة الاعتبارات الخاصة عند مراجعة قوائم معدة وفق إطار ذي غرض خاص.", why:"مثل قوائم على أساس نقدي أو وفق متطلبات تعاقدية.", key:["وصف الإطار في التقرير.","فقرة لفت انتباه تنبه للغرض الخاص وتقيد الاستخدام."], ex:"مراجعة قوائم على الأساس النقدي لصندوق خيري بطلب الجهة المانحة.", tip:["تأكد من قبول الإطار للغرض."], out:["تقارير مناسبة لغرضها."], rel:["isa805","liquidation"] },
+{ id:"isa805", code:"ISA 805", t:"اعتبارات خاصة: مراجعة قائمة مالية واحدة أو عناصر أو حسابات أو بنود محددة", g:"spec", tags:[], obj:"مراجعة قائمة واحدة أو بند محدد.", why:"مثل طلب مالك مركز تجاري مراجعة قائمة إيرادات المستأجر لاحتساب الإيجار المتغير.", key:["الأهمية النسبية تُحدد للبند نفسه.","فهم الترابط مع القوائم ككل."], ex:"مراجعة قائمة مبيعات فرع لحساب إيجار نسبي 3%.", tip:["حدد الإطار المنطبق على البند."], out:["تأكيد مستهدف للبند المطلوب."], rel:["isa800"] },
+{ id:"isa810", code:"ISA 810", t:"الارتباطات لإعداد التقارير عن القوائم المالية الملخصة", g:"spec", tags:[], obj:"التقرير عن قوائم ملخصة مستمدة من قوائم مراجعة.", why:"الملخصات تُنشر في الصحف أو المواقع.", key:["الاتساق مع القوائم المراجعة.","ضوابط التلخيص المطبقة."], ex:"شركة تنشر ملخصًا ماليًا في إعلان صحفي مع تقرير المراجع حوله.", tip:["لا تصدر التقرير قبل تقرير القوائم الكاملة."], out:["ملخصات أمينة."], rel:["isa700"] },
+
+{ id:"isre2400", code:"ISRE 2400", t:"الارتباطات لفحص القوائم المالية التاريخية", g:"eng", tags:[], obj:"الحصول على تأكيد محدود أساسه الاستفسار والإجراءات التحليلية لاستنتاج أنه لم يلفت الانتباه ما يجعل القوائم غير معدة وفق الإطار.", why:"بديل أقل تكلفة من المراجعة للمنشآت غير الملزمة بها.", key:["تأكيد محدود لا معقول.","استنتاج بصيغة سلبية."], ex:"منشأة صغيرة يطلب البنك منها قوائم مفحوصة لا مراجعة؛ ينفذ المحاسب القانوني فحصًا وفق 2400.", tip:["وضح للعميل الفرق بين الفحص والمراجعة."], out:["مصداقية بتكلفة أقل."], rel:["isre2410","isa-preface"] },
+{ id:"isre2410", code:"ISRE 2410", t:"فحص المعلومات المالية الأولية المنفذ من قبل المراجع المستقل للمنشأة", g:"eng", tags:[], obj:"فحص القوائم الأولية للمنشأة من مراجعها.", why:"القوائم الربعية للشركات المدرجة تُفحص قبل النشر.", key:["فهم المنشأة من المراجعة السنوية.","استفسار وإجراءات تحليلية."], ex:"مراجع شركة مدرجة يفحص قوائم الربع الأول ويصدر استنتاج فحص خلال مهلة النشر.", tip:["ركز على التغيرات منذ آخر مراجعة."], out:["ثقة في المعلومات الربعية."], rel:["ias34","isre2400"] },
+{ id:"isae3000", code:"ISAE 3000", t:"ارتباطات التأكيد الأخرى بخلاف مراجعة أو فحص المعلومات المالية التاريخية", g:"eng", tags:[], obj:"معيار شامل لارتباطات التأكيد على موضوعات غير مالية أو غير تاريخية.", why:"التأكيد على مؤشرات أداء، الرقابة، الامتثال.", key:["تأكيد معقول أو محدود.","ضوابط مناسبة للموضوع."], ex:"جهة تطلب تأكيدًا على دقة مؤشرات أداء برنامج تدريب.", tip:["حدد الضوابط قبل القبول."], out:["مصداقية معلومات غير مالية."], rel:["assurance-fw","issa5000"] },
+{ id:"isae3400", code:"ISAE 3400", t:"اختبار المعلومات المالية المستقبلية", g:"eng", tags:[], obj:"فحص المعلومات المستقبلية وافتراضاتها.", why:"مثل التوقعات المقدمة للممولين.", key:["معقولية الافتراضات.","التأكيد سلبي على الافتراضات وإيجابي على الإعداد."], ex:"مشروع يقدم توقعات تدفقات لبنك لطلب تمويل.", tip:["لا تضمن تحقق النتائج."], out:["ثقة معقولة بأساس التوقعات."], rel:["isae3000"] },
+{ id:"isae3402", code:"ISAE 3402", t:"تقارير التأكيد عن أدوات الرقابة في المنشأة الخدمية", g:"eng", tags:[], obj:"التقرير عن ضوابط المنشأة الخدمية لمستخدميها ومراجعيهم.", why:"مقدمو الخدمات السحابية والرواتب يحتاجون تقريرًا واحدًا لكل عملائهم.", key:["نوع 1: تصميم في تاريخ.","نوع 2: تصميم وفعالية تشغيل خلال فترة."], ex:"مزود خدمات دفع إلكتروني يحصل على تقرير نوع 2 لتقديمه لعملائه من التجار.", tip:["يرتبط مباشرة بمعيار 402."], out:["كفاءة للمستخدمين."], rel:["isa402"] },
+{ id:"isae3410", code:"ISAE 3410", t:"ارتباطات التأكيد عن قوائم الاحتباس الحراري", g:"eng", tags:[], obj:"التأكيد على قوائم انبعاثات الغازات الدفيئة.", why:"الإفصاح عن الانبعاثات أصبح مطلوبًا في إطار الاستدامة.", key:["النطاق 1 و2 و3.","عدم التأكد العلمي في القياس."], ex:"مصنع أسمنت يطلب تأكيدًا على قائمة انبعاثاته.", tip:["استعن بخبراء فنيين."], out:["موثوقية بيانات المناخ."], rel:["issa5000"] },
+{ id:"isae3420", code:"ISAE 3420", t:"ارتباطات التأكيد لتقرير عن تجميع المعلومات المالية التصورية في نشرات الاكتتاب", g:"eng", tags:[], obj:"التأكيد على تجميع المعلومات التصورية.", why:"نشرات الاكتتاب تعرض أثر صفقة كأنها حدثت سابقًا.", key:["التأكد من أن التجميع وفق الضوابط."], ex:"شركة تطرح أسهمها وتعرض قوائم تصورية لأثر استحواذ حديث.", tip:["نسّق مع متطلبات هيئة السوق المالية."], out:["ثقة المكتتبين."], rel:["ifrs3"] },
+{ id:"isrs4400", code:"ISRS 4400 (المحدث)", t:"ارتباطات الإجراءات المتفق عليها", g:"eng", tags:[], obj:"تنفيذ إجراءات يتفق عليها مع الجهة الطالبة والتقرير عن النتائج الفعلية دون رأي.", why:"مثل التحقق من شروط منحة أو عقد.", key:["لا تأكيد ولا رأي.","التقرير عن الحقائق المكتشفة."], ex:"جهة مانحة تطلب التحقق من أن مصروفات مشروع مدعومة بفواتير.", tip:["اجعل الإجراءات واضحة وقابلة للقياس."], out:["معلومات موضوعية لمتخذ القرار."], rel:["isrs4410"] },
+{ id:"isrs4410", code:"ISRS 4410", t:"ارتباطات التجميع", g:"eng", tags:[], obj:"مساعدة الإدارة في إعداد وعرض معلومات مالية دون تأكيد.", why:"منشآت صغيرة تحتاج من يعد قوائمها.", key:["لا تأكيد.","تقرير يوضح طبيعة الارتباط."], ex:"مكتب يعد القوائم السنوية لمؤسسة فردية من سجلاتها.", tip:["الاستقلال غير مطلوب لكن يجب الإفصاح عن الحالة."], out:["قوائم منظمة للمنشآت الصغيرة."], rel:["isrs4400"] },
+
+{ id:"issa5000", code:"ISSA 5000", t:"المتطلبات العامة لارتباطات تأكيد معلومات الاستدامة", g:"sus", tags:["new","core"],
+  obj:"معيار شامل لتأكيد معلومات الاستدامة (البيئة والمجتمع والحوكمة) بتأكيد محدود أو معقول، أيًا كان إطار التقرير.",
+  why:"تقارير الاستدامة تتوسع (ومنها معايير IFRS S1 وS2)، والمستثمرون يحتاجون ثقة فيها مثل الثقة في القوائم المالية.",
+  key:["يسري على ارتباطات تأكيد معلومات الاستدامة للفترات التي تبدأ في 15 ديسمبر 2026 أو بعده.","ينطبق على المحاسبين المهنيين وغيرهم من مقدمي التأكيد.","تقييم عملية تحديد المعلومات الجوهرية لدى المنشأة (عملية الأهمية النسبية المزدوجة إن وُجدت).","تناول معلومات سلسلة القيمة والمعلومات المستقبلية."],
+  ex:"شركة بتروكيماويات تنشر تقرير استدامة يتضمن انبعاثات النطاق 1 و2 ومؤشرات السلامة وتوطين الوظائف. يُطلب تأكيد محدود وفق 5000؛ يختبر المراجع أنظمة جمع البيانات في 3 مصانع ويعيد احتساب الانبعاثات بمعاملات الانبعاث المعتمدة.",
+  tip:["ابنِ فريقًا يجمع مراجعين وخبراء بيئة.","ابدأ بالتأكيد المحدود ثم انتقل للمعقول تدريجيًا."], out:["تقارير استدامة موثوقة.","الحد من الادعاءات البيئية المضللة."], rel:["isae3410","isae3000","isqm1"] },
+
+{ id:"iapn1000", code:"IAPN 1000", t:"مذكرة ممارسات المراجعة الدولية: اعتبارات خاصة في مراجعة الأدوات المالية", g:"more", tags:[], obj:"إرشاد غير ملزم لمراجعة الأدوات المالية المعقدة.", why:"المشتقات والتقييم والتحوط تحتاج معرفة متخصصة.", key:["خلفية عن الأدوات والمخاطر.","اعتبارات التقييم والرقابة."], ex:"مراجع بنك يستخدمها لفهم تقييم عقود مقايضة معدلات الربح.", tip:["اقرأها مع معيار 540."], out:["مراجعة أعمق للأدوات المالية."], rel:["ifrs9","ifrs7","isa540"] },
+{ id:"aqf", code:"إطار الجودة", t:"إطار جودة المراجعة", g:"more", tags:[], obj:"وصف العناصر التي تهيئ بيئة تعزز جودة المراجعة.", why:"الجودة تعتمد على المدخلات والعمليات والمخرجات والتفاعلات والسياق.", key:["المدخلات: القيم، المعرفة، الوقت.","التفاعلات بين المراجع والإدارة ولجنة المراجعة والمنظمين."], ex:"لجنة مراجعة تستخدم الإطار لتقييم جودة مراجعها الخارجي عند التجديد.", tip:["مفيد للجان المراجعة في تقييم المراجع."], out:["فهم مشترك للجودة."], rel:["isqm1"] },
+{ id:"assurance-fw", code:"إطار التأكيد", t:"الإطار الدولي لارتباطات التأكيد", g:"more", tags:[], obj:"تعريف عناصر ارتباط التأكيد وأهدافه.", why:"أساس مفاهيمي لكل ارتباطات التأكيد.", key:["ثلاثة أطراف: الممارس، الطرف المسؤول، المستخدمون.","موضوع مناسب، ضوابط، أدلة، تقرير."], ex:"قبل قبول ارتباط تأكيد جديد يتحقق المكتب من توفر العناصر الخمسة.", tip:["ارجع إليه عند أي ارتباط غير نمطي."], out:["قبول ارتباطات مناسبة."], rel:["isae3000","issa5000"] },
+{ id:"isa-glossary", code:"مسرد", t:"مسرد مصطلحات معايير المراجعة", g:"more", tags:[], obj:"التعريفات الرسمية لمصطلحات المراجعة والتأكيد.", why:"توحيد اللغة المهنية.", key:["مرجع للتعريفات."], ex:"للتحقق من تعريف 'الخطر المتأصل' و'الإقرارات'.", tip:["استخدم المصطلحات المعتمدة في التقارير."], out:["لغة مهنية موحدة."], rel:["ifrs-glossary"] },
+{ id:"forensic", code:"المحاسبة القضائية", t:"معيار الخدمات الاستشارية: ارتباطات تقديم خدمات المحاسبة القضائية", g:"more", tags:["local"], obj:"تنظيم الارتباطات التي يقدم فيها المحاسب خدمات لأغراض النزاعات والتحقيقات.", why:"الطلب يتزايد على المحاسبين كخبراء في المحاكم وقضايا الغش.", key:["الاستقلال والموضوعية.","التوثيق وسلسلة حيازة الأدلة.","التقرير بلغة مفهومة لغير المختصين."], ex:"محكمة تجارية تنتدب محاسبًا لتحديد مستحقات شريك في نزاع تصفية شركة.", tip:["لا تعطِ رأيًا قانونيًا."], out:["دعم عدالة الفصل في النزاعات."], rel:["isa240","liquidation"] },
+{ id:"isa-clarif", code:"توضيحات محلية", t:"توضيحات مجلس معايير المراجعة (تطبيق المعايير، مخالفات نظام الشركات، عدم تطبيق المنشأة للمعايير)", g:"more", tags:["local"], obj:"توضيح متطلبات محلية مكملة للمعايير الدولية.", why:"نظام الشركات يلزم المراجع بالإبلاغ عن المخالفات، ويجب أن يعرف المراجع كيف يتصرف إذا لم تطبق المنشأة المعايير المعتمدة.",
+  key:["كيفية التزام المراجع بمتطلب التقرير عن مخالفات أحكام نظام الشركات أو نظام الشركة الأساس.","موقف المراجع من عدم تطبيق المنشأة للمعايير الدولية المعتمدة."], ex:"يكتشف المراجع أن الشركة قدمت قرضًا لعضو مجلس إدارة بالمخالفة لنظام الشركات؛ يرجع للتوضيح لتحديد صيغة الإبلاغ في تقريره.", tip:["اقرأها مع معيار 250."], out:["اتساق الممارسة المهنية المحلية."], rel:["isa250","sa-endorse","ias24"] }
+];
+</script>
+<script>
+(function(){
+const MARKS=[
+ ["obj","الهدف","ما يريد المعيار تحقيقه، مصاغًا من فقرة «الهدف» في النص الرسمي.","var(--m-obj)"],
+ ["why","المقصود بالمعيار","المشكلة العملية التي يعالجها ولماذا تهمك في عملك اليومي.","var(--m-why)"],
+ ["key","أهم المتطلبات","النقاط التي لا بد أن تعرفها قبل التطبيق.","var(--m-key)"],
+ ["ex","مثال من الواقع","حالة من بيئة الأعمال في المملكة بأرقام توضيحية.","var(--m-ex)"],
+ ["tip","توجيه للممارس","نصائح عملية للمحاسب أو المراجع أثناء التطبيق.","var(--m-tip)"],
+ ["out","النتائج المرجوة","ما يتحقق للمنشأة ومستخدمي القوائم عند تطبيق المعيار كما ينبغي.","var(--m-out)"]
+];
+const BOOK={ifrs:{name:"المعايير الدولية للتقرير المالي — طبعة 2026",short:"كتاب التقرير المالي",groups:IFRS_GROUPS,c:"var(--ifrs)"},
+            isa:{name:"معايير إدارة الجودة والمراجعة والتأكيد — طبعة 2026",short:"كتاب المراجعة",groups:ISA_GROUPS,c:"var(--isa)"}};
+const TAGN={new:"جديد",updated:"محدث",core:"أساسي",local:"محلي"};
+const ALL=[...IFRS_DATA.map(x=>({...x,b:"ifrs"})),...ISA_DATA.map(x=>({...x,b:"isa"}))];
+const BY=Object.fromEntries(ALL.map(x=>[x.id,x]));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const mk=(k,c)=>`<span class="mk" style="--c:${c}"><svg><use href="#i-${k}"/></svg></span>`;
+document.getElementById("n-ifrs").textContent=IFRS_DATA.length;
+document.getElementById("n-isa").textContent=ISA_DATA.length;
+
+// legend
+document.getElementById("legendGrid").innerHTML=MARKS.map(([k,t,d,c])=>`<div class="lg">${mk(k,c)}<div><b>${t}</b><p>${d}</p></div></div>`).join("");
+
+// updates
+const UPD=[["ifrs18","يسري 1 يناير 2027 — استعد بأرقام مقارنة 2026"],["ifrs19","اختياري من 1 يناير 2027"],["ias8b","يرافق المعيار 18"],["ifrs9","تعديلات تسري 1 يناير 2026"],["ifrs7","إفصاحات جديدة من 1 يناير 2026"],["ias21","تعديلات عدم القابلية للتبادل والتضخم الجامح"],["isa570r","للفترات التي تبدأ 15 ديسمبر 2026"],["issa5000","للفترات التي تبدأ 15 ديسمبر 2026"]];
+document.getElementById("updGrid").innerHTML=UPD.map(([id,s])=>{const x=BY[id];return `<a class="up" href="#${id}" data-go="${id}" style="--c:${BOOK[x.b].c}"><span class="mono">${esc(x.code)}</span><b>${esc(x.t)}</b><span>${esc(s)}</span></a>`}).join("");
+
+// crosswalk
+const CW=[["الإيرادات",["ifrs15"],["isa240","isa315","isa330"],"هل الإيراد حقيقي ومسجل في فترته الصحيحة؟"],
+["التقديرات والقيم العادلة",["ifrs9","ias36","ifrs13"],["isa540","isa620"],"هل افتراضات الإدارة معقولة وغير متحيزة؟"],
+["المخزون",["ias2"],["isa501","isa505"],"هل المخزون موجود ومقيم بالأقل من التكلفة وصافي القيمة؟"],
+["الأطراف ذات العلاقة",["ias24"],["isa550"],"هل كل المعاملات مفصح عنها وبشروط واضحة؟"],
+["المخصصات والدعاوى",["ias37"],["isa501","isa580"],"هل الالتزامات مكتملة ومقاسة بتقدير معقول؟"],
+["الأحداث اللاحقة",["ias10"],["isa560"],"هل عكست القوائم ما حدث حتى تاريخ اعتمادها؟"],
+["الاستمرارية",["ias1","ias8b","bankruptcy"],["isa570","isa570r"],"هل تستطيع المنشأة الاستمرار 12 شهرًا على الأقل؟"],
+["المجموعات والاستحواذ",["ifrs10","ifrs3"],["isa600"],"هل التوحيد كامل والشهرة مقاسة بشكل صحيح؟"],
+["العرض والتقرير",["ifrs18","ias1"],["isa700","isa701","isa720"],"هل القوائم والتقرير السنوي متسقان وواضحان؟"],
+["الزكاة والضريبة",["zakat","ias12","ifric23"],["isa250","isa540"],"هل المصروف والمخصص محتسبان وفق الأنظمة؟"],
+["القوائم الأولية",["ias34"],["isre2410"],"هل المعلومات الربعية موثوقة للنشر؟"]];
+const rl=ids=>`<span class="rel">${ids.map(i=>`<a href="#${i}" data-go="${i}">${esc(BY[i].code)}</a>`).join("")}</span>`;
+document.getElementById("cw").innerHTML=CW.map(([a,f,s,q])=>`<tr><td><b>${a}</b></td><td class="c-ifrs">${rl(f)}</td><td class="c-isa">${rl(s)}</td><td>${q}</td></tr>`).join("");
+
+// filters
+const st={book:"all",q:"",grp:"",f:new Set()};
+const grpSel=document.getElementById("grp");
+function fillGroups(){
+  const opts=[];
+  for(const b of ["ifrs","isa"]) if(st.book==="all"||st.book===b){
+    for(const [k,v] of Object.entries(BOOK[b].groups)) opts.push(`<option value="${b}:${k}">${st.book==="all"?(b==="ifrs"?"مالي — ":"مراجعة — "):""}${v}</option>`);
+  }
+  grpSel.innerHTML=`<option value="">كل المجموعات</option>`+opts.join("");
+  grpSel.value=st.grp;
+  if(grpSel.value!==st.grp){st.grp="";grpSel.value=""}
 }
+const norm=s=>String(s).toLowerCase().replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/[ً-ْ]/g,"");
+function hay(x){return norm([x.code,x.t,x.obj,x.why,(x.key||[]).join(" "),x.ex,(x.tip||[]).join(" "),(x.out||[]).join(" ")].join(" "))}
+ALL.forEach(x=>x._h=hay(x));
 
-function matches(s){
-  if(activeCat && s.cat!==activeCat) return false;
-  if(!query) return true;
-  const q = query.toLowerCase();
-  return s.code.toLowerCase().includes(q) || s.title.toLowerCase().includes(q);
+function part(k,title,c,content){return `<div class="part ${k}" style="--c2:${c}">${mk(k,c)}<div><h4>${title}</h4><div class="txt">${content}</div></div></div>`}
+const ul=a=>`<ul>${a.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`;
+function card(x){
+  const P=PAGES[x.id], bk=BOOK[x.b];
+  const tags=(x.tags||[]).map(t=>`<span class="tag ${t}">${TAGN[t]}</span>`).join("");
+  const M=Object.fromEntries(MARKS.map(m=>[m[0],m]));
+  const sec=[
+    part("obj",M.obj[1],M.obj[3],`<p>${esc(x.obj)}</p>`),
+    part("why",M.why[1],M.why[3],`<p>${esc(x.why)}</p>`),
+    x.key&&x.key.length?part("key",M.key[1],M.key[3],ul(x.key)):"",
+    part("ex",M.ex[1],M.ex[3],`<p>${esc(x.ex)}</p>`),
+    x.tip&&x.tip.length?part("tip",M.tip[1],M.tip[3],ul(x.tip)):"",
+    x.out&&x.out.length?part("out",M.out[1],M.out[3],ul(x.out)):""
+  ].join("");
+  return `<details class="card ${x.b}" id="${x.id}">
+  <summary><span class="code">${esc(x.code)}</span><h3>${esc(x.t)}<span class="tags">${tags}</span></h3><svg class="chev"><use href="#i-chev"/></svg><p class="obj1">${esc(x.obj)}</p></summary>
+  <div class="body">${sec}
+    <div class="refbar"><div class="src"><b>المرجع:</b> ${bk.name}، الصفحات <span class="mono">${P[0]}–${P[1]}</span></div>
+      <div class="row"><button class="btn" type="button" data-read="${x.id}"><svg><use href="#i-book"/></svg>اقرأ نص المعيار</button></div></div>
+    ${x.rel&&x.rel.length?`<div class="rel">معايير مرتبطة: ${x.rel.map(i=>`<a href="#${i}" data-go="${i}">${esc(BY[i].code)}</a>`).join("")}</div>`:""}
+  </div></details>`;
 }
-
-function card(s){
-  return `<div class="card">
-    <div class="card-top">
-      <span class="code-badge">${esc(s.code)}</span>
-      <span class="pages">${s.pages} صفحة</span>
-    </div>
-    <div class="card-title">${esc(s.title)}</div>
-    <div class="card-actions">
-      <a class="btn btn-view" href="${fileUrl(s.id)}" target="_blank" rel="noopener">🔍 عرض</a>
-      <a class="btn btn-dl" href="${fileUrl(s.id)}" download>⬇ تنزيل</a>
-    </div>
-  </div>`;
-}
-
 function render(){
-  renderChips();
-  const results = document.getElementById('results');
-  const filtered = STANDARDS.filter(matches);
-  document.getElementById('countPill').textContent = filtered.length + ' مستنداً';
-
-  if(!filtered.length){
-    results.innerHTML = `<div class="empty"><div class="ei">🔍</div>لا توجد نتائج مطابقة للبحث</div>`;
-    return;
-  }
-
-  if(activeCat || query){
-    results.innerHTML = `<div class="grid">${filtered.map(card).join('')}</div>`;
-    return;
-  }
-
-  // Grouped view: one section per category, in a fixed sensible order
-  results.innerHTML = STANDARDS_CATS.map(c=>{
-    const items = STANDARDS.filter(s=>s.cat===c);
-    if(!items.length) return '';
-    return `<div class="cat-section">
-      <div class="cat-title">${STANDARDS_CAT_LABELS[c]} <span class="n">${items.length}</span></div>
-      <div class="grid">${items.map(card).join('')}</div>
-    </div>`;
-  }).join('');
+  const q=norm(st.q.trim());
+  const items=ALL.filter(x=>(st.book==="all"||x.b===st.book)&&(!st.grp||st.grp===x.b+":"+x.g)&&[...st.f].every(f=>(x.tags||[]).includes(f))&&(!q||q.split(/\s+/).every(w=>x._h.includes(w))));
+  const out=[];let last="";
+  for(const x of items){const key=x.b+":"+x.g;if(key!==last){last=key;out.push(`<div class="group-h" style="--c:${BOOK[x.b].c}"><span class="bk">${BOOK[x.b].short}</span>${esc(BOOK[x.b].groups[x.g])}</div>`)}out.push(card(x))}
+  document.getElementById("list").innerHTML=out.join("")||`<div class="empty">لا توجد نتائج مطابقة. جرّب رقم المعيار فقط (مثل 16) أو امسح عوامل التصفية.</div>`;
+  document.getElementById("count").textContent=`${items.length} من ${ALL.length}`;
 }
+function setBook(b){st.book=b;document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-pressed",String(t.dataset.tab===b)));document.querySelectorAll(".book").forEach(t=>t.setAttribute("aria-pressed",String(t.dataset.book===b)));fillGroups();render()}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>setBook(t.dataset.tab)));
+document.querySelectorAll(".book").forEach(t=>t.addEventListener("click",()=>{setBook(t.dataset.book);document.getElementById("standards").scrollIntoView()}));
+document.getElementById("q").addEventListener("input",e=>{st.q=e.target.value;render()});
+grpSel.addEventListener("change",e=>{st.grp=e.target.value;render()});
+document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{const f=c.dataset.f;st.f.has(f)?st.f.delete(f):st.f.add(f);c.setAttribute("aria-pressed",String(st.f.has(f)));render()}));
 
-document.getElementById('search').addEventListener('input', (e)=>{
-  query = e.target.value.trim();
-  render();
+function go(id){
+  if(!BY[id])return;
+  let el=document.getElementById(id);
+  if(!el){st.q="";document.getElementById("q").value="";st.grp="";st.f.clear();document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));setBook("all");el=document.getElementById(id)}
+  el.open=true;el.scrollIntoView({block:"start"});
+  el.querySelector("summary").focus({preventScroll:true});
+}
+document.addEventListener("click",e=>{
+  const g=e.target.closest("[data-go]");if(g){e.preventDefault();go(g.dataset.go);try{history.replaceState(null,"","#"+g.dataset.go)}catch(_){};return}
+  const r=e.target.closest("[data-read]");if(r){openViewer(r.dataset.read)}
 });
 
-render();
+// ---------- viewer ----------
+const V={el:document.getElementById("viewer"),stage:document.getElementById("vStage"),doc:null,n:1,scale:0,id:null,task:null,lastFocus:null};
+let libP=null;
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
+function loadPdfjs(){
+  if(!libP){const base="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+    libP=loadScript(base+"pdf.min.js").then(()=>loadScript(base+"pdf.worker.min.js")).then(()=>window.pdfjsLib)}
+  return libP;
+}
+function vmsg(html){V.stage.innerHTML=`<div class="vmsg">${html}</div>`}
+async function openViewer(id){
+  const x=BY[id],P=PAGES[id],bk=BOOK[x.b];
+  V.id=id;V.n=1;V.scale=0;V.doc=null;V.lastFocus=document.activeElement;
+  document.getElementById("vTitle").textContent=x.code+" — "+x.t;
+  document.getElementById("vSrc").textContent=`${bk.name} · الصفحات ${P[0]}–${P[1]}`;
+  const url="/api/standards-files/"+id+".pdf";
+  document.getElementById("vOpen").href=url;
+  const pin=document.getElementById("vPage");pin.min=P[0];pin.max=P[1];pin.value=P[0];
+  document.getElementById("vOf").textContent="من "+P[1];
+  V.el.hidden=false;document.body.style.overflow="hidden";
+  document.getElementById("vClose").focus();
+  vmsg("جارٍ تحميل صفحات المعيار…");
+  try{
+    const lib=await loadPdfjs();
+    const doc=await lib.getDocument({url,isEvalSupported:false}).promise;
+    if(V.id!==id)return;
+    V.doc=doc;await draw();
+  }catch(err){
+    vmsg(`تعذر عرض الصفحات داخل الدليل.<br><a class="btn" href="${url}" target="_blank" rel="noopener"><svg><use href="#i-ext"/></svg>افتح ملف المعيار</a>`);
+  }
+}
+async function draw(){
+  if(!V.doc)return;
+  const P=PAGES[V.id];
+  const page=await V.doc.getPage(V.n);
+  const base=page.getViewport({scale:1});
+  const avail=V.stage.clientWidth-28;
+  if(!V.scale)V.scale=Math.min(1.6,Math.max(.5,avail/base.width));
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const vp=page.getViewport({scale:V.scale*dpr});
+  const cv=document.createElement("canvas");cv.width=vp.width;cv.height=vp.height;
+  cv.style.width=(vp.width/dpr)+"px";cv.style.height=(vp.height/dpr)+"px";
+  cv.setAttribute("aria-label",`صفحة ${P[0]+V.n-1} من الكتاب`);
+  if(V.task){try{V.task.cancel()}catch(_){}}
+  V.task=page.render({canvasContext:cv.getContext("2d"),viewport:vp});
+  try{await V.task.promise}catch(_){return}
+  V.stage.replaceChildren(cv);V.stage.scrollTop=0;
+  document.getElementById("vPage").value=P[0]+V.n-1;
+  document.getElementById("vPrev").disabled=V.n<=1;document.getElementById("vNext").disabled=V.n>=V.doc.numPages;
+}
+function closeViewer(){V.el.hidden=true;document.body.style.overflow="";V.doc=null;V.id=null;V.stage.innerHTML="";if(V.lastFocus)V.lastFocus.focus()}
+document.getElementById("vClose").onclick=closeViewer;
+V.el.addEventListener("click",e=>{if(e.target===V.el)closeViewer()});
+document.getElementById("vPrev").onclick=()=>{if(V.doc&&V.n>1){V.n--;draw()}};
+document.getElementById("vNext").onclick=()=>{if(V.doc&&V.n<V.doc.numPages){V.n++;draw()}};
+document.getElementById("vZoomIn").onclick=()=>{if(V.doc){V.scale=Math.min(3,V.scale*1.2);draw()}};
+document.getElementById("vZoomOut").onclick=()=>{if(V.doc){V.scale=Math.max(.4,V.scale/1.2);draw()}};
+document.getElementById("vPage").addEventListener("change",e=>{if(!V.doc)return;const P=PAGES[V.id];let p=parseInt(e.target.value,10);if(isNaN(p))return;p=Math.min(P[1],Math.max(P[0],p));V.n=p-P[0]+1;draw()});
+document.addEventListener("keydown",e=>{if(V.el.hidden)return;if(e.key==="Escape")closeViewer();
+  if(e.target.tagName==="INPUT")return;
+  if(e.key==="ArrowLeft")document.getElementById("vNext").click();if(e.key==="ArrowRight")document.getElementById("vPrev").click()});
+
+fillGroups();render();
+const h=location.hash.slice(1);if(h&&BY[h])setTimeout(()=>go(h),50);
+window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(BY[h])go(h)});
+})();
 </script>
 
 <script src="/assets/azie-screens.js"></script>
@@ -260,12 +1086,10 @@ render();
   var allowed = [];
   try{ allowed = await AzieScreens.fetchAllowed('standards-guide'); }catch(e){ console.error(e); }
   if(allowed.length === 0){
-    document.querySelector('.hdr').style.display = 'none';
-    document.querySelector('.wrap').style.display = 'none';
-    document.querySelector('.footer').style.display = 'none';
-    var na = document.getElementById('no-access');
-    na.style.display = 'flex';
-    AzieScreens.renderNoAccess(na, 'دليل معايير المراجعة والتأكيد');
+    document.querySelectorAll('body > *').forEach(function(el){ el.style.display = 'none'; });
+    var na = document.createElement('div');
+    document.body.appendChild(na);
+    AzieScreens.renderNoAccess(na, 'دليل المعايير 2026');
   }
 })();
 </script>
