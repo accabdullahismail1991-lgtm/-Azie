@@ -115,6 +115,14 @@ const APPS = [
     accent: '#1A3A5C',
     tags: ['مقاولات', 'نماذج', 'تشغيلية', 'مالية', 'طباعة'],
   },
+  {
+    id: 'standards-guide',
+    title: 'دليل معايير المراجعة والتأكيد',
+    description: 'دليل مرجعي بجميع معايير المراجعة والفحص والتأكيد وإدارة الجودة (ISA وISQM وISRE وISAE وISRS) بنسختها المعتمدة من الهيئة السعودية للمراجعين والمحاسبين — بحث سريع وعرض وتنزيل لكل معيار.',
+    icon: '📚',
+    accent: '#1A3A5C',
+    tags: ['معايير المراجعة', 'ISA', 'مرجعي', 'محاسبة'],
+  },
 ];
 
 const SCREENS = {
@@ -291,6 +299,11 @@ const SCREENS = {
     ['users', 'المستخدمون'],
     ['hf', 'إعداد الطباعة'],
     ['audit', 'سجل الأحداث'],
+  ],
+  // Reference-only browsing tool: one continuous searchable page, no
+  // separate navigable sections — same rationale as sales-pulse/cashflow-riyadh.
+  'standards-guide': [
+    ['reference', 'دليل المعايير'],
   ],
 };
 

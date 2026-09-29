@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دليل معايير المراجعة والتأكيد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f5f9; --panel:#ffffff; --text:#1c2534; --muted:#67728a; --border:#e1e6ef;
+  --primary:#1a3a5c; --primary-l:#e7edf6; --accent:#b8862c; --accent-l:#f7ecd8;
+  --shadow:0 2px 10px rgba(20,35,60,.06); --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.hdr{position:sticky;top:0;z-index:20;background:var(--primary);color:#fff;padding:18px 26px;box-shadow:var(--shadow)}
+.hdr-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.hdr h1{font-size:19px;font-weight:900;display:flex;align-items:center;gap:8px}
+.hdr .sub{font-size:12px;opacity:.75;margin-top:2px}
+.search-wrap{flex:1;min-width:220px;position:relative}
+.search-wrap input{
+  width:100%;padding:11px 40px 11px 14px;border-radius:10px;border:none;
+  font-family:inherit;font-size:14px;background:rgba(255,255,255,.12);color:#fff;
+}
+.search-wrap input::placeholder{color:rgba(255,255,255,.65)}
+.search-wrap input:focus{outline:2px solid var(--accent);background:rgba(255,255,255,.18)}
+.search-wrap .ic{position:absolute;right:13px;top:50%;transform:translateY(-50%);opacity:.7;pointer-events:none}
+.count-pill{background:rgba(255,255,255,.14);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap}
+
+.wrap{max-width:1280px;margin:0 auto;padding:20px 26px 60px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.chip{
+  padding:8px 16px;border-radius:20px;font-size:12.5px;font-weight:700;cursor:pointer;
+  border:1.5px solid var(--border);background:var(--panel);color:var(--muted);transition:.15s;
+}
+.chip:hover{border-color:var(--primary);color:var(--primary)}
+.chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+.cat-section{margin-bottom:28px}
+.cat-title{
+  font-size:14px;font-weight:800;color:var(--primary);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.cat-title .n{background:var(--primary-l);color:var(--primary);border-radius:10px;padding:1px 9px;font-size:11px;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{
+  background:var(--panel);border:1px solid var(--border);border-radius:var(--r);
+  padding:16px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;
+}
+.card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.code-badge{
+  background:var(--accent-l);color:var(--accent);font-weight:900;font-size:12.5px;
+  padding:4px 12px;border-radius:8px;white-space:nowrap;
+}
+.pages{font-size:11px;color:var(--muted);white-space:nowrap}
+.card-title{font-size:13.5px;font-weight:700;line-height:1.6;color:var(--text);flex:1}
+.card-actions{display:flex;gap:8px;margin-top:2px}
+.btn{
+  flex:1;text-align:center;padding:9px 10px;border-radius:9px;font-size:12.5px;font-weight:700;
+  cursor:pointer;border:none;font-family:inherit;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.btn-view{background:var(--primary);color:#fff}
+.btn-view:hover{background:#132c47}
+.btn-dl{background:var(--primary-l);color:var(--primary);border:1.5px solid var(--border)}
+.btn-dl:hover{border-color:var(--primary)}
+
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty .ei{font-size:40px;margin-bottom:10px}
+
+.footer{
+  text-align:center;padding:22px;color:var(--muted);font-size:11.5px;
+  border-top:1px solid var(--border);margin-top:20px;
+}
+
+#no-access{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:999}
+
+@media(max-width:640px){
+  .hdr{padding:14px 16px}
+  .wrap{padding:16px 16px 40px}
+  .grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-inner">
+    <div>
+      <h1>📚 دليل معايير المراجعة والتأكيد</h1>
+      <div class="sub">الإصدارات المعتمدة من الهيئة السعودية للمراجعين والمحاسبين (SOCPA) — طبعة 2026</div>
+    </div>
+    <div class="search-wrap">
+      <input type="text" id="search" placeholder="ابحث برقم المعيار أو الاسم...">
+      <span class="ic">🔍</span>
+    </div>
+    <div class="count-pill" id="countPill">57 مستنداً</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="chips" id="chips"></div>
+  <div id="results"></div>
+</div>
+
+<div class="footer">
+  دليل مرجعي للاطلاع والتنزيل فقط — لا يُعدّ بديلاً عن الرجوع للنص الرسمي الصادر عن الهيئة عند التطبيق.<br>
+  جميع الحقوق محفوظة © عبدالله إسماعيل — للاستفسار والتواصل: 0509726204
+</div>
+
+<div id="no-access"></div>
+
+<script>
+'use strict';
+const STANDARDS_CATS = ["ISQM", "ISA", "ISRE", "ISAE", "ISRS", "ISSA", "IAPN", "FW", "REF", "CS"];
+const STANDARDS_CAT_LABELS = {"ISQM": "معايير إدارة الجودة الدولية (ISQM)", "ISA": "معايير المراجعة الدولية (ISA)", "ISRE": "معايير ارتباطات الفحص (ISRE)", "ISAE": "معايير ارتباطات التأكيد (ISAE)", "ISRS": "معايير الخدمات ذات العلاقة (ISRS)", "ISSA": "معيار تأكيد معلومات الاستدامة (ISSA)", "IAPN": "مذكرات ممارسات المراجعة الدولية (IAPN)", "FW": "الأُطر الدولية (Frameworks)", "REF": "مراجع عامة", "CS": "الخدمات الاستشارية"};
+const STANDARDS = [
+  {id:'isa-preface',cat:'ISA',code:'Preface',title:'التمهيد لإصدارات المعايير الدولية لإدارة الجودة والمراجعة والفحص والتأكيدات الأخرى والخدمات ذات العلاقة',pages:5},
+  {id:'isqm1',cat:'ISQM',code:'ISQM 1',title:'المعيار الدولي لإدارة الجودة (1): إدارة الجودة للمكاتب التي تنفذ ارتباطات مراجعة أو فحص القوائم المالية أو ارتباطات التأكيد الأخرى أو ارتباطات الخدمات ذات العلاقة',pages:60},
+  {id:'isqm2',cat:'ISQM',code:'ISQM 2',title:'المعيار الدولي لإدارة الجودة (2): فحوصات جودة الارتباطات',pages:16},
+  {id:'isa200',cat:'ISA',code:'ISA 200',title:'معيار المراجعة (200): الأهداف العامة للمراجع المستقل والقيام بالمراجعة وفقاً للمعايير الدولية للمراجعة',pages:22},
+  {id:'isa210',cat:'ISA',code:'ISA 210',title:'معيار المراجعة (210): الاتفاق على شروط ارتباطات المراجعة',pages:18},
+  {id:'isa220',cat:'ISA',code:'ISA 220',title:'معيار المراجعة (220) (المحدَّث): إدارة الجودة لمراجعة القوائم المالية',pages:32},
+  {id:'isa230',cat:'ISA',code:'ISA 230',title:'معيار المراجعة (230): توثيق أعمال المراجعة',pages:11},
+  {id:'isa240',cat:'ISA',code:'ISA 240',title:'معيار المراجعة (240): مسؤوليات المراجع ذات العلاقة بالغش عند مراجعة القوائم المالية',pages:34},
+  {id:'isa250',cat:'ISA',code:'ISA 250',title:'معيار المراجعة (250) (المحدَّث): مراعاة الأنظمة واللوائح عند مراجعة القوائم المالية',pages:14},
+  {id:'isa260',cat:'ISA',code:'ISA 260',title:'معيار المراجعة (260): الاتصال بالمكلفين بالحوكمة',pages:21},
+  {id:'isa265',cat:'ISA',code:'ISA 265',title:'معيار المراجعة (265): إبلاغ أوجه القصور في الرقابة الداخلية للمكلفين بالحوكمة والإدارة',pages:9},
+  {id:'isa300',cat:'ISA',code:'ISA 300',title:'معيار المراجعة (300): التخطيط لمراجعة القوائم المالية',pages:10},
+  {id:'isa315',cat:'ISA',code:'ISA 315',title:'معيار المراجعة (315) (المحدَّث في عام 2019): التعرف على مخاطر التحريف الجوهري وتقييمها',pages:89},
+  {id:'isa320',cat:'ISA',code:'ISA 320',title:'معيار المراجعة (320): الأهمية النسبية عند تخطيط وتنفيذ المراجعة',pages:8},
+  {id:'isa330',cat:'ISA',code:'ISA 330',title:'معيار المراجعة (330): استجابات المراجع للمخاطر المقيَّمة',pages:19},
+  {id:'isa402',cat:'ISA',code:'ISA 402',title:'معيار المراجعة (402): اعتبارات المراجعة ذات العلاقة بمنشأة تستخدم منشأة خدمية',pages:16},
+  {id:'isa450',cat:'ISA',code:'ISA 450',title:'معيار المراجعة (450): تقويم التحريفات المُكتشفة خلال المراجعة',pages:10},
+  {id:'isa500',cat:'ISA',code:'ISA 500',title:'معيار المراجعة (500): أدلة المراجعة',pages:16},
+  {id:'isa501',cat:'ISA',code:'ISA 501',title:'معيار المراجعة (501): أدلة المراجعة – اعتبارات محددة لبنود مختارة',pages:9},
+  {id:'isa505',cat:'ISA',code:'ISA 505',title:'معيار المراجعة (505): المصادقات الخارجية',pages:10},
+  {id:'isa510',cat:'ISA',code:'ISA 510',title:'معيار المراجعة (510): ارتباطات المراجعة لأول مرة – الأرصدة الافتتاحية',pages:11},
+  {id:'isa520',cat:'ISA',code:'ISA 520',title:'معيار المراجعة (520): الإجراءات التحليلية',pages:7},
+  {id:'isa530',cat:'ISA',code:'ISA 530',title:'معيار المراجعة (530): العينات في المراجعة',pages:12},
+  {id:'isa540',cat:'ISA',code:'ISA 540',title:'معيار المراجعة (540) (المحدَّث): مراجعة التقديرات الحاسبية وما يتعلق بها من إفصاحات',pages:51},
+  {id:'isa550',cat:'ISA',code:'ISA 550',title:'معيار المراجعة (550): الأطراف ذات العلاقة',pages:20},
+  {id:'isa560',cat:'ISA',code:'ISA 560',title:'معيار المراجعة (560): الأحداث اللاحقة',pages:9},
+  {id:'isa570',cat:'ISA',code:'ISA 570',title:'معيار المراجعة (570): الاستمرارية',pages:20},
+  {id:'isa570r',cat:'ISA',code:'ISA 570 (2024)',title:'معيار المراجعة (570) (المحدَّث في عام 2024): الاستمرارية',pages:121},
+  {id:'isa580',cat:'ISA',code:'ISA 580',title:'معيار المراجعة (580): الإفادات المكتوبة',pages:12},
+  {id:'isa600',cat:'ISA',code:'ISA 600',title:'المعيار الدولي للمراجعة (600) (المُحدَّث): اعتبارات خاصة — عمليات مراجعة القوائم المالية للمجموعات (بما في ذلك عمل مراجعي مكونات المجموعة)',pages:55},
+  {id:'isa610',cat:'ISA',code:'ISA 610',title:'معيار المراجعة (610): استخدام عمل المراجعين الداخليين',pages:16},
+  {id:'isa620',cat:'ISA',code:'ISA 620',title:'معيار المراجعة (620): استخدام عمل خبير استعان به المراجع',pages:16},
+  {id:'isa700',cat:'ISA',code:'ISA 700',title:'معيار المراجعة (700): تكوين الرأي والتقرير عن القوائم المالية',pages:39},
+  {id:'isa701',cat:'ISA',code:'ISA 701',title:'معيار المراجعة (701): الإبلاغ عن الأمور الرئيسة للمراجعة في تقرير المراجع المستقل',pages:16},
+  {id:'isa705',cat:'ISA',code:'ISA 705',title:'معيار المراجعة (705): التعديلات على الرأي في تقرير المراجع المستقل',pages:23},
+  {id:'isa706',cat:'ISA',code:'ISA 706',title:'معيار المراجعة (706): فقرات لفت الانتباه، وفقرات أمور أخرى في تقرير المراجع المستقل',pages:15},
+  {id:'isa710',cat:'ISA',code:'ISA 710',title:'معيار المراجعة (710): المعلومات المقارنة – الأرقام المقابلة والقوائم المالية المقارنة',pages:16},
+  {id:'isa720',cat:'ISA',code:'ISA 720',title:'معيار المراجعة (720): مسؤوليات المراجع ذات العلاقة بالمعلومات الأخرى',pages:37},
+  {id:'isa800',cat:'ISA',code:'ISA 800',title:'معيار المراجعة (800): اعتبارات خاصة – عمليات مراجعة القوائم المالية المُعدة وفقاً لأطر ذات غرض خاص',pages:18},
+  {id:'isa805',cat:'ISA',code:'ISA 805',title:'معيار المراجعة (805): اعتبارات خاصة – عمليات مراجعة قائمة مالية واحدة، وعناصر أو حسابات أو بنود محددة في قائمة مالية',pages:22},
+  {id:'isa810',cat:'ISA',code:'ISA 810',title:'معيار المراجعة (810): الارتباطات لإعداد التقارير عن القوائم المالية الملخصة',pages:23},
+  {id:'isre2400',cat:'ISRE',code:'ISRE 2400',title:'معيار ارتباطات الفحص (2400): الارتباطات لفحص القوائم المالية التاريخية',pages:62},
+  {id:'isre2410',cat:'ISRE',code:'ISRE 2410',title:'معيار ارتباطات الفحص (2410): فحص المعلومات المالية الأولية المُنفَّذ من قبل المراجع المستقل للمنشأة',pages:26},
+  {id:'isae3000',cat:'ISAE',code:'ISAE 3000',title:'معيار ارتباطات التأكيد (3000): ارتباطات التأكيد الأخرى بخلاف عمليات مراجعة أو فحص المعلومات المالية التاريخية',pages:58},
+  {id:'isae3400',cat:'ISAE',code:'ISAE 3400',title:'معيار ارتباطات التأكيد (3400): اختبار المعلومات المالية المستقبلية',pages:8},
+  {id:'isae3402',cat:'ISAE',code:'ISAE 3402',title:'معيار ارتباطات التأكيد (3402): تقارير التأكيد عن أدوات الرقابة في المنشأة الخدمية',pages:36},
+  {id:'isae3410',cat:'ISAE',code:'ISAE 3410',title:'معيار ارتباطات التأكيد (3410): ارتباطات التأكيد عن قوائم غازات الاحتباس الحراري',pages:60},
+  {id:'isae3420',cat:'ISAE',code:'ISAE 3420',title:'معيار ارتباطات التأكيد (3420): ارتباطات التأكيد لإعداد تقرير عن تجميع المعلومات المالية التصورية المُضمنة في نشرات الاكتتاب',pages:25},
+  {id:'isrs4400',cat:'ISRS',code:'ISRS 4400',title:'المعيار الدولي للخدمات ذات العلاقة (4400) (المحدَّث): ارتباطات الإجراءات المتفق عليها',pages:29},
+  {id:'isrs4410',cat:'ISRS',code:'ISRS 4410',title:'معيار الخدمات ذات العلاقة (4410): ارتباطات التجميع',pages:30},
+  {id:'issa5000',cat:'ISSA',code:'ISSA 5000',title:'معيار تأكيد معلومات الاستدامة (5000): المتطلبات العامة لارتباطات تأكيد معلومات الاستدامة',pages:192},
+  {id:'iapn1000',cat:'IAPN',code:'IAPN 1000',title:'مذكرة ممارسات المراجعة الدولية (1000): اعتبارات خاصة عند مراجعة الأدوات المالية',pages:44},
+  {id:'aqf',cat:'FW',code:'AQF',title:'إطار جودة المراجعة (Audit Quality Framework)',pages:44},
+  {id:'assurance-fw',cat:'FW',code:'ISAE FW',title:'الإطار الدولي لارتباطات التأكيد (International Framework for Assurance Engagements)',pages:23},
+  {id:'isa-glossary',cat:'REF',code:'Glossary',title:'مسرد المصطلحات (طبعة 2026)',pages:52},
+  {id:'isa-clarif',cat:'REF',code:'Clarification',title:'توضيحات من مجلس معايير المراجعة بشأن تاريخ تطبيق المعايير الدولية للمراجعة',pages:6},
+  {id:'forensic',cat:'CS',code:'Forensic Accounting',title:'معيار الخدمات الاستشارية: ارتباطات تقديم خدمات المحاسبة القضائية',pages:39},
+];
+
+let activeCat = '';
+let query = '';
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function fileUrl(id){ return '/api/standards-files/' + id + '.pdf'; }
+
+function renderChips(){
+  const chips = document.getElementById('chips');
+  const allChip = `<div class="chip${activeCat===''?' active':''}" data-cat="">الكل (${STANDARDS.length})</div>`;
+  const rest = STANDARDS_CATS.map(c=>{
+    const n = STANDARDS.filter(s=>s.cat===c).length;
+    return `<div class="chip${activeCat===c?' active':''}" data-cat="${c}">${STANDARDS_CAT_LABELS[c]} (${n})</div>`;
+  }).join('');
+  chips.innerHTML = allChip + rest;
+  chips.querySelectorAll('.chip').forEach(el=>{
+    el.onclick = ()=>{ activeCat = el.dataset.cat; render(); };
+  });
+}
+
+function matches(s){
+  if(activeCat && s.cat!==activeCat) return false;
+  if(!query) return true;
+  const q = query.toLowerCase();
+  return s.code.toLowerCase().includes(q) || s.title.toLowerCase().includes(q);
+}
+
+function card(s){
+  return `<div class="card">
+    <div class="card-top">
+      <span class="code-badge">${esc(s.code)}</span>
+      <span class="pages">${s.pages} صفحة</span>
+    </div>
+    <div class="card-title">${esc(s.title)}</div>
+    <div class="card-actions">
+      <a class="btn btn-view" href="${fileUrl(s.id)}" target="_blank" rel="noopener">🔍 عرض</a>
+      <a class="btn btn-dl" href="${fileUrl(s.id)}" download>⬇ تنزيل</a>
+    </div>
+  </div>`;
+}
+
+function render(){
+  renderChips();
+  const results = document.getElementById('results');
+  const filtered = STANDARDS.filter(matches);
+  document.getElementById('countPill').textContent = filtered.length + ' مستنداً';
+
+  if(!filtered.length){
+    results.innerHTML = `<div class="empty"><div class="ei">🔍</div>لا توجد نتائج مطابقة للبحث</div>`;
+    return;
+  }
+
+  if(activeCat || query){
+    results.innerHTML = `<div class="grid">${filtered.map(card).join('')}</div>`;
+    return;
+  }
+
+  // Grouped view: one section per category, in a fixed sensible order
+  results.innerHTML = STANDARDS_CATS.map(c=>{
+    const items = STANDARDS.filter(s=>s.cat===c);
+    if(!items.length) return '';
+    return `<div class="cat-section">
+      <div class="cat-title">${STANDARDS_CAT_LABELS[c]} <span class="n">${items.length}</span></div>
+      <div class="grid">${items.map(card).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('search').addEventListener('input', (e)=>{
+  query = e.target.value.trim();
+  render();
+});
+
+render();
+</script>
+
+<script src="/assets/azie-screens.js"></script>
+<script>
+// ═══════════════════════════════════════════
+// صلاحيات الشاشات — دليل مرجعي بشاشة واحدة، لا يحتاج تخزين بيانات
+// ═══════════════════════════════════════════
+(async function(){
+  var allowed = [];
+  try{ allowed = await AzieScreens.fetchAllowed('standards-guide'); }catch(e){ console.error(e); }
+  if(allowed.length === 0){
+    document.querySelector('.hdr').style.display = 'none';
+    document.querySelector('.wrap').style.display = 'none';
+    document.querySelector('.footer').style.display = 'none';
+    var na = document.getElementById('no-access');
+    na.style.display = 'flex';
+    AzieScreens.renderNoAccess(na, 'دليل معايير المراجعة والتأكيد');
+  }
+})();
+</script>
+</body>
+</html>
