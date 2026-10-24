@@ -2240,9 +2240,11 @@ function buildFullPrintPage(def, hf, body){
 
   const formTitle = (typeof getFormTitle==='function') ? getFormTitle(def) : def.title;
   const formSub   = (currentLang==='en') ? (def.titleEn||def.sub) : def.sub;
+  const isVoucher = def.id==='payment-voucher' || def.id==='receipt-voucher';
+  const subLine   = isVoucher ? formSub : `${formSub} • ${today} • ${ci.name}`;
   const titleBar = `<div style="padding:12px 28px 10px;border-bottom:2px dashed #e0e7ef;">
     <div style="text-align:center;font-size:18px;font-weight:900;color:${c};">${formTitle}</div>
-    <div style="text-align:center;font-size:11px;color:#888;">${formSub} • ${today} • ${ci.name}</div>
+    <div style="text-align:center;font-size:11px;color:#888;">${subLine}</div>
   </div>`;
 
   // ── FOOTER ──
