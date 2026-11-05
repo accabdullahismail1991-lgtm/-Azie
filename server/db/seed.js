@@ -123,6 +123,14 @@ const APPS = [
     accent: '#1A3A5C',
     tags: ['معايير المراجعة', 'IFRS', 'ISA', 'مرجعي', 'محاسبة'],
   },
+  {
+    id: 'kitchen-scale',
+    title: 'ميزان المطبخ — التكلفة وهندسة المنيو',
+    description: 'حساب تكلفة الأطباق والمواد الأولية، هندسة المنيو (مصفوفة بوسطن)، محاكاة أثر تغيّر الأسعار، ربحية قنوات التوصيل والعمولات، نقطة التعادل، تقييمات الأطباق، إضاءات وتوصيات، وتقارير جاهزة للطباعة.',
+    icon: '⚖️',
+    accent: '#E9A23B',
+    tags: ['تكلفة الأطباق', 'هندسة المنيو', 'قنوات التوصيل', 'نقطة التعادل', 'مطاعم'],
+  },
 ];
 
 const SCREENS = {
@@ -304,6 +312,24 @@ const SCREENS = {
   // separate navigable sections — same rationale as sales-pulse/cashflow-riyadh.
   'standards-guide': [
     ['reference', 'دليل المعايير'],
+  ],
+  // The tool's own "admin" route (owner:true) is unreachable in this
+  // deployment — it depends on a Claude-artifact user capability this
+  // platform doesn't provide, so it's left out of the screens list.
+  'kitchen-scale': [
+    ['home', 'الرئيسية'],
+    ['dashboard', 'لوحة التحكم'],
+    ['dishes', 'الأطباق'],
+    ['ingredients', 'المواد الأولية'],
+    ['needs', 'احتياج المكوّنات'],
+    ['import', 'استيراد من Excel'],
+    ['impact', 'أثر تغيّر الأسعار'],
+    ['menu', 'هندسة المنيو'],
+    ['channels', 'قنوات البيع'],
+    ['breakeven', 'نقطة التعادل'],
+    ['ratings', 'التقييمات'],
+    ['advisor', 'إضاءات المستشار'],
+    ['reports', 'التقارير'],
   ],
 };
 
