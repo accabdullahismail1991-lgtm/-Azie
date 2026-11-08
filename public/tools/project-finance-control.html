@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>نظام التحكم المالي للمشاريع</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --bg:#f4f6f9; --panel:#ffffff; --text:#1b2430; --muted:#64748b; --border:#e2e8f0;
+  --brand:#1f4e78; --brand-dark:#163a5a; --brand-soft:#eaf1f7;
+  --green:#1a7f4b; --green-bg:#e5f6ec; --yellow:#8a6d00; --yellow-bg:#fff6d9;
+  --red:#b3261e; --red-bg:#fbe7e6; --input-bg:#fffef2; --input-border:#e8d98a;
+  --shadow: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1520; --panel:#161d2b; --text:#e6e9ef; --muted:#93a0b4; --border:#293347;
+    --brand:#4f8fc0; --brand-dark:#3d729c; --brand-soft:#1c2c3c;
+    --green:#37c586; --green-bg:#0f2c22; --yellow:#e3bf3d; --yellow-bg:#332a0a;
+    --red:#f0685f; --red-bg:#3a1414; --input-bg:#20261a; --input-border:#4a4826;
+    --shadow: 0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1520; --panel:#161d2b; --text:#e6e9ef; --muted:#93a0b4; --border:#293347;
+  --brand:#4f8fc0; --brand-dark:#3d729c; --brand-soft:#1c2c3c;
+  --green:#37c586; --green-bg:#0f2c22; --yellow:#e3bf3d; --yellow-bg:#332a0a;
+  --red:#f0685f; --red-bg:#3a1414; --input-bg:#20261a; --input-border:#4a4826;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Tahoma,Arial,"Segoe UI",sans-serif;font-size:14px;}
+#app{display:flex;min-height:100vh;}
+#sidebar{width:230px;flex:0 0 230px;background:var(--brand-dark);color:#fff;padding:16px 10px;position:sticky;top:0;height:100vh;overflow-y:auto;}
+#sidebar h1{font-size:15px;line-height:1.4;margin:0 6px 18px;font-weight:700;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;cursor:pointer;color:#cfe0ee;font-size:13px;margin-bottom:2px;}
+.nav-item:hover{background:rgba(255,255,255,.08);}
+.nav-item.active{background:var(--brand);color:#fff;font-weight:700;}
+.nav-group{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#8fb0cc;margin:14px 8px 4px;}
+#main{flex:1;min-width:0;padding:22px 26px;max-width:100%;}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.topbar h2{margin:0;font-size:20px;color:var(--brand);}
+.topbar .sub{color:var(--muted);font-size:12.5px;margin-top:2px;}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;}
+.btn-primary{background:var(--brand);color:#fff;}
+.btn-primary:hover{background:var(--brand-dark);}
+.btn-ghost{background:transparent;color:var(--brand);border:1px solid var(--border);}
+.btn-danger{background:transparent;color:var(--red);}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden;}
+.card-pad{padding:16px 18px;}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:18px;}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);}
+.kpi .label{color:var(--muted);font-size:12px;margin-bottom:6px;}
+.kpi .value{font-size:20px;font-weight:700;color:var(--brand);}
+.table-wrap{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:12.8px;}
+th{background:var(--brand-soft);color:var(--brand);text-align:right;padding:9px 10px;position:sticky;top:0;font-weight:700;white-space:nowrap;border-bottom:1px solid var(--border);}
+td{padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
+tr:hover td{background:rgba(127,127,127,.05);}
+.tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:700;}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-yellow{background:var(--yellow-bg);color:var(--yellow);}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-grey{background:var(--border);color:var(--muted);}
+.muted{color:var(--muted);}
+.right{text-align:left;}
+.actions-cell{display:flex;gap:6px;}
+.empty{padding:30px;text-align:center;color:var(--muted);}
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,14,20,.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px;}
+.modal{background:var(--panel);border-radius:14px;max-width:520px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.3);}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-head h3{margin:0;font-size:15px;color:var(--brand);}
+.modal-body{padding:16px 20px;display:flex;flex-direction:column;gap:12px;}
+.field label{display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--text);}
+.field .hint{font-size:11px;color:var(--muted);margin-top:3px;}
+input,select,textarea{width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-family:inherit;font-size:13px;}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:1px;}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+.close-x{background:none;border:none;font-size:18px;color:var(--muted);cursor:pointer;padding:2px 6px;}
+.note-box{background:var(--brand-soft);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:12.8px;margin-bottom:16px;line-height:1.9;}
+.badge-count{background:rgba(255,255,255,.18);border-radius:10px;font-size:10.5px;padding:1px 7px;margin-right:auto;}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--brand-dark);color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:99;}
+#toast.show{opacity:1;}
+.bar-track{background:var(--border);border-radius:6px;height:8px;width:100px;overflow:hidden;}
+.bar-fill{height:100%;}
+::-webkit-scrollbar{height:8px;width:8px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+@media (max-width:820px){
+  #app{flex-direction:column;}
+  #sidebar{width:100%;height:auto;position:static;display:flex;overflow-x:auto;padding:10px;}
+  #sidebar h1{display:none;}
+  .nav-group{display:none;}
+  .nav-item{white-space:nowrap;}
+  #main{padding:14px;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <h1>💼 نظام التحكم المالي للمشاريع</h1>
+    <div id="nav"></div>
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,.15);display:flex;flex-direction:column;gap:6px;">
+      <div style="font-size:10.5px;color:#8fb0cc;padding:0 6px 4px;">البيانات محفوظة على قاعدة بيانات المنصة ومتاحة لكل من له صلاحية على هذا التطبيق</div>
+      <button id="btnExport" class="btn-ghost btn-sm" style="background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.25);width:100%;">⬇️ تنزيل نسخة احتياطية</button>
+      <button id="btnImportTrigger" class="btn-ghost btn-sm" style="background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.25);width:100%;">⬆️ استيراد نسخة</button>
+      <input type="file" id="btnImportFile" accept=".json" style="display:none">
+    </div>
+  </div>
+  <div id="main">
+    <div class="note-box">📌 بيانات هذا النظام محفوظة على قاعدة بيانات المنصة، ومتزامنة تلقائيًا بين جميع من لديه صلاحية على هذا التطبيق. استخدم زر "تنزيل نسخة احتياطية" بين الحين والآخر إن رغبت بالاحتفاظ بنسخة إضافية على جهازك.</div>
+    <div class="topbar">
+      <div>
+        <h2 id="pageTitle">Dashboard</h2>
+        <div class="sub" id="pageSub"></div>
+      </div>
+      <div id="pageActions"></div>
+    </div>
+    <div id="content"></div>
+  </div>
+</div>
+<div id="modalRoot"></div>
+<div id="toast"></div>
+<script src="/assets/azie-data.js"></script>
+<script src="/assets/azie-screens.js"></script>
+<script>
+// ═══════════════════════════════════════════
+// مزامنة قاعدة البيانات — تعمل بشفافية فوق localStorage الأصلي للتطبيق
+// ═══════════════════════════════════════════
+// هذا التطبيق يخزّن كل بياناته (المشاريع، الموازنات، الحركات، ...) في
+// مفتاح localStorage واحد (pfcs_local_data_v1) ويقرأه بشكل متزامن عند
+// فتح الصفحة (initLocal)، دون تغيير أي من منطق التطبيق نفسه، نزامن نفس
+// المفتاح مع قاعدة بيانات المنصة عبر: (١) تحميل متزامن (XHR) يعبّئ
+// localStorage قبل تشغيل سكربت التطبيق الأساسي، و(٢) اعتراض الكتابة
+// لدفع أي تعديل لاحقاً للخادم.
+(function(){
+  var APP_ID = 'project-finance-control';
+  var SYNC_KEYS = ['pfcs_local_data_v1'];
+
+  try{
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/data/' + APP_ID, false);
+    xhr.send(null);
+    if(xhr.status === 200){
+      var body = JSON.parse(xhr.responseText || '{}');
+      var blob = body && body.data;
+      if(blob && typeof blob === 'object'){
+        SYNC_KEYS.forEach(function(k){
+          if(typeof blob[k] === 'string') window.localStorage.setItem(k, blob[k]);
+        });
+      }
+    }
+  }catch(e){ console.error('تعذّر تحميل بيانات نظام التحكم المالي للمشاريع من الخادم', e); }
+
+  var origSetItem = Storage.prototype.setItem;
+  var origRemoveItem = Storage.prototype.removeItem;
+  function pushSnapshot(){
+    var out = {};
+    SYNC_KEYS.forEach(function(k){
+      var v = window.localStorage.getItem(k);
+      if(v !== null) out[k] = v;
+    });
+    AzieData.debouncedSave(APP_ID, function(){ return out; }, 600);
+  }
+  Storage.prototype.setItem = function(key, value){
+    origSetItem.apply(this, arguments);
+    if(this === window.localStorage && SYNC_KEYS.indexOf(key) !== -1) pushSnapshot();
+  };
+  Storage.prototype.removeItem = function(key){
+    origRemoveItem.apply(this, arguments);
+    if(this === window.localStorage && SYNC_KEYS.indexOf(key) !== -1) pushSnapshot();
+  };
+})();
+</script>
+<script>
+"use strict";
+
+/* ============================ STATE ============================ */
+const state = {
+  settings: { vatRate:0.15, budgetYellow:0.8, budgetRed:1.0 },
+  projects: [], costCodes: [], budgets: [], bank: [], transfers: [], expenses: [],
+  supplierInvoices: [], supplierPayments: [], subcontractors: [], subStatements: [],
+  advances: [], advanceSettlements: [], clientStatements: [], cashFlow: []
+};
+let db = null;
+let dbReady = false;
+let currentTab = "dashboard";
+
+/* ============================ UTIL ============================ */
+const fmt = n => (isFinite(n)?n:0).toLocaleString("ar-SA",{maximumFractionDigits:0});
+const pct = n => ((isFinite(n)?n:0)*100).toFixed(1)+"%";
+const todayISO = () => new Date().toISOString().slice(0,10);
+const daysBetween = (a,b) => Math.round((new Date(b)-new Date(a))/86400000);
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(toast._h); toast._h=setTimeout(()=>t.classList.remove("show"),2200);
+}
+function byId(list,id){ return list.find(x=>x.id===id); }
+function projectName(code){ const p=byId(state.projects,code); return p? (p.name||code) : code; }
+function costCodeName(code){ const c=byId(state.costCodes,code); return c? (c.name||code) : code; }
+function sumWhere(list, pred, field){
+  return list.reduce((s,r)=> pred(r) ? s + (Number(r[field])||0) : s, 0);
+}
+
+/* ============================ DERIVED CALCS ============================ */
+function projectBalance(code){
+  const p = byId(state.projects, code); if(!p) return 0;
+  const opening = Number(p.openingBalance)||0;
+  const bankNet = sumWhere(state.bank, r=>r.projectCode===code, "amount");
+  const transIn = sumWhere(state.transfers, r=>r.toProject===code, "amount");
+  const transOut = sumWhere(state.transfers, r=>r.fromProject===code, "amount");
+  return opening + bankNet + transIn - transOut;
+}
+function invoiceRemaining(inv){
+  const paid = sumWhere(state.supplierPayments, r=>r.invoiceNo===inv.invoiceNo, "amount");
+  return (Number(inv.amount)||0) - paid;
+}
+function subDerived(sub){
+  const stmts = state.subStatements.filter(s=>s.subcontractorId===sub.id);
+  const totalStatements = stmts.reduce((s,r)=>s+(Number(r.value)||0),0);
+  const totalAdvanceRecovered = stmts.reduce((s,r)=>s+advanceRecoveryAmount(r,sub),0);
+  const totalRetention = stmts.reduce((s,r)=>s+retentionAmount(r,sub),0);
+  const totalNetPaid = stmts.reduce((s,r)=>s+netPayable(r,sub),0);
+  const advanceValue = (Number(sub.contractValue)||0)*(Number(sub.advancePct)||0);
+  return {
+    totalStatements, totalAdvanceRecovered, totalRetention, totalNetPaid,
+    advanceValue,
+    advanceRemaining: advanceValue - totalAdvanceRecovered,
+    remainingContract: (Number(sub.contractValue)||0) - totalStatements
+  };
+}
+function retentionAmount(stmt, sub){
+  const rp = stmt.retentionPctOverride!=null && stmt.retentionPctOverride!=="" ? Number(stmt.retentionPctOverride) : Number(sub?.retentionPct)||0;
+  return (Number(stmt.value)||0)*rp;
+}
+function advanceRecoveryAmount(stmt, sub){
+  const ap = stmt.advancePctOverride!=null && stmt.advancePctOverride!=="" ? Number(stmt.advancePctOverride) : Number(sub?.advancePct)||0;
+  return (Number(stmt.value)||0)*ap;
+}
+function netPayable(stmt, sub){
+  return (Number(stmt.value)||0) - retentionAmount(stmt,sub) - advanceRecoveryAmount(stmt,sub);
+}
+function advanceDerived(adv){
+  const settled = sumWhere(state.advanceSettlements, r=>r.advanceId===adv.id, "amount");
+  const remaining = (Number(adv.amount)||0) - settled;
+  const age = remaining>0 ? daysBetween(adv.date, todayISO()) : null;
+  return { settled, remaining, age };
+}
+function clientStmtDerived(cs){
+  const vat = Number(state.settings.vatRate)||0;
+  const value = Number(cs.value)||0, discount = Number(cs.discount)||0;
+  const tax = (value-discount)*vat;
+  const net = value-discount+tax;
+  const p = byId(state.projects, cs.projectCode);
+  const retPct = p ? Number(p.retentionPct)||0 : 0;
+  const retention = (value-discount)*retPct;
+  const dueForCollection = net-retention;
+  const collected = Number(cs.collectedAmount)||0;
+  const remaining = dueForCollection - collected;
+  return {tax, net, retPct, retention, dueForCollection, remaining};
+}
+function budgetActual(projCode, costCode){
+  let v = sumWhere(state.expenses, r=>r.projectCode===projCode&&r.costCode===costCode, "totalWithTax");
+  v += sumWhere(state.advanceSettlements, r=>r.projectCode===projCode&&r.costCode===costCode, "amount");
+  if(costCode==="SUB"){
+    v += sumWhere(state.subStatements.map(s=>({...s, __p: (byId(state.subcontractors,s.subcontractorId)||{}).projectCode})),
+                  r=>r.__p===projCode, "value");
+  }
+  return v;
+}
+function budgetCommitted(projCode, costCode, manual){
+  if(costCode==="SUB"){
+    const subs = state.subcontractors.filter(s=>s.projectCode===projCode);
+    return subs.reduce((s,sub)=> s + subDerived(sub).remainingContract, 0) + (Number(manual)||0);
+  }
+  const unpaid = state.supplierInvoices
+    .filter(r=>r.projectCode===projCode && r.costCode===costCode)
+    .reduce((s,r)=>s+invoiceRemaining(r),0);
+  return unpaid + (Number(manual)||0);
+}
+function projectActualTotal(code){
+  return state.costCodes.reduce((s,cc)=>s+budgetActual(code,cc.id),0) + (Number(byId(state.projects,code)?.carriedActualCost)||0);
+}
+function projectCommittedTotal(code){
+  const rows = state.budgets.filter(b=>b.projectCode===code);
+  return rows.reduce((s,b)=>s+budgetCommitted(code,b.costCode,b.manualCommitment),0);
+}
+function projectBudgetTotal(code){
+  return sumWhere(state.budgets, r=>r.projectCode===code, "budget");
+}
+function projectRevenue(code){
+  return sumWhere(state.clientStatements.map(c=>({...c,__net:clientStmtDerived(c).net})), r=>r.projectCode===code, "__net");
+}
+function utilLevel(u){
+  if(u>=state.settings.budgetRed) return "red";
+  if(u>=state.settings.budgetYellow) return "yellow";
+  return "green";
+}
+function statusTag(status){
+  const map={"نشط":"green","متوقف مؤقتًا":"yellow","مكتمل تنفيذيًا":"grey","مغلق نهائيًا":"grey"};
+  return `<span class="tag tag-${map[status]||'grey'}">${status||'-'}</span>`;
+}
+</script>
+<script>
+"use strict";
+
+/* ============================ MODULE CONFIG ============================ */
+const SEL = (moduleKey, labelFn) => ({type:"select", moduleKey, labelFn});
+
+const MODULES = {
+  projects: {
+    label:"المشاريع", group:"البيانات الأساسية", path:"projects", customId:true, idLabel:"كود المشروع",
+    fields:[
+      {key:"name", label:"اسم المشروع", type:"text", required:true},
+      {key:"client", label:"العميل", type:"text"},
+      {key:"contractValue", label:"قيمة العقد", type:"number"},
+      {key:"startDate", label:"تاريخ البداية", type:"date"},
+      {key:"endDate", label:"تاريخ النهاية", type:"date"},
+      {key:"manager", label:"مدير المشروع", type:"text"},
+      {key:"status", label:"حالة المشروع", type:"select", options:["نشط","متوقف مؤقتًا","مكتمل تنفيذيًا","مغلق نهائيًا"], default:"نشط"},
+      {key:"retentionPct", label:"نسبة محتجز العميل %", type:"percent", default:0},
+      {key:"openingDate", label:"تاريخ الرصيد الافتتاحي", type:"date"},
+      {key:"openingBalance", label:"الرصيد الافتتاحي", type:"number", default:0},
+      {key:"carriedActualCost", label:"Actual Cost مرحّل من سنوات سابقة", type:"number", default:0},
+    ],
+    columns:[
+      {label:"كود", render:r=>r.id},
+      {label:"الاسم", render:r=>r.name||"-"},
+      {label:"العميل", render:r=>r.client||"-"},
+      {label:"الحالة", render:r=>statusTag(r.status)},
+      {label:"قيمة العقد", render:r=>fmt(r.contractValue)},
+      {label:"رصيد المشروع الحالي", render:r=>fmt(projectBalance(r.id))},
+      {label:"مدير المشروع", render:r=>r.manager||"-"},
+    ]
+  },
+  costCodes: {
+    label:"بنود التكلفة", group:"البيانات الأساسية", path:"costCodes", customId:true, idLabel:"كود البند",
+    fields:[ {key:"name", label:"اسم البند", type:"text", required:true} ],
+    columns:[ {label:"الكود", render:r=>r.id}, {label:"الاسم", render:r=>r.name} ]
+  },
+  budgets: {
+    label:"الموازنة", group:"الرقابة المالية", path:"budgets",
+    fields:[
+      {key:"projectCode", label:"كود المشروع", ...SEL("projects", p=>p.id+" — "+(p.name||"")), required:true},
+      {key:"costCode", label:"كود البند", ...SEL("costCodes", c=>c.id+" — "+(c.name||"")), required:true},
+      {key:"budget", label:"Budget", type:"number", default:0},
+      {key:"manualCommitment", label:"التزام يدوي إضافي", type:"number", default:0},
+    ],
+    columns:[
+      {label:"المشروع", render:r=>projectName(r.projectCode)},
+      {label:"البند", render:r=>costCodeName(r.costCode)},
+      {label:"Budget", render:r=>fmt(r.budget)},
+      {label:"Actual", render:r=>fmt(budgetActual(r.projectCode,r.costCode))},
+      {label:"Committed", render:r=>fmt(budgetCommitted(r.projectCode,r.costCode,r.manualCommitment))},
+      {label:"Variance", render:r=>fmt((Number(r.budget)||0)-budgetActual(r.projectCode,r.costCode)-budgetCommitted(r.projectCode,r.costCode,r.manualCommitment))},
+      {label:"% الاستخدام", render:r=>{
+        const u=(budgetActual(r.projectCode,r.costCode)+budgetCommitted(r.projectCode,r.costCode,r.manualCommitment))/((Number(r.budget)||0)||1);
+        return `<span class="tag tag-${utilLevel(u)}">${pct(u)}</span>`;
+      }},
+    ]
+  },
+  bank: {
+    label:"حركة البنك", group:"الحركات اليومية", path:"bank", sortField:"date",
+    note:"المبلغ موجب = دخل للمشروع، سالب = خرج. لا تُسجَّل هنا التحويلات بين المشاريع.",
+    fields:[
+      {key:"date", label:"التاريخ", type:"date", required:true, default:todayISO()},
+      {key:"type", label:"النوع", type:"select", options:["إيداع","تحويل","شيك","مصروف","تحصيل عميل"]},
+      {key:"projectCode", label:"كود المشروع", ...SEL("projects", p=>p.id+" — "+(p.name||"")), required:true},
+      {key:"amount", label:"المبلغ (+داخل / -خارج)", type:"number", required:true},
+      {key:"description", label:"البيان", type:"text"},
+      {key:"ref", label:"رقم المرجع", type:"text"},
+    ],
+    columns:[
+      {label:"التاريخ", render:r=>r.date||"-"},
+      {label:"النوع", render:r=>r.type||"-"},
+      {label:"المشروع", render:r=>projectName(r.projectCode)},
+      {label:"المبلغ", render:r=>`<span style="color:${(r.amount||0)<0?'var(--red)':'var(--green)'}">${fmt(r.amount)}</span>`},
+      {label:"البيان", render:r=>r.description||"-"},
+    ]
+  },
+  transfers: {
+    label:"التحويلات الداخلية", group:"الحركات اليومية", path:"transfers", sortField:"date",
+    note:"قيود تصحيحية بين المشاريع فقط — لا تُحرّك رصيد البنك الفعلي.",
+    fields:[
+      {key:"date", label:"التاريخ", type:"date", required:true, default:todayISO()},
+      {key:"fromProject", label:"من مشروع", ...SEL("projects", p=>p.id+" — "+(p.name||"")), required:true},
+      {key:"toProject", label:"إلى مشروع", ...SEL("projects", p=>p.id+" — "+(p.name||"")), required:true},
+      {key:"amount", label:"المبلغ", type:"number", required:true},
+      {key:"reason", label:"السبب", type:"text"},
+      {key:"ref", label:"رقم المرجع", type:"text"},
+    ],
+    columns:[
+      {label:"التاريخ", render:r=>r.date||"-"},
+      {label:"من", render:r=>projectName(r.fromProject)},
+      {label:"إلى", render:r=>projectName(r.toProject)},
+      {label:"المبلغ", render:r=>fmt(r.amount)},
+      {label:"السبب", render:r=>r.reason||"-"},
+    ]
+  },
+  expenses: {
+    label:"المصروفات", group:"الحركات اليومية", path:"expenses", sortField:"date",
+    fields:[
+      {key:"date", label:"التاريخ", type:"date", required:true, default:todayISO()},
+      {key:"projectCode", label:"كود المشروع", ...SEL("projects", p=>p.id+" — "+(p.name||"")), required:true},
+      {key:"costCode", label:"كود البند", ...SEL("costCodes", c=>c.id+" — "+(c.name||"")), required:true},
+      {key:"supplier", label:"المورد", type:"text"},
+      {key:"amount", label:"المبلغ (قبل الضريبة)", type:"number", required:true},
+      {key:"taxOverride", label:"الضريبة (اتركه فارغًا للاحتساب التلقائي)", type:"number"},
+      {key:"paymentMethod", label:"طريقة الدفع", type:"select", options:["تحويل بنكي","شيك","نقدي","بطاقة"]},
+      {key:"docNumber", label:"رقم المستند", type:"text"},
+      {key:"attachmentUrl", label:"رابط المرفق", type:"text"},
+    ],
+    beforeSave:(data)=>{
+      const amt=Number(data.amount)||0;
+      const tax = (data.taxOverride!==undefined && data.taxOverride!=="" && data.taxOverride!=null) ? Number(data.taxOverride) : amt*state.settings.vatRate;
+      data.tax = tax; data.totalWithTax = amt+tax;
+      return data;
+    },
+    columns:[
+      {label:"التاريخ", render:r=>r.date||"-"},
+      {label:"المشروع", render:r=>projectName(r.projectCode)},
+      {label:"البند", render:r=>costCodeName(r.costCode)},
+      {label:"المورد", render:r=>r.supplier||"-"},
+      {label:"المبلغ", render:r=>fmt(r.amount)},
+      {label:"الضريبة", render:r=>fmt(r.tax)},
+      {label:"الإجمالي", render:r=>fmt(r.totalWithTax)},
+    ]
+  },
+  supplierInvoices: {
+    label:"فواتير الموردين", group:"الموردون", path:"supplierInvoices", sortField:"invoiceDate",
+    fields:[
+      {key:"invoiceDate", label:"تاريخ الفاتورة", type:"date", default:todayISO()},
+      {key:"invoiceNo", label:"رقم الفاتورة", type:"text", required:true},
+      {key:"supplier", label:"المورد", type:"text", required:true},
+      {key:"projectCode", label:"كود المشروع", ...SEL("projects", p=>p.id+" — "+(p.name||"")), required:true},
+      {key:"costCode", label:"كود البند", ...SEL("costCodes", c=>c.id+" — "+(c.name||"")), required:true},
+      {key:"amount", label:"المبلغ", type:"number", required:true},
+      {key:"dueDate", label:"تاريخ الاستحقاق", type:"date"},
+    ],
+    columns:[
+      {label:"رقم الفاتورة", render:r=>r.invoiceNo},
+      {label:"المورد", render:r=>r.supplier},
+      {label:"المشروع", render:r=>projectName(r.projectCode)},
+      {label:"المبلغ", render:r=>fmt(r.amount)},
+      {label:"المدفوع", render:r=>fmt(sumWhere(state.supplierPayments,p=>p.invoiceNo===r.invoiceNo,"amount"))},
+      {label:"المتبقي", render:r=>fmt(invoiceRemaining(r))},
+    ]
+  },
+  supplierPayments: {
+    label:"مدفوعات الموردين", group:"الموردون", path:"supplierPayments", sortField:"date",
+    fields:[
+      {key:"date", label:"التاريخ", type:"date", default:todayISO()},
+      {key:"invoiceNo", label:"رقم الفاتورة", type:"text", required:true},
+      {key:"supplier", label:"المورد", type:"text"},
+      {key:"amount", label:"المبلغ المدفوع", type:"number", required:true},
+      {key:"projectCode", label:"كود المشروع", ...SEL("projects", p=>p.id+" — "+(p.name||""))},
+    ],
+    columns:[
+      {label:"التاريخ", render:r=>r.date||"-"},
+      {label:"رقم الفاتورة", render:r=>r.invoiceNo},
+      {label:"المورد", render:r=>r.supplier||"-"},
+      {label:"المبلغ", render:r=>fmt(r.amount)},
+    ]
+  },
+  subcontractors: {
+    label:"المقاولون من الباطن", group:"المقاولون", path:"subcontractors",
+    fields:[
+      {key:"projectCode", label:"كود المشروع", ...SEL("projects", p=>p.id+" — "+(p.name||"")), required:true},
+      {key:"name", label:"اسم المقاول", type:"text", required:true},
+      {key:"contractNo", label:"رقم العقد", type:"text"},
+      {key:"contractValue", label:"قيمة العقد", type:"number", required:true},
+      {key:"advancePct", label:"نسبة الدفعة المقدمة %", type:"percent", default:0},
+      {key:"retentionPct", label:"نسبة المحتجز %", type:"percent", default:0.1},
+      {key:"status", label:"حالة العقد", type:"select", options:["ساري","مكتمل","مغلق"], default:"ساري"},
+    ],
+    columns:[
+      {label:"المشروع", render:r=>projectName(r.projectCode)},
+      {label:"المقاول", render:r=>r.name},
+      {label:"قيمة العقد", render:r=>fmt(r.contractValue)},
+      {label:"إجمالي المستخلصات", render:r=>fmt(subDerived(r).totalStatements)},
+      {label:"المتبقي (Committed)", render:r=>fmt(subDerived(r).remainingContract)},
+      {label:"رصيد الدفعة المقدمة", render:r=>fmt(subDerived(r).advanceRemaining)},
+      {label:"المحتجز المستحق", render:r=>fmt(subDerived(r).totalRetention)},
+      {label:"الحالة", render:r=>r.status||"-"},
+    ]
+  },
+  subStatements: {
+    label:"مستخلصات المقاولين", group:"المقاولون", path:"subStatements", sortField:"date",
+    fields:[
+      {key:"date", label:"التاريخ", type:"date", default:todayISO()},
+      {key:"subcontractorId", label:"المقاول", ...SEL("subcontractors", s=>(s.name||"")+" — "+projectName(s.projectCode)), required:true},
+      {key:"statementNo", label:"رقم المستخلص", type:"text"},
+      {key:"value", label:"قيمة المستخلص", type:"number", required:true},
+      {key:"retentionPctOverride", label:"نسبة محتجز مخصصة (فارغ = افتراضي العقد)", type:"percent"},
+      {key:"advancePctOverride", label:"نسبة استرداد دفعة مقدمة مخصصة (فارغ = افتراضي العقد)", type:"percent"},
+    ],
+    columns:[
+      {label:"التاريخ", render:r=>r.date||"-"},
+      {label:"المقاول", render:r=>{const s=byId(state.subcontractors,r.subcontractorId); return s?s.name:"-";}},
+      {label:"المشروع", render:r=>{const s=byId(state.subcontractors,r.subcontractorId); return s?projectName(s.projectCode):"-";}},
+      {label:"قيمة المستخلص", render:r=>fmt(r.value)},
+      {label:"المحتجز", render:r=>fmt(retentionAmount(r,byId(state.subcontractors,r.subcontractorId)))},
+      {label:"استرداد الدفعة", render:r=>fmt(advanceRecoveryAmount(r,byId(state.subcontractors,r.subcontractorId)))},
+      {label:"الصافي المستحق", render:r=>fmt(netPayable(r,byId(state.subcontractors,r.subcontractorId)))},
+    ]
+  },
+  advances: {
+    label:"العهد والسلف", group:"العهد", path:"advances", sortField:"date",
+    note:"صرف العهدة لا يُحتسب كتكلفة فعلية إلا عند التسوية.",
+    fields:[
+      {key:"holder", label:"صاحب العهدة", type:"text", required:true},
+      {key:"projectCode", label:"كود المشروع", ...SEL("projects", p=>p.id+" — "+(p.name||"")), required:true},
+      {key:"date", label:"تاريخ الصرف", type:"date", default:todayISO()},
+      {key:"amount", label:"مبلغ العهدة", type:"number", required:true},
+    ],
+    columns:[
+      {label:"صاحب العهدة", render:r=>r.holder},
+      {label:"المشروع", render:r=>projectName(r.projectCode)},
+      {label:"تاريخ الصرف", render:r=>r.date||"-"},
+      {label:"مبلغ العهدة", render:r=>fmt(r.amount)},
+      {label:"إجمالي المُسوّى", render:r=>fmt(advanceDerived(r).settled)},
+      {label:"المتبقي", render:r=>fmt(advanceDerived(r).remaining)},
+      {label:"عمر العهدة (يوم)", render:r=>{const a=advanceDerived(r); return a.age==null?"-":a.age;}},
+    ]
+  },
+  advanceSettlements: {
+    label:"تسويات العهد", group:"العهد", path:"advanceSettlements", sortField:"date",
+    fields:[
+      {key:"date", label:"التاريخ", type:"date", default:todayISO()},
+      {key:"advanceId", label:"العهدة", ...SEL("advances", a=>(a.holder||"")+" — "+projectName(a.projectCode)+" — "+(a.date||"")), required:true},
+      {key:"projectCode", label:"كود المشروع", ...SEL("projects", p=>p.id+" — "+(p.name||"")), required:true},
+      {key:"costCode", label:"كود البند", ...SEL("costCodes", c=>c.id+" — "+(c.name||"")), required:true},
+      {key:"amount", label:"المبلغ المُسوّى", type:"number", required:true},
+    ],
+    columns:[
+      {label:"التاريخ", render:r=>r.date||"-"},
+      {label:"صاحب العهدة", render:r=>{const a=byId(state.advances,r.advanceId); return a?a.holder:"-";}},
+      {label:"المشروع", render:r=>projectName(r.projectCode)},
+      {label:"البند", render:r=>costCodeName(r.costCode)},
+      {label:"المبلغ", render:r=>fmt(r.amount)},
+    ]
+  },
+  clientStatements: {
+    label:"المستخلصات والتحصيلات", group:"العميل", path:"clientStatements", sortField:"date",
+    fields:[
+      {key:"date", label:"التاريخ", type:"date", default:todayISO()},
+      {key:"projectCode", label:"كود المشروع", ...SEL("projects", p=>p.id+" — "+(p.name||"")), required:true},
+      {key:"statementNo", label:"رقم المستخلص", type:"text"},
+      {key:"value", label:"قيمة المستخلص", type:"number", required:true},
+      {key:"discount", label:"الخصومات", type:"number", default:0},
+      {key:"collectedAmount", label:"المحصَّل فعليًا", type:"number", default:0},
+      {key:"collectionDate", label:"تاريخ التحصيل", type:"date"},
+    ],
+    columns:[
+      {label:"التاريخ", render:r=>r.date||"-"},
+      {label:"المشروع", render:r=>projectName(r.projectCode)},
+      {label:"قيمة المستخلص", render:r=>fmt(r.value)},
+      {label:"صافي المستخلص", render:r=>fmt(clientStmtDerived(r).net)},
+      {label:"محتجز العميل", render:r=>fmt(clientStmtDerived(r).retention)},
+      {label:"المستحق للتحصيل", render:r=>fmt(clientStmtDerived(r).dueForCollection)},
+      {label:"المحصَّل", render:r=>fmt(r.collectedAmount)},
+      {label:"المتبقي", render:r=>fmt(clientStmtDerived(r).remaining)},
+    ]
+  },
+  cashFlow: {
+    label:"التدفق النقدي", group:"التخطيط", path:"cashFlow", sortField:"month",
+    fields:[
+      {key:"projectCode", label:"كود المشروع", ...SEL("projects", p=>p.id+" — "+(p.name||"")), required:true},
+      {key:"month", label:"الشهر (YYYY-MM)", type:"text", required:true},
+      {key:"actualCollections", label:"تحصيلات فعلية", type:"number", default:0},
+      {key:"actualExpenses", label:"مصروفات فعلية", type:"number", default:0},
+      {key:"forecastCollections", label:"تحصيلات متوقعة", type:"number", default:0},
+      {key:"forecastExpenses", label:"مصروفات متوقعة", type:"number", default:0},
+    ],
+    columns:[
+      {label:"المشروع", render:r=>projectName(r.projectCode)},
+      {label:"الشهر", render:r=>r.month},
+      {label:"صافي فعلي", render:r=>fmt((Number(r.actualCollections)||0)-(Number(r.actualExpenses)||0))},
+      {label:"صافي متوقع", render:r=>fmt((Number(r.forecastCollections)||0)-(Number(r.forecastExpenses)||0))},
+    ]
+  },
+};
+window.__MODULES = MODULES;
+</script>
+<script>
+"use strict";
+
+/* ============================ NAV ============================ */
+const NAV_GROUPS = ["overview","البيانات الأساسية","الرقابة المالية","الحركات اليومية","الموردون","المقاولون","العهد","العميل","التخطيط","settings"];
+function buildNav(){
+  const nav = document.getElementById("nav");
+  nav.innerHTML = "";
+  function item(key,label,icon){
+    const d = document.createElement("div");
+    d.className = "nav-item" + (currentTab===key?" active":"");
+    d.dataset.tabKey = key;
+    d.innerHTML = `<span>${icon}</span><span>${label}</span>`;
+    d.onclick = ()=>selectTab(key);
+    nav.appendChild(d);
+  }
+  const groupLabel = g=>{
+    const dd=document.createElement("div"); dd.className="nav-group"; dd.textContent=g; nav.appendChild(dd);
+  };
+  groupLabel("نظرة عامة");
+  item("dashboard","Dashboard","📊");
+  item("profitability","ربحية المشاريع","💰");
+  Object.keys(MODULES).filter(k=>MODULES[k].group==="البيانات الأساسية").forEach(k=>item(k,MODULES[k].label,"📁"));
+  groupLabel("الرقابة المالية");
+  Object.keys(MODULES).filter(k=>MODULES[k].group==="الرقابة المالية").forEach(k=>item(k,MODULES[k].label,"🧮"));
+  groupLabel("الحركات اليومية");
+  Object.keys(MODULES).filter(k=>MODULES[k].group==="الحركات اليومية").forEach(k=>item(k,MODULES[k].label,"🧾"));
+  groupLabel("الموردون");
+  Object.keys(MODULES).filter(k=>MODULES[k].group==="الموردون").forEach(k=>item(k,MODULES[k].label,"🏭"));
+  item("suppliersSummary","ملخص الموردون","📦");
+  groupLabel("المقاولون من الباطن");
+  Object.keys(MODULES).filter(k=>MODULES[k].group==="المقاولون").forEach(k=>item(k,MODULES[k].label,"👷"));
+  groupLabel("العهد والسلف");
+  Object.keys(MODULES).filter(k=>MODULES[k].group==="العهد").forEach(k=>item(k,MODULES[k].label,"💳"));
+  groupLabel("العميل");
+  Object.keys(MODULES).filter(k=>MODULES[k].group==="العميل").forEach(k=>item(k,MODULES[k].label,"🤝"));
+  groupLabel("التخطيط");
+  Object.keys(MODULES).filter(k=>MODULES[k].group==="التخطيط").forEach(k=>item(k,MODULES[k].label,"📈"));
+  groupLabel("النظام");
+  item("settings","الإعدادات","⚙️");
+}
+function selectTab(key){ currentTab = key; buildNav(); render(); }
+
+/* ============================ GENERIC TABLE ============================ */
+function renderGenericTable(moduleKey){
+  const mod = MODULES[moduleKey];
+  const rows = (state[moduleKey] || []).slice();
+  if(mod.sortField) rows.sort((a,b)=> String(b[mod.sortField]||"").localeCompare(String(a[mod.sortField]||"")));
+  document.getElementById("pageTitle").textContent = mod.label;
+  document.getElementById("pageSub").textContent = mod.note || `${rows.length} صف`;
+  document.getElementById("pageActions").innerHTML = "";
+  const addBtn = document.createElement("button");
+  addBtn.className="btn-primary"; addBtn.textContent="+ إضافة";
+  addBtn.onclick = ()=>openFormModal(moduleKey,null);
+  document.getElementById("pageActions").appendChild(addBtn);
+
+  const content = document.getElementById("content");
+  if(!rows.length){
+    content.innerHTML = `<div class="card"><div class="empty">لا توجد بيانات بعد — اضغط "+ إضافة" لبدء الإدخال.</div></div>`;
+    return;
+  }
+  const cols = mod.columns;
+  let html = `<div class="card"><div class="table-wrap"><table><thead><tr>`;
+  cols.forEach(c=> html += `<th>${c.label}</th>`);
+  html += `<th class="right">إجراءات</th></tr></thead><tbody>`;
+  rows.forEach(r=>{
+    html += `<tr>`;
+    cols.forEach(c=> html += `<td>${c.render(r)}</td>`);
+    html += `<td class="actions-cell right">
+      <button class="btn-ghost btn-sm" data-edit="${r.id}">تعديل</button>
+      <button class="btn-danger btn-sm" data-del="${r.id}">حذف</button>
+    </td></tr>`;
+  });
+  html += `</tbody></table></div></div>`;
+  content.innerHTML = html;
+  content.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openFormModal(moduleKey, byId(rows,b.dataset.edit)));
+  content.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>confirmDelete(moduleKey,b.dataset.del));
+}
+
+/* ============================ MODAL FORM ============================ */
+function optionsForField(f){
+  if(f.type!=="select") return [];
+  const src = state[f.moduleKey] || [];
+  return src.map(r=>({value:r.id, label:f.labelFn(r)}));
+}
+function openFormModal(moduleKey, existing){
+  const mod = MODULES[moduleKey];
+  const root = document.getElementById("modalRoot");
+  const isEdit = !!existing;
+  root.innerHTML = `<div class="modal-overlay" id="ovl">
+    <div class="modal">
+      <div class="modal-head"><h3>${isEdit?"تعديل":"إضافة"} — ${mod.label}</h3><button class="close-x" id="mClose">✕</button></div>
+      <div class="modal-body" id="mBody"></div>
+      <div class="modal-foot">
+        <button class="btn-ghost" id="mCancel">إلغاء</button>
+        <button class="btn-primary" id="mSave">حفظ</button>
+      </div>
+    </div>
+  </div>`;
+  const body = document.getElementById("mBody");
+  if(mod.customId){
+    const d = document.createElement("div"); d.className="field";
+    d.innerHTML = `<label>${mod.idLabel} *</label><input id="f__id" value="${existing?existing.id:""}" ${isEdit?"disabled":""}/>${isEdit?'<div class="hint">لا يمكن تعديل الكود بعد الإنشاء</div>':''}`;
+    body.appendChild(d);
+  }
+  mod.fields.forEach(f=>{
+    const val = existing ? (existing[f.key]!==undefined && existing[f.key]!==null ? existing[f.key] : "") : (f.default!==undefined?f.default:"");
+    const wrap = document.createElement("div"); wrap.className="field";
+    let inner = `<label>${f.label}${f.required?' *':''}</label>`;
+    if(f.type==="select" && f.moduleKey){
+      const opts = optionsForField(f);
+      inner += `<select id="f__${f.key}"><option value="">— اختر —</option>${opts.map(o=>`<option value="${o.value}" ${String(val)===String(o.value)?"selected":""}>${o.label}</option>`).join("")}</select>`;
+    } else if(f.type==="select" && f.options){
+      inner += `<select id="f__${f.key}"><option value="">— اختر —</option>${f.options.map(o=>`<option ${String(o)===String(val)?"selected":""}>${o}</option>`).join("")}</select>`;
+    } else if(f.type==="text"){
+      const safe = val!==undefined?String(val).replace(/"/g,'&quot;'):'';
+      inner += `<input id="f__${f.key}" type="text" value="${safe}"/>`;
+    } else if(f.type==="date"){
+      inner += `<input id="f__${f.key}" type="date" value="${val||''}"/>`;
+    } else if(f.type==="number"){
+      inner += `<input id="f__${f.key}" type="number" step="any" value="${val!==""?val:''}"/>`;
+    } else if(f.type==="percent"){
+      const pctVal = (val!==""&&val!==undefined&&val!==null) ? (Number(val)*100) : "";
+      inner += `<input id="f__${f.key}" type="number" step="any" value="${pctVal}" placeholder="مثال: 10 يعني 10%"/><div class="hint">أدخل رقمًا مئويًا (10 = 10%)</div>`;
+    }
+    wrap.innerHTML = inner;
+    body.appendChild(wrap);
+  });
+  document.getElementById("mClose").onclick = closeModal;
+  document.getElementById("mCancel").onclick = closeModal;
+  document.getElementById("ovl").addEventListener("click", e=>{ if(e.target.id==="ovl") closeModal(); });
+  document.getElementById("mSave").onclick = ()=>saveForm(moduleKey, existing);
+}
+
+function closeModal(){ document.getElementById("modalRoot").innerHTML=""; }
+
+async function persist(moduleKey, id, data, customId){
+  delete data.__id;
+  const mod = MODULES[moduleKey];
+  const col = db.collection(mod.path);
+  try{
+    if(id){
+      await col.doc(id).set(data);
+    } else if(customId){
+      // find intended id from the form again (already stripped) -> re-read
+      toast("خطأ داخلي، أعد المحاولة");
+      return;
+    } else {
+      await col.add(data);
+    }
+    toast("تم الحفظ");
+    closeModal();
+  }catch(e){
+    toast("تعذر الحفظ: "+(e && e.message ? e.message : "خطأ غير معروف"));
+  }
+}
+function saveForm(moduleKey, existing){
+  const mod = MODULES[moduleKey];
+  const data = {};
+  let newId = null;
+  if(mod.customId && !existing){
+    newId = document.getElementById("f__id").value.trim();
+    if(!newId){ toast("الكود مطلوب"); return; }
+    if(byId(state[moduleKey], newId)){ toast("هذا الكود مستخدم بالفعل"); return; }
+  }
+  for(const f of mod.fields){
+    const el = document.getElementById("f__"+f.key);
+    if(!el) continue;
+    let v = el.value;
+    if(f.required && !v){ toast(`الحقل "${f.label}" مطلوب`); return; }
+    if(f.type==="number"){ v = v===""?null:Number(v); }
+    else if(f.type==="percent"){ v = v===""?null:Number(v)/100; }
+    data[f.key] = v;
+  }
+  const finalData = mod.beforeSave ? mod.beforeSave(data) : data;
+  const targetId = existing ? existing.id : newId;
+  persist(moduleKey, mod.customId ? targetId : (existing?existing.id:null), finalData, mod.customId && !existing);
+}
+
+function confirmDelete(moduleKey, id){
+  if(!confirm("تأكيد الحذف؟ لا يمكن التراجع.")) return;
+  const mod = MODULES[moduleKey];
+  db.collection(mod.path).doc(id).delete().then(()=>toast("تم الحذف")).catch(e=>toast("تعذر الحذف"));
+}
+window.__engine = {buildNav, selectTab, renderGenericTable, openFormModal, closeModal, confirmDelete};
+</script>
+<script>
+"use strict";
+
+/* ============================ DASHBOARD ============================ */
+function renderDashboard(){
+  document.getElementById("pageTitle").textContent = "لوحة التحكم — جميع المشاريع";
+  document.getElementById("pageSub").textContent = "تتحدث تلقائيًا مع كل إدخال جديد";
+  document.getElementById("pageActions").innerHTML = "";
+  const content = document.getElementById("content");
+  if(!state.projects.length){
+    content.innerHTML = `<div class="card"><div class="empty">أضف مشروعًا أولاً من شيت "المشاريع" لتبدأ اللوحة بالعمل.</div></div>`;
+    return;
+  }
+  const bankTotal = sumWhere(state.bank, ()=>true, "amount");
+  const contractsTotal = state.projects.reduce((s,p)=>s+(Number(p.contractValue)||0),0);
+  const revenueTotal = state.projects.reduce((s,p)=>s+projectRevenue(p.id),0);
+  const collectedTotal = sumWhere(state.clientStatements, ()=>true, "collectedAmount");
+  const receivableTotal = state.clientStatements.reduce((s,c)=>s+clientStmtDerived(c).remaining,0);
+  const activeCount = state.projects.filter(p=>p.status==="نشط").length;
+
+  let kpiHtml = `<div class="kpis">
+    ${kpi("إجمالي رصيد البنك الفعلي", fmt(bankTotal))}
+    ${kpi("إجمالي قيمة العقود", fmt(contractsTotal))}
+    ${kpi("إجمالي الإيرادات المستحقة", fmt(revenueTotal))}
+    ${kpi("إجمالي المحصَّل فعليًا", fmt(collectedTotal))}
+    ${kpi("المتبقي للتحصيل من العملاء", fmt(receivableTotal))}
+    ${kpi("عدد المشاريع النشطة", activeCount)}
+  </div>`;
+
+  let rows = "";
+  state.projects.forEach(p=>{
+    const efc = projectActualTotal(p.id) + projectCommittedTotal(p.id);
+    const profit = (Number(p.contractValue)||0) - efc;
+    const margin = profit/((Number(p.contractValue)||0)||1);
+    const budgetTotal = projectBudgetTotal(p.id) || 1;
+    const util = (projectActualTotal(p.id)+projectCommittedTotal(p.id))/budgetTotal;
+    rows += `<tr>
+      <td>${p.id}</td><td>${p.name||"-"}</td><td>${statusTag(p.status)}</td>
+      <td>${p.manager||"-"}</td><td>${fmt(p.contractValue)}</td><td>${fmt(efc)}</td>
+      <td style="color:${profit<0?'var(--red)':'var(--green)'}">${fmt(profit)}</td>
+      <td>${pct(margin)}</td><td>${fmt(projectBalance(p.id))}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,util*100)}%;background:var(--${utilLevel(util)==='green'?'green':utilLevel(util)==='yellow'?'yellow':'red'})"></div></div>
+          <span class="tag tag-${utilLevel(util)}">${pct(util)}</span>
+        </div>
+      </td>
+    </tr>`;
+  });
+
+  content.innerHTML = kpiHtml + `<div class="card"><div class="table-wrap"><table><thead><tr>
+    <th>كود</th><th>الاسم</th><th>الحالة</th><th>مدير المشروع</th><th>قيمة العقد</th>
+    <th>Estimated Final Cost</th><th>ربح متوقع</th><th>% هامش</th><th>رصيد المشروع</th><th>% استخدام الموازنة</th>
+  </tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+function kpi(label,val){ return `<div class="kpi"><div class="label">${label}</div><div class="value">${val}</div></div>`; }
+
+/* ============================ PROFITABILITY ============================ */
+function renderProfitability(){
+  document.getElementById("pageTitle").textContent = "ربحية المشاريع";
+  document.getElementById("pageSub").textContent = "كل الأعمدة تلقائية بالكامل";
+  document.getElementById("pageActions").innerHTML = "";
+  const content = document.getElementById("content");
+  if(!state.projects.length){ content.innerHTML = `<div class="card"><div class="empty">لا توجد مشاريع بعد.</div></div>`; return; }
+  let rows = "";
+  state.projects.forEach(p=>{
+    const revenue = projectRevenue(p.id);
+    const actual = projectActualTotal(p.id);
+    const committed = projectCommittedTotal(p.id);
+    const efc = actual+committed;
+    const profit = (Number(p.contractValue)||0)-efc;
+    const margin = profit/((Number(p.contractValue)||0)||1);
+    rows += `<tr>
+      <td>${p.id}</td><td>${p.name||"-"}</td><td>${fmt(p.contractValue)}</td>
+      <td>${fmt(revenue)}</td><td>${fmt(actual)}</td><td>${fmt(committed)}</td>
+      <td>${fmt(efc)}</td>
+      <td style="color:${profit<0?'var(--red)':'var(--green)'}">${fmt(profit)}</td>
+      <td>${pct(margin)}</td>
+    </tr>`;
+  });
+  content.innerHTML = `<div class="card"><div class="table-wrap"><table><thead><tr>
+    <th>كود</th><th>اسم المشروع</th><th>قيمة العقد</th><th>Revenue</th><th>Actual Cost</th>
+    <th>Committed</th><th>Estimated Final Cost</th><th>Estimated Profit</th><th>% الهامش</th>
+  </tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+/* ============================ SUPPLIERS SUMMARY ============================ */
+function renderSuppliersSummary(){
+  document.getElementById("pageTitle").textContent = "ملخص الموردين";
+  document.getElementById("pageSub").textContent = "محسوب تلقائيًا من فواتير_الموردين ومدفوعات_الموردين";
+  document.getElementById("pageActions").innerHTML = "";
+  const content = document.getElementById("content");
+  const names = [...new Set(state.supplierInvoices.map(i=>i.supplier).filter(Boolean))];
+  if(!names.length){ content.innerHTML = `<div class="card"><div class="empty">لا توجد فواتير موردين بعد.</div></div>`; return; }
+  let rows = "";
+  names.forEach(name=>{
+    const invoices = state.supplierInvoices.filter(i=>i.supplier===name);
+    const totalInvoiced = invoices.reduce((s,i)=>s+(Number(i.amount)||0),0);
+    const totalPaid = sumWhere(state.supplierPayments, p=>p.supplier===name, "amount");
+    const balance = totalInvoiced-totalPaid;
+    const overdue = invoices.reduce((max,i)=>{
+      const rem = invoiceRemaining(i);
+      if(rem<=0 || !i.dueDate) return max;
+      const d = daysBetween(i.dueDate, todayISO());
+      return Math.max(max, d);
+    }, 0);
+    rows += `<tr><td>${name}</td><td>${fmt(totalInvoiced)}</td><td>${fmt(totalPaid)}</td>
+      <td>${fmt(balance)}</td><td>${overdue>0?`<span class="tag tag-red">${overdue} يوم</span>`:'<span class="tag tag-green">منتظم</span>'}</td></tr>`;
+  });
+  content.innerHTML = `<div class="card"><div class="table-wrap"><table><thead><tr>
+    <th>اسم المورد</th><th>إجمالي الفواتير</th><th>إجمالي المدفوعات</th><th>الرصيد المستحق</th><th>أقصى تأخير</th>
+  </tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+/* ============================ SETTINGS ============================ */
+function renderSettings(){
+  document.getElementById("pageTitle").textContent = "الإعدادات العامة";
+  document.getElementById("pageSub").textContent = "كل صيغ الملف ترتبط بهذه القيم مركزيًا";
+  document.getElementById("pageActions").innerHTML = "";
+  const s = state.settings;
+  document.getElementById("content").innerHTML = `<div class="card card-pad" style="max-width:480px">
+    <div class="field" style="margin-bottom:14px"><label>نسبة الضريبة (VAT) الافتراضية %</label>
+      <input id="s_vat" type="number" step="any" value="${(s.vatRate*100).toFixed(2)}"/></div>
+    <div class="field" style="margin-bottom:14px"><label>عتبة تحذير الموازنة — أصفر %</label>
+      <input id="s_yel" type="number" step="any" value="${(s.budgetYellow*100).toFixed(1)}"/></div>
+    <div class="field" style="margin-bottom:18px"><label>عتبة تحذير الموازنة — أحمر %</label>
+      <input id="s_red" type="number" step="any" value="${(s.budgetRed*100).toFixed(1)}"/></div>
+    <button class="btn-primary" id="saveSettingsBtn">حفظ الإعدادات</button>
+  </div>`;
+  document.getElementById("saveSettingsBtn").onclick = async ()=>{
+    const vatRate = Number(document.getElementById("s_vat").value)/100;
+    const budgetYellow = Number(document.getElementById("s_yel").value)/100;
+    const budgetRed = Number(document.getElementById("s_red").value)/100;
+    try{
+      await db.doc("settings/main").set({vatRate, budgetYellow, budgetRed});
+      toast("تم حفظ الإعدادات");
+    }catch(e){ toast("تعذر الحفظ"); }
+  };
+}
+
+/* ============================ MASTER RENDER ============================ */
+function render(){
+  if(!dbReady){
+    document.getElementById("pageTitle").textContent = "جاري التحميل...";
+    document.getElementById("pageSub").textContent = "";
+    document.getElementById("pageActions").innerHTML = "";
+    document.getElementById("content").innerHTML = `<div class="card"><div class="empty">جاري الاتصال بقاعدة البيانات…</div></div>`;
+    return;
+  }
+  if(currentTab==="dashboard") return renderDashboard();
+  if(currentTab==="profitability") return renderProfitability();
+  if(currentTab==="suppliersSummary") return renderSuppliersSummary();
+  if(currentTab==="settings") return renderSettings();
+  if(window.__MODULES[currentTab]) return renderGenericTable(currentTab);
+  renderDashboard();
+}
+</script>
+<script>
+"use strict";
+
+/* ============================ LOCAL STORAGE PERSISTENCE ============================
+   هذه نسخة قابلة للتنزيل تعمل بالكامل داخل المتصفح — بدون خادم وبدون مشاركة تلقائية
+   بين المستخدمين. كل جهاز/متصفح له نسخته الخاصة من البيانات. استخدم "تنزيل نسخة
+   احتياطية" و"استيراد نسخة" لنقل البيانات بين الأجهزة أو لمشاركتها مع فريقك. */
+const STORAGE_KEY = "pfcs_local_data_v1";
+function uid(){ return "id_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8); }
+function saveLocal(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch(e){ toast("تعذر الحفظ محليًا (قد تكون مساحة التخزين ممتلئة)"); console.error(e); }
+}
+const localDb = {
+  collection(path){
+    return {
+      doc(id){
+        return {
+          async set(data){
+            const arr = state[path] = state[path] || [];
+            const idx = arr.findIndex(r=>r.id===id);
+            const row = Object.assign({}, data, {id});
+            if(idx>=0) arr[idx] = row; else arr.push(row);
+            saveLocal(); render();
+          },
+          async delete(){
+            state[path] = (state[path]||[]).filter(r=>r.id!==id);
+            saveLocal(); render();
+          }
+        };
+      },
+      async add(data){
+        const id = uid();
+        const arr = state[path] = state[path] || [];
+        arr.push(Object.assign({}, data, {id}));
+        saveLocal(); render();
+        return {id};
+      }
+    };
+  },
+  doc(){
+    return {
+      async set(data){
+        state.settings = Object.assign({}, state.settings, data);
+        saveLocal(); render();
+      }
+    };
+  }
+};
+function seedDefaults(){
+  state.settings = {vatRate:0.15, budgetYellow:0.8, budgetRed:1.0};
+  state.costCodes = [
+    {id:"MAT",name:"مواد"},{id:"LAB",name:"عمالة"},{id:"SUB",name:"مقاولون من الباطن"},
+    {id:"EQP",name:"معدات"},{id:"TRN",name:"نقل"},{id:"RENT",name:"إيجارات"},
+    {id:"SITE",name:"مصروفات موقع"},{id:"CONS",name:"استشارات"},{id:"FEE",name:"رسوم"},{id:"OTH",name:"أخرى"}
+  ];
+}
+function initLocal(){
+  db = localDb;
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      Object.keys(state).forEach(k=>{ if(parsed[k]!==undefined) state[k] = parsed[k]; });
+    } else {
+      seedDefaults();
+      saveLocal();
+    }
+  }catch(e){ console.error(e); seedDefaults(); }
+  dbReady = true;
+  render();
+}
+function exportBackup(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "نسخة_احتياطية_نظام_المالي_"+todayISO()+".json";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast("تم تنزيل النسخة الاحتياطية");
+}
+function importBackup(file){
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const parsed = JSON.parse(e.target.result);
+      Object.keys(state).forEach(k=>{ if(parsed[k]!==undefined) state[k] = parsed[k]; });
+      saveLocal(); render();
+      toast("تم الاستيراد بنجاح");
+    }catch(err){ toast("ملف غير صالح"); }
+  };
+  reader.readAsText(file);
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+  buildNav();
+  initLocal();
+  document.getElementById("btnExport").onclick = exportBackup;
+  document.getElementById("btnImportTrigger").onclick = ()=>document.getElementById("btnImportFile").click();
+  document.getElementById("btnImportFile").onchange = function(e){
+    if(e.target.files && e.target.files[0]) importBackup(e.target.files[0]);
+    e.target.value = "";
+  };
+});
+</script>
+<script>
+// ═══════════════════════════════════════════
+// صلاحيات الشاشات — يعمل بعد اكتمال تشغيل سكربت التطبيق أعلاه
+// ═══════════════════════════════════════════
+(async function(){
+  var APP_ID = 'project-finance-control';
+  var allowed = [];
+  try{ allowed = await AzieScreens.fetchAllowed(APP_ID); }catch(e){ console.error(e); }
+
+  if(allowed.length === 0){
+    AzieScreens.renderNoAccess(document.getElementById('main')||document.body, 'نظام التحكم المالي للمشاريع');
+    return;
+  }
+  var allowedSet = new Set(allowed);
+
+  selectTab = AzieScreens.guardNavigate(selectTab, allowed, {
+    onBlocked: function(key){ console.warn('لا صلاحية على الشاشة:', key); },
+  });
+
+  var origBuildNav = buildNav;
+  buildNav = function(){
+    origBuildNav();
+    document.querySelectorAll('#nav .nav-item[data-tab-key]').forEach(function(el){
+      if(!allowedSet.has(el.dataset.tabKey)) el.style.display = 'none';
+    });
+  };
+
+  if(!allowedSet.has(currentTab)){
+    selectTab(allowed[0]);
+  } else {
+    buildNav();
+  }
+})();
+</script>
+</body></html>

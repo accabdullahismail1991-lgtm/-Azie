@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دليل التسعير في شركات المقاولات</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;800&display=swap');
+
+  :root {
+    --navy: #1a2744;
+    --gold: #c8922a;
+    --gold-light: #f0c96a;
+    --red: #c0392b;
+    --green: #1d7a4e;
+    --green-light: #e8f5ee;
+    --blue: #2563a8;
+    --blue-light: #e8f0fb;
+    --cream: #fdf8f0;
+    --white: #ffffff;
+    --gray: #f4f4f4;
+    --text: #1e1e2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    line-height: 1.7;
+    direction: rtl;
+  }
+
+  /* HEADER */
+  .hero {
+    background: var(--navy);
+    color: white;
+    padding: 60px 40px 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 250px; height: 250px;
+    border-radius: 50%;
+    background: rgba(200,146,42,0.12);
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(200,146,42,0.08);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: var(--gold);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 16px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-family: 'Tajawal', sans-serif;
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+  .hero h1 span { color: var(--gold-light); }
+  .hero p {
+    color: rgba(255,255,255,0.72);
+    font-size: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* NAV PILLS */
+  .nav-pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 28px 20px;
+    background: white;
+    border-bottom: 2px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .nav-pills a {
+    text-decoration: none;
+    color: var(--navy);
+    background: var(--gray);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all .2s;
+    border: 2px solid transparent;
+  }
+  .nav-pills a:hover {
+    background: var(--navy);
+    color: white;
+  }
+
+  /* SECTIONS */
+  .container { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+
+  section {
+    padding: 60px 0 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .section-num {
+    width: 48px; height: 48px;
+    background: var(--navy);
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-family: 'Tajawal', sans-serif;
+    font-size: clamp(20px, 3.5vw, 28px);
+    font-weight: 800;
+    color: var(--navy);
+  }
+  .section-header h2 span { color: var(--red); }
+
+  /* CARD GRID */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+  .card {
+    background: white;
+    border-radius: 14px;
+    padding: 22px 20px;
+    border: 1.5px solid var(--border);
+    transition: box-shadow .2s, transform .2s;
+  }
+  .card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.09); transform: translateY(-2px); }
+  .card-icon { font-size: 28px; margin-bottom: 10px; }
+  .card h3 { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .card p { font-size: 13.5px; color: var(--muted); }
+
+  /* FORMULA BOX */
+  .formula {
+    background: var(--navy);
+    color: white;
+    border-radius: 14px;
+    padding: 24px 28px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 28px 0;
+  }
+  .formula span { color: var(--gold-light); }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: 12px; border: 1.5px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; background: white; font-size: 14px; }
+  th {
+    background: var(--navy);
+    color: white;
+    padding: 12px 16px;
+    text-align: right;
+    font-weight: 700;
+  }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: var(--gray); }
+  .td-red { color: var(--red); font-weight: 700; }
+  .td-green { color: var(--green); font-weight: 700; }
+  .td-gold { color: var(--gold); font-weight: 700; }
+
+  /* DASHBOARD STATS */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .stat-box {
+    background: white;
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+    border: 1.5px solid var(--border);
+  }
+  .stat-box .val {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--navy);
+    line-height: 1.1;
+  }
+  .stat-box .val.red { color: var(--red); }
+  .stat-box .val.green { color: var(--green); }
+  .stat-box .val.gold { color: var(--gold); }
+  .stat-box .label { font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 600; }
+
+  /* ALERT BOX */
+  .alert {
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin: 20px 0;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .alert-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .alert p { font-size: 14px; font-weight: 600; }
+  .alert-warn { background: #fff8e6; border: 1.5px solid #f0c96a; }
+  .alert-warn .alert-icon { color: var(--gold); }
+  .alert-danger { background: #fef2f2; border: 1.5px solid #f5a5a5; }
+  .alert-danger .alert-icon { color: var(--red); }
+  .alert-success { background: var(--green-light); border: 1.5px solid #7dd3a8; }
+  .alert-success .alert-icon { color: var(--green); }
+  .alert-info { background: var(--blue-light); border: 1.5px solid #93c5fd; }
+  .alert-info .alert-icon { color: var(--blue); }
+
+  /* STEPS */
+  .steps { display: flex; flex-direction: column; gap: 16px; margin: 24px 0; }
+  .step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: white;
+    border-radius: 12px;
+    padding: 18px 20px;
+    border: 1.5px solid var(--border);
+  }
+  .step-num {
+    width: 36px; height: 36px;
+    background: var(--gold);
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .step-body h4 { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+  .step-body p { font-size: 13.5px; color: var(--muted); }
+
+  /* CHECKLIST */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .checklist li {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 14px;
+  }
+  .checklist li::before { content: '✓'; color: var(--green); font-weight: 900; flex-shrink: 0; font-size: 15px; }
+  .checklist.danger li::before { content: '✗'; color: var(--red); }
+
+  /* TAG BADGES */
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .tag {
+    background: var(--blue-light);
+    color: var(--blue);
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+  .tag.red { background: #fef2f2; color: var(--red); }
+  .tag.green { background: var(--green-light); color: var(--green); }
+  .tag.gold { background: #fff8e6; color: #a07020; }
+
+  /* COMPARISON TABLE */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .compare-col {
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1.5px solid var(--border);
+  }
+  .compare-col .col-head {
+    padding: 14px 18px;
+    font-weight: 800;
+    font-size: 16px;
+    text-align: center;
+  }
+  .compare-col .col-head.a { background: var(--green); color: white; }
+  .compare-col .col-head.b { background: var(--red); color: white; }
+  .compare-col ul { list-style: none; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+  .compare-col ul li { font-size: 13.5px; display: flex; gap: 8px; align-items: flex-start; }
+  .compare-col.good ul li::before { content: '✓'; color: var(--green); font-weight: 900; }
+  .compare-col.bad ul li::before { content: '✗'; color: var(--red); font-weight: 900; }
+
+  /* CONTINGENCY TABLE */
+  .cont-table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1.5px solid var(--border);
+  }
+  .cont-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .cont-row:last-child { border-bottom: none; }
+  .cont-row > div { padding: 12px 18px; font-size: 14px; }
+  .cont-row > div:first-child { border-left: 1px solid var(--border); font-weight: 700; }
+  .cont-row.head > div { background: var(--navy); color: white; font-weight: 700; }
+
+  /* FOOTER */
+  footer {
+    background: var(--navy);
+    color: rgba(255,255,255,0.65);
+    text-align: center;
+    padding: 32px 20px;
+    font-size: 13px;
+  }
+  footer strong { color: var(--gold-light); }
+
+  @media (max-width: 600px) {
+    .compare { grid-template-columns: 1fr; }
+    .hero { padding: 40px 20px 36px; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">📋 دليل شامل</div>
+  <h1>دليل <span>التسعير الاحترافي</span><br>في شركات المقاولات</h1>
+  <p>من فهم التكلفة والسعر والربح … حتى تجنب الأخطاء القاتلة وتحقيق الفوز المربح</p>
+</div>
+
+<!-- NAV -->
+<nav class="nav-pills">
+  <a href="#s1">التكلفة والسعر والربح</a>
+  <a href="#s2">أسباب الخسارة</a>
+  <a href="#s3">دورة التسعير</a>
+  <a href="#s4">الأخطاء القاتلة</a>
+  <a href="#s5">بند غير موجود</a>
+  <a href="#s6">قراءة الـ BOQ</a>
+  <a href="pricing-forms.html" style="background:var(--gold);color:white;font-weight:800;" target="_blank">🗂️ النماذج العملية</a>
+</nav>
+
+<!-- SECTION 1 -->
+<section id="s1">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>ما الفرق بين التكلفة والسعر <span>والربح؟</span></h2>
+    </div>
+
+    <div class="formula">
+      السعر (Price) = التكلفة (Cost) + <span>الربح (Profit)</span>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">💰</div>
+        <h3>التكلفة (Cost)</h3>
+        <p>كل ما ستدفعه لإنجاز المشروع — مواد، عمالة، مصاريف غير مباشرة، تمويل ومخاطر.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏷️</div>
+        <h3>السعر (Price)</h3>
+        <p>المبلغ الذي ستقدمه للعميل — يجب أن يغطي كل التكاليف ويحقق هامش ربح مناسب.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📈</div>
+        <h3>الربح (Profit)</h3>
+        <p>ما يتبقى لك بعد تغطية كل التكاليف — هو هدف المشروع وليس مجرد رقم إضافي.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-warn">
+      <div class="alert-icon">⚠️</div>
+      <p>أكبر كذبة في المقاولات: "أنا سعّرت المشروع بـ 10 مليون" — السعر وحده لا يقول أي شيء عن الربحية. السؤال الحقيقي: كم كانت التكلفة؟</p>
+    </div>
+
+    <h3 style="margin:28px 0 16px;font-size:16px;color:var(--navy);">مثال واقعي — مشروع خرسانة مسلحة</h3>
+    <div class="stats-row">
+      <div class="stat-box"><div class="val">6,000,000</div><div class="label">إجمالي التكلفة (جنيه)</div></div>
+      <div class="stat-box"><div class="val gold">15%</div><div class="label">نسبة الربح المستهدفة</div></div>
+      <div class="stat-box"><div class="val green">900,000</div><div class="label">قيمة الربح (جنيه)</div></div>
+      <div class="stat-box"><div class="val">6,900,000</div><div class="label">السعر المقدم للعميل</div></div>
+    </div>
+
+    <h3 style="margin:28px 0 16px;font-size:16px;color:var(--navy);">دراسة حالة — نفس السعر … أرباح مختلفة</h3>
+    <div class="compare">
+      <div class="compare-col good">
+        <div class="col-head a">🏆 شركة A — ممتاز</div>
+        <ul>
+          <li>إجمالي التكلفة: 8,000,000</li>
+          <li>السعر: 10,000,000</li>
+          <li>الربح: 2,000,000</li>
+          <li>نسبة الربح: <strong>20%</strong></li>
+        </ul>
+      </div>
+      <div class="compare-col bad">
+        <div class="col-head b">👎 شركة B — ضعيف</div>
+        <ul>
+          <li>إجمالي التكلفة: 9,500,000</li>
+          <li>السعر: 10,000,000</li>
+          <li>الربح: 500,000</li>
+          <li>نسبة الربح: <strong>5%</strong></li>
+        </ul>
+      </div>
+    </div>
+    <div class="alert alert-info">
+      <div class="alert-icon">💡</div>
+      <p>الاثنتين قدما نفس السعر (10 مليون جنيه) لكن الربحية مختلفة تماماً بسبب اختلاف إدارة التكلفة!</p>
+    </div>
+
+    <div style="margin-top:24px;background:linear-gradient(135deg,#1a2744,#2563a8);border-radius:14px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div style="color:white;">
+        <div style="font-weight:800;font-size:15px;">🗂️ طبّق هذا القسم عملياً</div>
+        <div style="font-size:12.5px;color:rgba(255,255,255,.7);margin-top:3px;">استخدم النماذج لحساب التكلفة والسعر والربح لمشروعك الفعلي</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="pricing-forms.html#f1" target="_blank" style="background:var(--gold);color:white;text-decoration:none;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:800;">📊 نموذج 1: تحليل التكلفة</a>
+        <a href="pricing-forms.html#f5" target="_blank" style="background:rgba(255,255,255,.15);color:white;text-decoration:none;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:700;border:1px solid rgba(255,255,255,.3);">📈 نموذج 5: مقارنة العروض</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SECTION 2 -->
+<section id="s2">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <h2>لماذا <span>تخسر</span> شركات المقاولات رغم أن المشروع يبدو مربحاً؟</h2>
+    </div>
+
+    <div class="alert alert-danger">
+      <div class="alert-icon">🚨</div>
+      <p>المشروع قد يبدو مربحاً على الورق (السعر أكبر من التكلفة) لكن أثناء التنفيذ تظهر تكاليف خفية وأخطاء في التقدير تأكل الربح وتحوله إلى خسارة!</p>
+    </div>
+
+    <h3 style="margin:24px 0 16px;font-size:16px;color:var(--navy);">أسباب الخسارة الخفية (الأكثر شيوعاً)</h3>
+    <div class="card-grid">
+      <div class="card"><div class="card-icon">🔢</div><h3>تقدير خاطئ للكميات</h3><p>الكميات الفعلية تتجاوز المقدرة في العرض.</p></div>
+      <div class="card"><div class="card-icon">💵</div><h3>أسعار مواد قديمة</h3><p>استخدام أسعار لا تعكس السوق الحالي.</p></div>
+      <div class="card"><div class="card-icon">📄</div><h3>نسيان بنود في العقد</h3><p>بنود مشمولة قانوناً لكن غير مسعّرة.</p></div>
+      <div class="card"><div class="card-icon">⏰</div><h3>سوء تقدير مدة المشروع</h3><p>تأخير = تكاليف إضافية غير محسوبة.</p></div>
+      <div class="card"><div class="card-icon">📊</div><h3>مصاريف Overhead مرتفعة</h3><p>تكاليف غير مباشرة أعلى من المتوقع.</p></div>
+      <div class="card"><div class="card-icon">💸</div><h3>مشاكل تدفق نقدي</h3><p>تأخر الدفعات يضيف تكاليف تمويل مخفية.</p></div>
+    </div>
+
+    <h3 style="margin:28px 0 16px;font-size:16px;color:var(--navy);">مثال واقعي — مشروع مبنى سكني</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>البيان</th><th>على الورق (قبل التنفيذ)</th><th>على أرض الواقع (أثناء التنفيذ)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>قيمة العقد</td><td class="td-green">10,000,000</td><td class="td-green">10,000,000</td></tr>
+          <tr><td>إجمالي التكلفة المباشرة</td><td>7,200,000</td><td>7,900,000</td></tr>
+          <tr><td>المصاريف غير المباشرة</td><td>1,300,000</td><td>1,700,000</td></tr>
+          <tr><td>إجمالي التكلفة</td><td>8,500,000</td><td>9,600,000</td></tr>
+          <tr><td>الربح المتوقع / الفعلي</td><td class="td-green">1,500,000</td><td class="td-red">-400,000</td></tr>
+          <tr><td>نسبة الربح</td><td class="td-green">15%</td><td class="td-red">-4%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert alert-danger">
+      <div class="alert-icon">📉</div>
+      <p>المشروع كان سيحقق ربح 1,500,000 جنيه … لكنه انتهى بخسارة 400,000 جنيه! الانحراف عن الربح المتوقع: 126.7%</p>
+    </div>
+
+    <h3 style="margin:28px 0 16px;font-size:16px;color:var(--navy);">نسب الاحتياطي المقترحة لتفادي الخسارة</h3>
+    <div class="cont-table">
+      <div class="cont-row head"><div>نوع المشروع</div><div>نسبة الاحتياطي المقترحة</div></div>
+      <div class="cont-row"><div>مباني سكنية</div><div>5% – 10%</div></div>
+      <div class="cont-row"><div>مباني تجارية</div><div>7% – 12%</div></div>
+      <div class="cont-row"><div>مشاريع بنية تحتية</div><div>10% – 15%</div></div>
+      <div class="cont-row"><div>أعمال خاصة ومعقدة</div><div>15% – 22%</div></div>
+    </div>
+
+    <div style="margin-top:24px;background:linear-gradient(135deg,#c0392b,#8b1a1a);border-radius:14px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div style="color:white;">
+        <div style="font-weight:800;font-size:15px;">⚠️ قيّم مخاطر مشروعك الآن</div>
+        <div style="font-size:12.5px;color:rgba(255,255,255,.7);margin-top:3px;">استخدم نموذج تقييم المخاطر لتحديد نسبة الاحتياطي الصحيحة</div>
+      </div>
+      <a href="pricing-forms.html#f4" target="_blank" style="background:white;color:var(--red);text-decoration:none;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:800;flex-shrink:0;">⚠️ نموذج 4: تقييم المخاطر</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- SECTION 3 -->
+<section id="s3">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2>دورة التسعير <span>الكاملة</span> في شركات المقاولات</h2>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-icon">💡</div>
+      <p>التسعير الناجح ليس خطوة واحدة، بل هو سلسلة من الخطوات المتتابعة تبدأ من استلام فرصة المشروع وتنتهي بتقديم عرض مالي مدروس ومربح.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body"><h4>استلام فرصة المشروع</h4><p>استلام دعوة المناقصة أو الفرصة — تحليل مبدئي للفرصة.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body"><h4>دراسة المستندات</h4><p>دراسة شاملة لكل المستندات — فهم المتطلبات — تحديد أي استفسارات.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body"><h4>حصر الكميات (BOQ)</h4><p>مراجعة BOQ — تصحيح الأخطاء إن وجدت — اعتماد الكميات النهائية.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body"><h4>تحليل البنود والأسعار</h4><p>تسعير كل بند — اعتماد أسعار المواد والعمالة والمعدات.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body"><h4>تجميع التكلفة والمصاريف</h4><p>إجمالي التكلفة المباشرة + غير المباشرة + المصاريف الإدارية + الموقع.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-body"><h4>تحديد الربح والمخاطر</h4><p>تحديد هامش الربح المناسب + إضافة احتياطي المخاطر + التأمينات والضمانات.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">7</div>
+        <div class="step-body"><h4>مراجعة العرض والتأكد</h4><p>مراجعة داخلية — التحقق من الاتساق والمنطق — التدقيق الحسابي.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">8</div>
+        <div class="step-body"><h4>تقديم العرض المالي</h4><p>إعداد الكتاب المالي — اعتماد الإدارة — تسليم العرض في الموعد المحدد.</p></div>
+      </div>
+    </div>
+
+    <h3 style="margin:28px 0 16px;font-size:16px;color:var(--navy);">مؤشرات أداء دورة التسعير</h3>
+    <div class="stats-row">
+      <div class="stat-box"><div class="val">98.5%</div><div class="label">دقة الحصر الكمي</div></div>
+      <div class="stat-box"><div class="val">245</div><div class="label">عدد البنود المسعّرة</div></div>
+      <div class="stat-box"><div class="val">12</div><div class="label">متوسط وقت الاستغراق (يوم)</div></div>
+      <div class="stat-box"><div class="val gold">12%</div><div class="label">نسبة الربح المستهدفة</div></div>
+      <div class="stat-box"><div class="val green">24,750,000</div><div class="label">قيمة العرض المالي (جنيه)</div></div>
+    </div>
+
+    <div style="margin-top:24px;background:linear-gradient(135deg,#1d7a4e,#0f4d2c);border-radius:14px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div style="color:white;">
+        <div style="font-weight:800;font-size:15px;">📋 أنشئ عرضك المالي الكامل</div>
+        <div style="font-size:12.5px;color:rgba(255,255,255,.7);margin-top:3px;">أدخل بنود مشروعك وستحصل على عرض مالي احترافي جاهز للطباعة</div>
+      </div>
+      <a href="pricing-forms.html#f3" target="_blank" style="background:white;color:var(--green);text-decoration:none;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:800;flex-shrink:0;">📋 نموذج 3: العرض المالي</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- SECTION 4 -->
+<section id="s4">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <h2>أهم الأخطاء <span>القاتلة</span> في التسعير</h2>
+    </div>
+
+    <div class="alert alert-danger">
+      <div class="alert-icon">💣</div>
+      <p>خطأ واحد في التسعير قد يهدر شهور عمل ويحرق أرباح المشروع بل ويؤدي إلى خسارة! التسعير ليس مجرد جمع أسعار بند، بل تحليل دقيق لكل عناصر المشروع ومخاطره.</p>
+    </div>
+
+    <h3 style="margin:24px 0 16px;font-size:16px;color:var(--navy);">أكثر 10 أخطاء شيوعاً وتأثيراً</h3>
+    <div class="card-grid">
+      <div class="card"><div class="card-icon">📋</div><h3>عدم دراسة المخططات والمواصفات</h3><p>قراءة سطحية تؤدي لتفويت بنود مهمة.</p></div>
+      <div class="card"><div class="card-icon">🔍</div><h3>الحصر غير الدقيق</h3><p>أخطاء في الكميات تُراكم فروقات ضخمة.</p></div>
+      <div class="card"><div class="card-icon">👁️</div><h3>تجاهل البنود الخفية (Hidden Items)</h3><p>بنود غير ظاهرة في BOQ لكنها مطلوبة تنفيذياً.</p></div>
+      <div class="card"><div class="card-icon">📐</div><h3>تقدير كميات غير واقعية</h3><p>كميات غير واقعية أو متفائل أو محدثة.</p></div>
+      <div class="card"><div class="card-icon">📅</div><h3>أسعار قديمة أو غير موثوقة</h3><p>السوق يتغير — الأسعار يجب أن تكون حديثة.</p></div>
+      <div class="card"><div class="card-icon">🏗️</div><h3>إهمال المصاريف غير المباشرة</h3><p>نسيان إدارة الموقع والمعسكرات والتنقل.</p></div>
+      <div class="card"><div class="card-icon">🛡️</div><h3>عدم احتساب المخاطر</h3><p>لا احتياطي للظروف الطارئة.</p></div>
+      <div class="card"><div class="card-icon">🏆</div><h3>الاعتماد فقط على أسعار المنافسين</h3><p>تكلفتك ليست بالضرورة مثل تكلفتهم.</p></div>
+      <div class="card"><div class="card-icon">⏱️</div><h3>عدم مراجعة العرض قبل التقديم</h3><p>أخطاء حسابية قد تكلفك الكثير.</p></div>
+      <div class="card"><div class="card-icon">🚀</div><h3>التسرع في تقديم العرض</h3><p>العجلة تخلق ثغرات قاتلة في التسعير.</p></div>
+    </div>
+
+    <h3 style="margin:28px 0 16px;font-size:16px;color:var(--navy);">أمثلة سريعة على تكلفة الأخطاء</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>الخطأ</th><th>مثال</th><th>التأثير المالي التقريبي</th></tr></thead>
+        <tbody>
+          <tr><td>تقدير كمية خرسانة أقل</td><td>زيادة 220 م²</td><td class="td-red">+350,000 جنيه</td></tr>
+          <tr><td>نسيان العزل بدون تسعير</td><td>عزل أسطح تحت بلاطة</td><td class="td-red">+220,000 جنيه</td></tr>
+          <tr><td>سوء تقدير الكميات</td><td>تقدير 1,000 م² والفعلي 1,600 م²</td><td class="td-red">+180,000 جنيه</td></tr>
+          <tr><td>إهمال مصاريف غير مباشرة</td><td>موقع ومواد جودة</td><td class="td-red">+150,000 جنيه</td></tr>
+          <tr><td>أسعار الحديد القديمة</td><td>استخدام سعر الحديد القديم</td><td class="td-red">+300,000 جنيه</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-success">
+      <div class="alert-icon">🏆</div>
+      <p>القاعدة الذهبية: التسعير الناجح = معلومة صحيحة + تحليل دقيق + احتياطي مناسب = ربح مستدام</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5 -->
+<section id="s5">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>كيف تسعّر بنداً <span>غير موجود</span> في المشروع؟</h2>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-icon">💡</div>
+      <p>ليس كل البنود موجودة في الـ BOQ … المهم هو منهجية التسعير وليس التخمين! عندما تواجه بنداً غير موجود، يجب أن تبني سعره من الصفر اعتماداً على تحليل منطقي ومدعوم بالبيانات والخبرة والأسعار الحالية في السوق.</p>
+    </div>
+
+    <h3 style="margin:24px 0 16px;font-size:16px;color:var(--navy);">خطوات تسعير بند غير موجود</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><h4>فهم البند والحصول على المواصفات</h4><p>اقرأ وصف البند بدقة، راجع المخططات والمواصفات الفنية.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><h4>تحديد نطاق العمل بدقة</h4><p>حدد ماذا يشمل البند من مواد، عمالة، معدات، تركيب.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><h4>تحديد الموارد (عمالة – معدات – مواد)</h4><p>حدد كل عنصر من عناصر التكلفة المباشرة بشكل تفصيلي.</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><h4>حساب تكلفة كل مورد</h4><p>استخدم أسعار حديثة من الموردين أو قاعدة بيانات الشركة.</p></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><h4>تجميع التكلفة المباشرة</h4><p>إجمالي المواد + العمالة + المعدات.</p></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><h4>إضافة التكاليف غير المباشرة والهالك والمخاطر</h4><p>أضف نسبة للمصاريف الإدارية، الهالك، واحتياطي المخاطر.</p></div></div>
+      <div class="step"><div class="step-num">7</div><div class="step-body"><h4>تحديد السعر النهائي (سعر البند)</h4><p>السعر النهائي = التكلفة الإجمالية + هامش الربح.</p></div></div>
+    </div>
+
+    <h3 style="margin:28px 0 16px;font-size:16px;color:var(--navy);">مثال عملي — توريد وتركيب درابزين زجاج سيكوريت</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>العنصر</th><th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي (جنيه)</th></tr></thead>
+        <tbody>
+          <tr><td>زجاج سيكوريت 12 مم</td><td>1.00 م²</td><td>1,550</td><td>1,550</td></tr>
+          <tr><td>قواعد ستانلس ستيل</td><td>1.00 قطعة</td><td>350</td><td>350</td></tr>
+          <tr><td>إكسسوارات تثبيت</td><td>1.00 م²</td><td>120</td><td>120</td></tr>
+          <tr><td>سيليكون + مواد مساعدة</td><td>1.00 م²</td><td>80</td><td>80</td></tr>
+          <tr><td colspan="3" style="font-weight:700">إجمالي المواد (A)</td><td class="td-gold">2,100</td></tr>
+          <tr><td>فني تركيب زجاج</td><td>2.00 ساعة</td><td>180</td><td>360</td></tr>
+          <tr><td>مساعد فني</td><td>2.00 ساعة</td><td>120</td><td>240</td></tr>
+          <tr><td colspan="3" style="font-weight:700">إجمالي العمالة (B)</td><td class="td-gold">600</td></tr>
+          <tr><td colspan="3" style="font-weight:700">إجمالي المعدات (C)</td><td class="td-gold">100</td></tr>
+          <tr><td colspan="3" style="font-weight:700">التكلفة المباشرة الإجمالية (A+B+C)</td><td class="td-green">2,800</td></tr>
+          <tr><td colspan="3">مصاريف موقع وإدارة (10%)</td><td>280</td></tr>
+          <tr><td colspan="3">هالك وفاقد (3%)</td><td>84</td></tr>
+          <tr><td colspan="3">مخاطر واحتياطي (5%)</td><td>140</td></tr>
+          <tr><td colspan="3" style="font-weight:700">التكلفة الإجمالية</td><td class="td-green">3,304</td></tr>
+          <tr><td colspan="3">هامش الربح (15%)</td><td>496</td></tr>
+          <tr><td colspan="3" style="font-weight:800;color:var(--navy)">🏷️ سعر البند النهائي للمتر الطولي</td><td class="td-gold" style="font-size:16px">3,800</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin:28px 0 16px;font-size:16px;color:var(--navy);">أمثلة على بنود غالباً غير موجودة في الـ BOQ</h3>
+    <div class="tags">
+      <span class="tag">أعمال ديكور خاصة</span>
+      <span class="tag">أنظمة إنارة ذكية</span>
+      <span class="tag">أعمال زجاج وواجهات</span>
+      <span class="tag">أنظمة ميكانيكا خاصة</span>
+      <span class="tag">أعمال لاندسكيب</span>
+      <span class="tag">بنود مبتكرة حسب الطلب</span>
+    </div>
+
+    <div style="margin-top:24px;background:linear-gradient(135deg,#c8922a,#7a5a00);border-radius:14px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div style="color:white;">
+        <div style="font-weight:800;font-size:15px;">🏷️ سعّر أي بند غير موجود الآن</div>
+        <div style="font-size:12.5px;color:rgba(255,255,255,.7);margin-top:3px;">استخدم نموذج التسعير التفصيلي لبناء سعر أي بند من الصفر</div>
+      </div>
+      <a href="pricing-forms.html#f2" target="_blank" style="background:white;color:var(--gold);text-decoration:none;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:800;flex-shrink:0;">🏷️ نموذج 2: تسعير بند</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- SECTION 6 -->
+<section id="s6">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <h2>كيف تقرأ الـ BOQ قبل بدء <span>التسعير؟</span></h2>
+    </div>
+
+    <div class="alert alert-success">
+      <div class="alert-icon">📖</div>
+      <p>قراءة صحيحة للـ BOQ = سعر دقيق + لا خسائر + عرض احترافي. الـ BOQ هو خريطة المشروع المالية … كل بند تفهمه صح هو ربح محفوظ لك!</p>
+    </div>
+
+    <h3 style="margin:24px 0 16px;font-size:16px;color:var(--navy);">خطوات قراءة الـ BOQ باحترافية</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><h4>فهم هيكل BOQ</h4><p>تعرف على الأقسام والمراحل والترقيم.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><h4>مراجعة البيانات الرئيسية</h4><p>تحقق من الإجماليات والأرقام العامة للمشروع.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><h4>تحليل بنود الأعمال</h4><p>اقرأ وصف كل بند بعناية ولا تكتفِ بالسعر.</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><h4>فهم الوحدات والكميات</h4><p>تأكد من وحدة القياس (م², طن، قطعة …) وتطابقها مع طبيعة العمل.</p></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><h4>قراءة الملاحظات والشروط</h4><p>الملاحظات هي أهم جزء في الـ BOQ — لا تهملها أبداً!</p></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><h4>تحديد الغموض والتناقضات</h4><p>ابحث عن أي بند غامض أو متناقض مع المخططات.</p></div></div>
+      <div class="step"><div class="step-num">7</div><div class="step-body"><h4>تجهيز قائمة الاستفسارات</h4><p>لا تخف من الاستفسار — الاستفسار اليوم يوفر عليك خسارة غداً!</p></div></div>
+    </div>
+
+    <h3 style="margin:28px 0 16px;font-size:16px;color:var(--navy);">الأقسام الشائعة في الـ BOQ</h3>
+    <div class="card-grid">
+      <div class="card"><div class="card-icon">🏗️</div><h3>01 — الأعمال التمهيدية والحفر والردم</h3></div>
+      <div class="card"><div class="card-icon">🏢</div><h3>02 — الأعمال الخرسانية</h3></div>
+      <div class="card"><div class="card-icon">🔩</div><h3>03 — أعمال الحديد والتسليح</h3></div>
+      <div class="card"><div class="card-icon">🧱</div><h3>04 — أعمال المباني والطوب</h3></div>
+      <div class="card"><div class="card-icon">🌡️</div><h3>05 — أعمال العزل والأسقف</h3></div>
+      <div class="card"><div class="card-icon">🪟</div><h3>06 — أعمال المباني والمعمارية</h3></div>
+      <div class="card"><div class="card-icon">🎨</div><h3>07 — أعمال التشطيبات الداخلية</h3></div>
+      <div class="card"><div class="card-icon">🏛️</div><h3>08 — أعمال التشطيبات الخارجية</h3></div>
+      <div class="card"><div class="card-icon">⚡</div><h3>09 — أعمال الكهرباء</h3></div>
+      <div class="card"><div class="card-icon">🚿</div><h3>10 — أعمال الصرف الصحي</h3></div>
+      <div class="card"><div class="card-icon">⚙️</div><h3>11 — أعمال التكييف والميكانيكا</h3></div>
+    </div>
+
+    <h3 style="margin:28px 0 16px;font-size:16px;color:var(--navy);">أخطاء شائعة عند قراءة الـ BOQ</h3>
+    <ul class="checklist danger" style="background:white;padding:20px;border-radius:12px;border:1.5px solid var(--border);">
+      <li>تجاهل الملاحظات والشروط</li>
+      <li>الاعتماد على الكميات فقط دون فهم الوصف</li>
+      <li>عدم مراجعة الرسومات والمواصفات</li>
+      <li>افتراض اشتمال على أشياء غير مذكورة</li>
+      <li>عدم تحديد الغموض قبل التسعير</li>
+      <li>عدم التحقق من الوحدات وطريقة القياس</li>
+    </ul>
+
+    <div class="alert alert-success" style="margin-top:28px;">
+      <div class="alert-icon">⭐</div>
+      <p>تذكر دائماً: ما لا يُقاس لا يُدار … وما لا يُدار لا يمكن تحسينه. قراءة صحيحة للـ BOQ = تسعير دقيق = مشروع ناجح!</p>
+    </div>
+
+    <div style="margin-top:24px;background:linear-gradient(135deg,#2563a8,#1a3a6e);border-radius:14px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div style="color:white;">
+        <div style="font-weight:800;font-size:15px;">📋 أنشئ عرضك المالي من الـ BOQ</div>
+        <div style="font-size:12.5px;color:rgba(255,255,255,.7);margin-top:3px;">بعد قراءة الـ BOQ، ادخل البنود في النموذج واحصل على تقرير فوري</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="pricing-forms.html#f3" target="_blank" style="background:white;color:var(--blue);text-decoration:none;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:800;">📋 نموذج 3: العرض المالي</a>
+        <a href="pricing-forms.html#f1" target="_blank" style="background:rgba(255,255,255,.15);color:white;text-decoration:none;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:700;border:1px solid rgba(255,255,255,.3);">📊 نموذج 1: التكلفة</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>دليل التسعير الاحترافي في شركات المقاولات</p>
+  <p style="margin-top:8px;"><strong>التسعير = علم + خبرة + تحليل = قرار صحيح وربح مستدام</strong></p>
+</footer>
+
+
+<a href="pricing-forms.html" target="_blank" style="
+  position:fixed;bottom:28px;left:28px;z-index:999;
+  background:var(--gold);color:white;text-decoration:none;
+  padding:14px 22px;border-radius:50px;font-family:Cairo,sans-serif;
+  font-size:14px;font-weight:800;box-shadow:0 4px 20px rgba(200,146,42,.4);
+  transition:.2s;display:flex;align-items:center;gap:8px;
+">🗂️ النماذج العملية</a>
+
+<script src="/assets/azie-screens.js"></script>
+<script>
+(async function initScreenGuard(){
+  let allowed = [];
+  try{
+    allowed = await AzieScreens.fetchAllowed('pricing-guide');
+  }catch(err){
+    console.error(err);
+  }
+  if(allowed.length === 0){
+    AzieScreens.renderNoAccess(document.body, 'دليل التسعير في شركات المقاولات');
+    return;
+  }
+  // This is a single scrolling page (no JS tab-switching), so enforcing a
+  // screen means hiding both the nav-pill link and the section itself —
+  // otherwise a disallowed section would still be reachable by scrolling.
+  const sections = ['s1','s2','s3','s4','s5','s6'];
+  sections.forEach((key) => {
+    if(allowed.includes(key)) return;
+    const section = document.getElementById(key);
+    if(section) section.style.display = 'none';
+    const navLink = document.querySelector(`.nav-pills a[href="#${key}"]`);
+    if(navLink) navLink.style.display = 'none';
+  });
+})();
+</script>
+
+</body>
+</html>
