@@ -444,7 +444,7 @@ input[type=search]:focus{outline:none;border-color:var(--ac)}
 /* Toast notification */
 .toast{position:fixed;bottom:24px;left:24px;background:var(--t1);color:var(--bg);padding:10px 16px;border-radius:var(--r);font-size:11px;font-weight:600;z-index:2000;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
-.toast.ok{background:var(--gn)}.toast.err{background:var(--rd)}
+.toast.ok{background:var(--gn)}.toast.err{background:var(--rd)}.toast.warn{background:var(--am)}
 
 /* ════ COMPANY PROFILE ════ */
 .prof-tab-content .pn { display: none; }
@@ -2877,6 +2877,7 @@ function parseRun(rows){
       updL('جارٍ تصنيف الحسابات...');
       applyFixes();
       classify();
+      S.riskyAccts=detectRiskyClassification();
       updL('جارٍ احتساب القوائم...');
       calcFin();
       updL('جارٍ توليد القوائم...');
@@ -2889,7 +2890,12 @@ function parseRun(rows){
       try{ if(pendingDepFile&&S.co) archiveDepFile(pendingDepFile); }catch(ae){}
       saveReportSnapshot();
       showBtns(); hideL(); nav('tb',null); resetUploadPage();
-      toast('تم معالجة '+S.accts.length+' حساب تحليلي ✓');
+      if(S.riskyAccts&&S.riskyAccts.length){
+        toast('⚠ تمت المعالجة، لكن راجع تصنيف '+S.riskyAccts.length+' حساب قبل اعتماد الميزان — انظر التنبيه أعلى الجدول',
+          'warn', 6000);
+      } else {
+        toast('تم معالجة '+S.accts.length+' حساب تحليلي ✓');
+      }
     } catch(err) {
       hideL();
       console.error('parseRun error:', err);
@@ -3085,6 +3091,31 @@ function applyFixes(){
     // Provision (EOSB already handled above) → l_ncur
     if(/مخصص(?!.*زكاة|.*ضريبة)|provision(?!.*tax|.*zakat)/i.test(n)&&r.cat!=='l_cur'){r.cat='l_ncur';return}
   });
+}
+
+/* ── Detect LIABILITY accounts whose name would get swept into a
+   current-asset presentation line (النقد وما في حكمه / المدينون /
+   الدفعات المقدمة) by aggLines() — e.g. a loan named "قرض بنكي..."
+   contains "بنك" and would show up under "النقد وما في حكمه" on the
+   balance sheet. aggLines() matches by keyword only and is called ONLY
+   on a_cur, a_ncur_tang, a_ncur_intang, a_ncur_rou, l_cur, l_ncur,
+   l_cur_lease, l_ncur_lease (see its call sites) — so only liability
+   accounts carry this presentation trap; equity/revenue/expense
+   accounts are rendered elsewhere and are never at risk of it. ── */
+function detectRiskyClassification(){
+  const RISKY_CATS=new Set(['l_cur','l_ncur','l_cur_lease','l_ncur_lease']);
+  const GROUPS=[
+    {re:/بنك|cash|bank|صندوق|petty|نقدية|نقد/i, label:'النقد وما في حكمه'},
+    {re:/عميل|عملاء|customer.*rec|trade.*rec|مدين.*تجار|receivable|ذمم.*مدين|أرصدة.*مدين|accrued.*rev|إيراد.*مستحق|عهد|petty.*cash|staff.*rec|سلف/i, label:'المدينون والأرصدة المدينة الأخرى'},
+    {re:/prepaid|مقدم|دفعة.*مقدم|مدفوع.*مقدم/i, label:'الدفعات المقدمة'}
+  ];
+  const flags=[];
+  (S.accts||[]).forEach(r=>{
+    if(!RISKY_CATS.has(r.cat))return;
+    const hit=GROUPS.find(g=>g.re.test(r.name));
+    if(hit)flags.push({code:r.code,name:r.name,cat:r.cat,label:hit.label});
+  });
+  return flags;
 }
 
 /* ── Classify into groups ── */
@@ -5282,6 +5313,7 @@ function saveLN(){
 function renderTB(){
   const f=S.f,yr=S.year,yp=yr-1;
   const bOB=Math.abs(f.tOBdr-f.tOBcr)<1,bCB=Math.abs(f.tCBdr-f.tCBcr)<1,ok=bOB&&bCB;
+  const riskyAccts=detectRiskyClassification();
   const CATS={a_cur:'أصول متداولة',a_ncur_tang:'أصول ثابتة ملموسة',a_ncur_intang:'أصول غير ملموسة',
     a_ncur_dep:'مجمع إهلاك',a_ncur_rou:'حق الاستخدام (IFRS 16)',a_ncur_dep_rou:'مجمع استهلاك حق الاستخدام',
     a_ncur:'أصول غير متداولة',l_cur:'التزامات متداولة',l_cur_lease:'التزامات إيجار متداولة',
@@ -5402,6 +5434,17 @@ function renderTB(){
       الافتتاحي ${bOB?'✓':'✗'} | الختامي ${bCB?'✓':'✗'} —
       ${ok?'الميزان متوازن':'خلل في التوازن'}
     </div>
+    ${riskyAccts.length?`<div class="alrt warn">
+      <span class="alrt-ico">⚠</span><div>
+        <div class="alrt-t">راجع تصنيف ${riskyAccts.length} حساب قبل اعتماد الميزان</div>
+        اسم الحساب يحتوي كلمة قد تُدرجه القوائم تلقائيًا ضمن بند لا يطابق تصنيفه الفعلي (${CATS[riskyAccts[0].cat]||riskyAccts[0].cat} مثلاً) — تحقق أن هذا هو التصنيف الصحيح فعلاً قبل الاعتماد على الميزان:
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+          ${riskyAccts.map(x=>`<span class="tag-e edit" onclick="openRC('${x.code}')" style="cursor:pointer;text-decoration:underline;display:inline-flex;align-items:center;gap:3px">
+            ✎ ${x.name} (${x.code}) — ${CATS[x.cat]||x.cat}، قد يُعرض كـ«${x.label}»
+          </span>`).join('')}
+        </div>
+      </div>
+    </div>`:''}
     <div class="alrt info no-print"><span class="alrt-ico">ℹ</span><div>
       <strong>BS</strong>=مركز مالي فقط · <strong>RP</strong>=طرف ذو علاقة · انقر <strong>✎</strong> لتعديل التبويب
     </div></div>
