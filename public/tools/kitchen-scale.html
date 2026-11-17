@@ -11,16 +11,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/tokens.css">
 <style>
 /* Layout: right-hand rail (RTL) + working canvas; summary tiles → alerts → charts → detail tables */
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
-  --bg:#0D131E; --surface:#141C2A; --surface-2:#1A2435; --line:#263249; --line-soft:#1F2a3d;
-  --fg:#E7EBF2; --muted:#8F9CB4; --accent:#E9A23B; --accent-ink:#1B1305; --accent-soft:rgba(233,162,59,.14);
+  /* هوية موحّدة مع المنصة: الخلفية الداكنة والحدود والنص مطابقة لتوكِنز الغلاف، مع إبقاء اللون الذهبي-البرتقالي كتمييز خاص بهذه الأداة */
+  --bg:var(--color-bg); --surface:var(--color-surface); --surface-2:var(--color-bg-light); --line:var(--color-border); --line-soft:var(--color-border);
+  --fg:var(--color-text); --muted:var(--color-text-muted); --accent:#E9A23B; --accent-ink:#1B1305; --accent-soft:rgba(233,162,59,.14);
   --good:#41C283; --info:#4FA6DC; --violet:#A98BF5; --bad:#EA6352;
   --good-soft:rgba(65,194,131,.14); --info-soft:rgba(79,166,220,.15); --violet-soft:rgba(169,139,245,.15); --bad-soft:rgba(234,99,82,.15);
   --shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 8px 24px rgba(0,0,0,.25);
-  --font-body:"IBM Plex Sans Arabic", "Segoe UI", Tahoma, system-ui, sans-serif;
-  --font-display:"Readex Pro", "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  --font-body:var(--font-sans), "IBM Plex Sans Arabic", "Segoe UI", Tahoma, system-ui, sans-serif;
+  --font-display:var(--font-sans), "Readex Pro", "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
   --r:12px; --r-sm:8px;
   color-scheme:dark;
 }
