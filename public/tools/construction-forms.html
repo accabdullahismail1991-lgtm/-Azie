@@ -2840,14 +2840,65 @@ const FORM_PREFIXES = {
   'cost-sheet':     'CS',
 };
 
-function genFormNum(formId){
+// formId → the input id holding the selected fund/bank/payment-method for
+// that form, when it has one. Payment and receipt vouchers each draw from
+// a specific cash box or bank (see updateFormBankDropdowns); their document
+// sequence is scoped per fund so "الصندوق الرئيسي" and every other box each
+// count their own vouchers independently instead of sharing one counter.
+const FORM_FUND_FIELD = {
+  'payment-voucher': 'f-pv-method',
+  'receipt-voucher': 'f-rv-method',
+};
+
+// Derive a short, stable code for a fund/bank/payment-method value so it can
+// be embedded in the document number (e.g. PV-MAIN-2026-003). Prefers the
+// bank/fund's English name when set (never relies on transliteration), and
+// recognizes the generic (not-tied-to-a-specific-box) payment methods too.
+function fundCodeFromValue(value){
+  if(!value) return null;
+  const GENERIC = {
+    'نقداً من الصندوق':'CASH', 'Cash from Petty Cash':'CASH',
+    'نقداً':'CASH', 'Cash':'CASH',
+    'تحويل بنكي':'BANK', 'Bank Transfer':'BANK',
+    'شيك':'CHK', 'Cheque':'CHK',
+    'بطاقة ائتمان':'CRD', 'Credit Card':'CRD',
+  };
+  if(GENERIC[value]) return GENERIC[value];
+  const bank = getBanks().find(b => b.name === value || b.nameEn === value);
+  const raw = (bank && (bank.nameEn || bank.name)) || value;
+  const STOPWORDS = /^(bank|fund|account|cash|petty|بنك|صندوق|حساب|عهدة)$/i;
+  const words = raw.trim().split(/\s+/).filter(w => w && !STOPWORDS.test(w));
+  let code = (words.length ? words.join('') : raw.replace(/\s+/g,''));
+  code = code.replace(/[^A-Za-z0-9؀-ۿ]/g,'').toUpperCase().slice(0,6);
+  return code || 'FND';
+}
+
+function genFormNum(formId, fundValue){
   const prefix = FORM_PREFIXES[formId] || formId.toUpperCase().slice(0,3);
   const year   = new Date().getFullYear();
-  // Count existing saved forms of this type to get next sequence
+  // Count existing saved forms of this type (and, for vouchers, this same
+  // fund) to get the next sequence.
   const saved  = getSavedForms();
-  const sameType = saved.filter(f => f.formId === formId);
+  const fundFieldId = FORM_FUND_FIELD[formId];
+  const fundCode = fundFieldId ? fundCodeFromValue(fundValue) : null;
+  const sameType = saved.filter(f => f.formId === formId
+    && (!fundFieldId || (f.data && f.data[fundFieldId]) === fundValue));
   const seq    = String(sameType.length + 1).padStart(3, '0');
-  return `${prefix}-${year}-${seq}`;
+  return fundCode ? `${prefix}-${fundCode}-${year}-${seq}` : `${prefix}-${year}-${seq}`;
+}
+
+// Re-derive a voucher's auto-generated number when the user switches the
+// cash box / bank it's drawn from or into, so the number reflects that
+// fund's own sequence instead of staying on whichever fund was selected
+// first. Never touches an already-saved record's number.
+function onVoucherFundChange(formId){
+  if(typeof editingFormRecord !== 'undefined' && editingFormRecord) return;
+  const fundFieldId = FORM_FUND_FIELD[formId]; if(!fundFieldId) return;
+  const numFieldId = formId === 'payment-voucher' ? 'f-pv-num' : formId === 'receipt-voucher' ? 'f-rv-num' : null;
+  if(!numFieldId) return;
+  const numEl = document.getElementById(numFieldId), fundEl = document.getElementById(fundFieldId);
+  if(!numEl || !fundEl) return;
+  numEl.value = genFormNum(formId, fundEl.value);
 }
 
 function setFormNumField(formId){
@@ -2876,7 +2927,9 @@ function setFormNumField(formId){
   if(!fieldId) return;
   const el = document.getElementById(fieldId);
   if(el && (!el.value || el.value === '')) {
-    el.value = genFormNum(formId);
+    const fundFieldId = FORM_FUND_FIELD[formId];
+    const fundValue = fundFieldId ? document.getElementById(fundFieldId)?.value : undefined;
+    el.value = genFormNum(formId, fundValue);
   }
 }
 
@@ -2911,13 +2964,13 @@ function fld(label, content){
   return '<div class="fg"><div class="fl">'+label+'</div>'+content+'</div>';
 }
 function inp(id, ph='', type='text', extra=''){ return `<input class="fi" id="${id}" type="${type}" placeholder="${ph}" ${extra}>`; }
-function sel(id, opts, mini){
+function sel(id, opts, mini, extra){
   const cls = mini ? 'class=""' : 'class="fi"';
   const os = opts.map(o=>Array.isArray(o)
     ? '<option value="'+o[0]+'">'+o[1]+'</option>'
     : '<option>'+o+'</option>'
   ).join('');
-  return '<select '+cls+' id="'+id+'">'+os+'</select>';
+  return '<select '+cls+' id="'+id+'" '+(extra||'')+'>'+os+'</select>';
 }
 // Compact select for use inside table cells
 function selM(id, opts){ return sel(id, opts, true); }
@@ -3192,7 +3245,7 @@ ${buildFormActionBar('payment-voucher')}
   </div>
   <div style="background:#f5f3ff;border:1.5px solid #c4b5fd;border-radius:10px;padding:16px;margin-bottom:18px">
     <div style="font-size:13px;font-weight:700;color:#7c3aed;margin-bottom:12px">💵 ${currentLang==='en'?'Disbursement Details':'بيانات الصرف'}</div>
-    ${row3(fld(t('pvAmount')+' <span class="req">*</span>', '<input class="fi" type="number" id="f-pv-amount" placeholder="0" oninput="pvAmountToWords()" style="font-size:18px;font-weight:900;color:#7c3aed">'), fld(t('pvMethod'), sel('f-pv-method',[t('mCashBox'),t('mBank'),t('mCheck')])), fld(t('pvCheckNum'), inp('f-pv-ref',t('pvCheckNum'))))}
+    ${row3(fld(t('pvAmount')+' <span class="req">*</span>', '<input class="fi" type="number" id="f-pv-amount" placeholder="0" oninput="pvAmountToWords()" style="font-size:18px;font-weight:900;color:#7c3aed">'), fld(t('pvMethod'), sel('f-pv-method',[t('mCashBox'),t('mBank'),t('mCheck')],false,'onchange="onVoucherFundChange(\'payment-voucher\')"')), fld(t('pvCheckNum'), inp('f-pv-ref',t('pvCheckNum'))))}
     ${fld(t('pvWords'), '<input class="fi" id="f-pv-amount-words" placeholder="'+t('pvWords')+'..." readonly style="background:#f8fafc;font-weight:600;color:#7c3aed">')}
   </div>
   ${fld(t('pvReason')+' <span class="req">*</span>', txta('f-pv-reason',t('pvReasonPH')))}
@@ -3216,7 +3269,7 @@ ${buildFormActionBar('receipt-voucher')}
   </div>
   <div style="background:#ecfdf5;border:1.5px solid #a7f3d0;border-radius:10px;padding:16px;margin-bottom:18px">
     <div style="font-size:13px;font-weight:700;color:#059669;margin-bottom:12px">💵 ${currentLang==='en'?'Amount Received':'بيانات المبلغ المستلَم'}</div>
-    ${row3(fld(t('rvAmount')+' <span class="req">*</span>', '<input class="fi" type="number" id="f-rv-amount" placeholder="0" oninput="rvAmountToWords()" style="font-size:18px;font-weight:900;color:#059669">'), fld(t('rvMethod'), sel('f-rv-method',[t('mCash'),t('mBank'),t('mCheck'),t('mCredit')])), fld(t('rvRef'), inp('f-rv-ref',t('rvRef'))))}
+    ${row3(fld(t('rvAmount')+' <span class="req">*</span>', '<input class="fi" type="number" id="f-rv-amount" placeholder="0" oninput="rvAmountToWords()" style="font-size:18px;font-weight:900;color:#059669">'), fld(t('rvMethod'), sel('f-rv-method',[t('mCash'),t('mBank'),t('mCheck'),t('mCredit')],false,'onchange="onVoucherFundChange(\'receipt-voucher\')"')), fld(t('rvRef'), inp('f-rv-ref',t('rvRef'))))}
     ${fld(t('rvWords'), '<input class="fi" id="f-rv-amount-words" placeholder="'+t('rvWords')+'..." readonly style="background:#f8fafc;font-weight:600;color:#059669">')}
   </div>
   <div class="fr">
