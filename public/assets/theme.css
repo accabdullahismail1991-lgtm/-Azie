@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800&display=swap');
+@import url('./tokens.css');
 
 :root{
-  --navy:#0F172A; --navy-mid:#161F32; --navy-light:#1E293B;
-  --gold:#c8933a; --gold-lt:#e8c97a;
-  --text:#E9ECF2; --muted:#93A0B4; --border:#28324A;
-  --card:#141C2E;
-  --ok:#1d7a4e; --red:#b8433a; --blue:#2563EB; --teal:#0d9488; --purple:#7c3aed; --rose:#be185d;
+  --navy:var(--color-bg); --navy-mid:var(--color-bg-mid); --navy-light:var(--color-bg-light);
+  --gold:var(--color-accent); --gold-lt:var(--color-accent-light);
+  --text:var(--color-text); --muted:var(--color-text-muted); --border:var(--color-border);
+  --card:var(--color-surface);
+  --ok:var(--color-success); --red:var(--color-danger); --blue:var(--color-info); --teal:var(--color-teal); --purple:var(--color-purple); --rose:var(--color-rose);
 }
 *{box-sizing:border-box; margin:0; padding:0;}
 body{

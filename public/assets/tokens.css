@@ -1,0 +1,138 @@
+/*
+  توكِنز التصميم — المنصة الموحدة
+  المصدر الوحيد للألوان والخط والتباعد ونصف القطر وهدف اللمس.
+  أي أداة جديدة في المنصة يجب أن تستورد هذا الملف أولًا (قبل أي CSS خاص بها)،
+  ثم تضيف لون تمييز واحد خاص بها إن احتاجت — بدل تعريف لوحة ألوان مستقلة من الصفر.
+  مبني على public/assets/theme.css (الغلاف الرئيسي)، وهو المرجع الذي أخذت منه هذه القيم.
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800&display=swap');
+
+:root{
+  /* ===== الخط ===== */
+  --font-sans: 'Cairo', 'Tajawal', sans-serif;
+
+  /* ===== الألوان المحايدة (الخلفيات والحدود والنص) ===== */
+  --color-bg: #0F172A;
+  --color-bg-mid: #161F32;
+  --color-bg-light: #1E293B;
+  --color-surface: #141C2E;
+  --color-border: #28324A;
+  --color-text: #E9ECF2;
+  --color-text-muted: #93A0B4;
+
+  /* ===== لون التمييز الموحّد للمنصة (ذهبي) ===== */
+  --color-accent: #c8933a;
+  --color-accent-light: #e8c97a;
+
+  /* ===== ألوان الحالة (نجاح / خطر / معلومة...) ===== */
+  --color-success: #1d7a4e;
+  --color-danger: #b8433a;
+  --color-info: #2563EB;
+  --color-teal: #0d9488;
+  --color-purple: #7c3aed;
+  --color-rose: #be185d;
+
+  /* ===== مقياس التباعد (أساسه 4px) ===== */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ===== نصف القطر ===== */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+
+  /* ===== مقياس الخط ===== */
+  --text-xs: 11px;
+  --text-sm: 12.5px;
+  --text-base: 14px;
+  --text-md: 15px;
+  --text-lg: 17px;
+  --text-xl: 20px;
+  --text-2xl: 26px;
+
+  /* ===== الظلال ===== */
+  --shadow-card: 0 14px 30px -12px rgba(0,0,0,.5);
+
+  /* ===== هدف اللمس الأدنى — المعيار الذي تتبناه كل الأنظمة العالمية (WCAG 2.5.5) ===== */
+  --touch-target-min: 44px;
+
+  /* ===== نقاط الكسر ===== */
+  --bp-sm: 640px;
+  --bp-md: 960px;
+  --bp-lg: 1280px;
+}
+
+/*
+  ===== مكوّنات أساسية جاهزة (اختيارية) =====
+  بادئة "tk-" (Token Kit) لتفادي أي تعارض مع أسماء كلاسات الأدوات القائمة.
+  أداة جديدة يمكنها استخدام هذه الكلاسات مباشرة بدل تعريف زر/حقل/بطاقة من جديد.
+*/
+.tk-btn{
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  padding: 10px 18px;
+  min-height: var(--touch-target-min);
+  border: 1px solid var(--color-border);
+  background: rgba(255,255,255,.06);
+  color: var(--color-text);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition: background .15s ease, filter .15s ease;
+}
+.tk-btn:hover{ background: rgba(255,255,255,.1); }
+.tk-btn:disabled{ opacity: .5; cursor: not-allowed; }
+
+.tk-btn-accent{
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light));
+  color: var(--color-bg);
+  border-color: transparent;
+  font-weight: 800;
+}
+.tk-btn-accent:hover{ filter: brightness(1.05); }
+
+.tk-btn-danger{ color: #ffb4ac; border-color: rgba(184,67,58,.5); }
+.tk-btn-danger:hover{ background: rgba(184,67,58,.15); }
+
+.tk-input{
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  min-height: var(--touch-target-min);
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: rgba(255,255,255,.04);
+  color: var(--color-text);
+}
+.tk-input::placeholder{ color: var(--color-text-muted); }
+.tk-input:focus{ outline: 2px solid var(--color-accent); outline-offset: 1px; }
+
+.tk-card{
+  background: linear-gradient(180deg, var(--color-surface), rgba(20,28,46,.6));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+}
+
+.tk-tag{
+  font-size: var(--text-xs);
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: rgba(255,255,255,.06);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
