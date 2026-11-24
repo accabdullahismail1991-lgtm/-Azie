@@ -281,14 +281,37 @@ body.lang-en .lang-switcher-btn.active{background:var(--accent);color:var(--dark
 .modal-body{padding:22px}
 .modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;background:var(--surface)}
 
-/* ── FORM MODAL (open a new/saved voucher as a popup over the current screen) ── */
-.form-modal-overlay{position:fixed;inset:0;background:rgba(13,20,33,.6);z-index:600;display:none;align-items:flex-start;justify-content:center;padding:28px 20px;overflow-y:auto}
+/* ── FORM MODAL (open a new/saved voucher as a popup over the current screen) ──
+   Card is a fixed-size flex column: a drag handle (fixed), then a scrollable body.
+   The form's own action bar is sticky to the TOP of that scrollable body, so it
+   never moves out of view regardless of how long the form is. The card itself is
+   natively resizable (CSS `resize`) and draggable via the handle (JS, below). */
+.form-modal-overlay{position:fixed;inset:0;background:rgba(13,20,33,.6);z-index:600;display:none;align-items:center;justify-content:center;padding:20px}
 .form-modal-overlay.open{display:flex}
-.form-modal-card{position:relative;background:white;border-radius:16px;width:min(980px,96vw);max-height:none;box-shadow:0 30px 80px rgba(0,0,0,.4);animation:fadeUp .25s ease;padding:24px 24px 12px}
-.form-modal-card .page{padding:0}
-.form-modal-close{position:absolute;top:14px;left:14px;width:34px;height:34px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;transition:.2s}
+.form-modal-card{
+  position:relative;background:white;border-radius:16px;
+  width:min(980px,96vw); height:min(88vh,1000px);
+  min-width:420px; min-height:300px; max-width:96vw; max-height:94vh;
+  box-shadow:0 30px 80px rgba(0,0,0,.4);animation:fadeUp .25s ease;
+  display:flex;flex-direction:column;overflow:hidden;resize:both;
+}
+.form-modal-head{
+  flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);
+  border-radius:16px 16px 0 0;cursor:move;user-select:none;
+}
+.form-modal-head .tp-grip{display:flex;gap:3px;color:var(--muted);letter-spacing:2px;font-size:13px}
+.form-modal-head-hint{font-size:11px;color:var(--muted);font-weight:600}
+.form-modal-close{width:30px;height:30px;border-radius:50%;background:white;border:1px solid var(--border);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
 .form-modal-close:hover{background:var(--border)}
-@media(max-width:720px){.form-modal-card{padding:18px 14px 10px}}
+.form-modal-body{flex:1;min-height:0;overflow-y:auto;padding:20px 24px 12px}
+.form-modal-card .page{padding:0}
+/* .form-panel normally clips with overflow:hidden, which would also make it the (non-scrolling)
+   sticky containing block for anything inside it — overriding to visible here lets the action
+   bar's position:sticky resolve against .form-modal-body (the actual scroll container) instead. */
+.form-modal-card .form-panel{overflow:visible}
+.form-modal-card .form-action-bar{position:sticky;top:-20px;margin-top:-20px;z-index:30;background:white;padding-top:20px}
+@media(max-width:720px){.form-modal-body{padding:16px 14px 10px}.form-modal-card{resize:none}}
 
 /* ── TOGGLE ── */
 .tgl-wrap{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -773,7 +796,7 @@ body.lang-en .bottom-nav-bar{left:0;right:280px}
           <button class="btn btn-outline btn-sm" id="form-report-back" style="display:none" onclick="hideFormReport()">
             ← <span id="back-to-reports-lbl">العودة للتقارير</span>
           </button>
-          <button class="btn btn-primary btn-sm" onclick="buildReportsPage()">🔄 تحديث</button>
+          <button class="btn btn-primary btn-sm" onclick="manualRefresh()">🔄 تحديث</button>
         </div>
       </div>
 
@@ -813,7 +836,7 @@ body.lang-en .bottom-nav-bar{left:0;right:280px}
             <option value="beneficiary-asc">المستفيد / الدافع (أبجدي)</option>
           </select>
           <button class="btn btn-primary btn-sm" onclick="printReport('rpt-cf-content')">🖨️ طباعة</button>
-          <button class="btn btn-outline btn-sm" onclick="buildCashflowReport()">🔄 تحديث</button>
+          <button class="btn btn-outline btn-sm" onclick="manualRefresh()">🔄 تحديث</button>
         </div>
       </div>
       <!-- Summary cards -->
@@ -846,7 +869,7 @@ body.lang-en .bottom-nav-bar{left:0;right:280px}
           <input class="fi" type="date" id="rpt-cb-from" style="width:150px" onchange="buildCashboxReport()">
           <input class="fi" type="date" id="rpt-cb-to"   style="width:150px" onchange="buildCashboxReport()">
           <button class="btn btn-primary btn-sm" onclick="printReport('rpt-cb-content')">🖨️ طباعة</button>
-          <button class="btn btn-outline btn-sm" onclick="buildCashboxReport()">🔄 تحديث</button>
+          <button class="btn btn-outline btn-sm" onclick="manualRefresh()">🔄 تحديث</button>
         </div>
       </div>
       <!-- Bank cards -->
@@ -1743,8 +1766,7 @@ function buildFinPage(){
 //  ARCHIVE
 // ══════════════════════════════════════════════
 function showArchive(){
-  showPage('archive');
-  renderArchive(getSavedForms());
+  showPage('archive'); // renders via _buildPageContent('archive') — do not also call renderArchive() here, that's what caused the infinite showPage↔showArchive recursion
 }
 
 function renderArchive(forms){
@@ -1806,6 +1828,37 @@ function updateArchiveBadge(){
   document.getElementById('archive-count').textContent=mine.length;
 }
 
+// Live refresh — rebuild whichever page/report/list is currently on screen, right after any
+// save/edit/delete, so counts, tables and totals reflect the change immediately with no manual
+// reload. Also used by every "🔄 تحديث" button so a manual refresh is instant, not a page reload.
+function refreshCurrentView(){
+  const activeId = document.querySelector('.page.active')?.id;
+  updateArchiveBadge();
+  if(activeId==='page-dashboard'){
+    buildDashboard();
+  } else if(activeId==='page-archive'){
+    if(typeof filterArchive==='function') filterArchive(); else renderArchive(getSavedForms());
+  } else if(activeId==='page-reports'){
+    const reportContainer = document.getElementById('form-report-container');
+    if(_activeFormReportId && reportContainer && reportContainer.style.display!=='none'){
+      buildFormLedgerReport(_activeFormReportId, document.getElementById('form-report-body'));
+    } else {
+      buildReportsPage();
+    }
+  } else if(activeId==='page-rpt-cashflow'){
+    buildCashflowReport();
+  } else if(activeId==='page-rpt-cashbox'){
+    buildCashboxReport();
+  }
+}
+
+// Wired to every manual "🔄 تحديث" button — same instant rebuild as the automatic refresh,
+// plus a toast so the user gets visible confirmation the data is current.
+function manualRefresh(){
+  refreshCurrentView();
+  showToast(currentLang==='en'?'✅ Updated':'✅ تم التحديث','success');
+}
+
 // ══════════════════════════════════════════════
 //  OPEN A FORM AS A POPUP (quick-create without leaving the current screen)
 // ══════════════════════════════════════════════
@@ -1829,15 +1882,23 @@ function openFormInModal(formId, savedData=null, savedRecord=null){
     overlay = document.createElement('div');
     overlay.id = 'form-modal-overlay';
     overlay.className = 'form-modal-overlay';
+    const isEn = currentLang==='en';
     overlay.innerHTML = `<div class="form-modal-card" id="form-modal-card">
-      <button type="button" class="form-modal-close" onclick="closeFormModal()" aria-label="${currentLang==='en'?'Close':'إغلاق'}" title="Esc">${FI('back')}</button>
+      <div class="form-modal-head" id="form-modal-head">
+        <span class="tp-grip" aria-hidden="true">⠿⠿</span>
+        <span class="form-modal-head-hint">${isEn?'Drag to move · drag the corner to resize':'اسحب للتحريك · اسحب الزاوية لتغيير الحجم'}</span>
+        <button type="button" class="form-modal-close" onclick="closeFormModal()" aria-label="${isEn?'Close':'إغلاق'}" title="Esc">${FI('back')}</button>
+      </div>
+      <div class="form-modal-body" id="form-modal-body"></div>
     </div>`;
     overlay.addEventListener('mousedown', e=>{ if(e.target===overlay) closeFormModal(); });
     document.body.appendChild(overlay);
+    _initFormModalDrag();
   }
-  document.getElementById('form-modal-card').appendChild(pageEl);
+  document.getElementById('form-modal-body').appendChild(pageEl);
   overlay.classList.add('open');
   _formModalActive = true;
+  _resetFormModalPosition();
 
   openForm(formId, savedData, savedRecord);
 }
@@ -1859,12 +1920,69 @@ function closeFormModal(){
   _formModalActive = false;
   currentFormId = null;
   editingFormRecord = null;
+  // Instant refresh: whatever page/report was behind the popup reflects what was just saved,
+  // with no manual reload needed.
+  refreshCurrentView();
 }
 
 // Shared handler for the action bar's Back/Home buttons — closes the popup instead of navigating when the form was opened as a modal
 function handleFormExit(kind){
   if(_formModalActive){ closeFormModal(); return; }
   if(kind==='back') goBack(); else showPage('dashboard');
+}
+
+// Reset the popup to its default centered position/size (called every time it's freshly opened,
+// so a drag/resize from a previous session never leaves it stuck somewhere awkward).
+function _resetFormModalPosition(){
+  const card = document.getElementById('form-modal-card');
+  if(!card) return;
+  card.style.position = '';
+  card.style.left = '';
+  card.style.top = '';
+  card.style.margin = '';
+  card.style.width = '';
+  card.style.height = '';
+}
+
+// Drag-to-move via the modal's header bar. Resizing itself is native (CSS `resize:both` on the
+// card) and needs no JS. Set up once, the first time the modal overlay is created.
+function _initFormModalDrag(){
+  const head = document.getElementById('form-modal-head');
+  const card = document.getElementById('form-modal-card');
+  if(!head || !card) return;
+  let dragging = false, startX=0, startY=0, startLeft=0, startTop=0;
+
+  head.addEventListener('mousedown', e=>{
+    if(e.target.closest('.form-modal-close')) return; // don't start a drag from the close button
+    const rect = card.getBoundingClientRect();
+    // Switch from flex-centered to an explicit fixed position so it can follow the mouse
+    card.style.position = 'fixed';
+    card.style.margin = '0';
+    card.style.left = rect.left+'px';
+    card.style.top  = rect.top+'px';
+    startLeft = rect.left; startTop = rect.top;
+    startX = e.clientX; startY = e.clientY;
+    dragging = true;
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e=>{
+    if(!dragging) return;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const rect = card.getBoundingClientRect();
+    let left = startLeft + (e.clientX - startX);
+    let top  = startTop  + (e.clientY - startY);
+    // Keep at least ~80px of the header reachable within the viewport
+    left = Math.min(Math.max(left, -rect.width+80), vw-80);
+    top  = Math.min(Math.max(top, 0), vh-40);
+    card.style.left = left+'px';
+    card.style.top  = top+'px';
+  });
+  document.addEventListener('mouseup', ()=>{
+    if(!dragging) return;
+    dragging = false;
+    document.body.style.userSelect = '';
+  });
 }
 
 // ══════════════════════════════════════════════
@@ -2024,8 +2142,7 @@ function deleteForm(recordId){
   invalidateFormsCache();
     DB.set('saved_forms',forms);
   addAudit('حذف نموذج',`المستخدم "${currentUser.name}" حذف النموذج ${rec?.formNumber||recordId}`);
-  renderArchive(forms);
-  updateArchiveBadge();
+  refreshCurrentView();
   showToast('🗑️ تم حذف النموذج','danger');
 }
 
@@ -2101,8 +2218,7 @@ function saveForm(status){
     addFormLedgerEntry(record, status==='draft'?'create':'final');
     showToast('✅ تم حفظ النموذج بنجاح','success');
   }
-  updateArchiveBadge();
-  buildDashboard();
+  refreshCurrentView();
 }
 
 // ══════════════════════════════════════════════
@@ -2511,7 +2627,7 @@ function _buildPageContent(pid){
         try{ buildFinPage(); } catch(e){}
         break;
       case 'fin':            buildFinPage(); break;
-      case 'archive':        showArchive(); break;
+      case 'archive':        renderArchive(getSavedForms()); break;
       case 'users':          buildUsersPage(); break;
       case 'audit':          renderAudit(); break;
       case 'rpt-cashflow':   buildCashflowReport(); break;
@@ -2577,12 +2693,10 @@ function showPageDirect(pid){ showPage(pid); }
 
 
 function goBack(){
-  // Restore fill panel state before leaving
+  // Restore fill panel state before leaving (full reset — see switchFTabBack for why cssText,
+  // not individual properties, is the only way to fully clear the preview tab's temporary styles)
   const fillPanel = document.getElementById('form-fill-panel');
-  if(fillPanel){
-    fillPanel.style.position=''; fillPanel.style.left='';
-    fillPanel.style.visibility=''; fillPanel.style.display='block';
-  }
+  if(fillPanel) fillPanel.style.cssText='display:block;position:static;left:auto;visibility:visible;pointer-events:auto;';
   const prev = document.getElementById('breadcrumb').dataset.prev||'dashboard';
   showPage(prev);
   editingFormRecord=null; currentFormId=null;
@@ -6157,7 +6271,7 @@ function confirmDeleteCurrentForm(){
   document.getElementById('confirm-msg').innerHTML=`${isEn?'Delete form':'حذف النموذج'} <strong>${editingFormRecord.formNumber}</strong>?`;
   document.getElementById('confirm-ok').style.display='inline-flex';
   document.getElementById('confirm-ok').textContent=isEn?'Delete':'حذف';
-  document.getElementById('confirm-ok').onclick=()=>{ deleteForm(editingFormRecord.id); closeModal('confirm-modal'); goBack(); };
+  document.getElementById('confirm-ok').onclick=()=>{ deleteForm(editingFormRecord.id); closeModal('confirm-modal'); handleFormExit('back'); };
   document.getElementById('confirm-modal').classList.add('open');
 }
 
@@ -6558,7 +6672,9 @@ function buildReportsPage(){
   if(el) el.innerHTML = opSection + finSection;
 }
 
+let _activeFormReportId = null;
 function showFormReport(formId){
+  _activeFormReportId = formId;
   const isEn = currentLang==='en';
   const def = getFormDef(formId)||{title:formId,titleEn:formId,icon:'📄'};
   const fTitle = isEn?(def.titleEn||def.title):def.title;
@@ -6590,12 +6706,13 @@ function showFormReport(formId){
     <input class="fi" id="flr-search-${formId}" placeholder="🔍 ${isEn?'Search...':'بحث...'}" style="width:180px" oninput="buildFormLedgerReport('${formId}',document.getElementById('form-report-body'))">
     <select class="fi" id="flr-sort-${formId}" style="width:180px" onchange="buildFormLedgerReport('${formId}',document.getElementById('form-report-body'))">${sortOptionsHtml(isEn)}</select>
     <button class="btn btn-primary btn-sm" onclick="printReport('form-report-body')">🖨️ ${isEn?'Print':'طباعة'}</button>
-    <button class="btn btn-outline btn-sm" onclick="buildFormLedgerReport('${formId}',document.getElementById('form-report-body'))">🔄</button>`;
+    <button class="btn btn-outline btn-sm" onclick="manualRefresh()" aria-label="${isEn?'Refresh':'تحديث'}">🔄</button>`;
 
   buildFormLedgerReport(formId, document.getElementById('form-report-body'));
 }
 
 function hideFormReport(){
+  _activeFormReportId = null;
   const container = document.getElementById('form-report-container');
   const index     = document.getElementById('reports-index-body');
   const backBtn   = document.getElementById('form-report-back');
