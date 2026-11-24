@@ -148,6 +148,9 @@ body.lang-en .lang-switcher-btn.active{background:var(--accent);color:var(--dark
 .topbar-pinned-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--rs);border:1.5px solid var(--accent);background:var(--accent);color:var(--dark);font-family:'Cairo',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s}
 .topbar-pinned-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .topbar-pinned-btn .tp-ico{font-size:13px}
+.topbar-pinned-btn.icon-only{background:transparent;border-color:var(--border);color:var(--text);padding:7px 10px}
+.topbar-pinned-btn.icon-only:hover{background:var(--surface2);border-color:var(--accent)}
+.topbar-pinned-btn.icon-only .tp-ico{font-size:15px}
 @media(max-width:1180px){.topbar-pinned-lbl{display:none}}
 @media(max-width:980px){.topbar-pinned{display:none}}
 
@@ -724,6 +727,9 @@ body.lang-en .bottom-nav-bar{left:0;right:280px}
       </button>
       <button class="topbar-pinned-btn" onclick="openFormInModal('receipt-voucher')" id="topbar-pin-rv">
         <span class="tp-ico">📥</span> <span id="topbar-pin-rv-lbl">سند القبض</span>
+      </button>
+      <button class="topbar-pinned-btn icon-only" onclick="showPage('rpt-cashflow')" id="topbar-pin-reports" title="تقارير السندات" aria-label="تقارير السندات">
+        <span class="tp-ico">💸</span>
       </button>
     </div>
     <div style="display:flex;align-items:center;gap:12px">
@@ -4474,6 +4480,7 @@ function updateStaticText(){
   ss('topbar-pinned-lbl', isEn?'Quick shortcuts':'اختصارات سريعة');
   ss('topbar-pin-pv-lbl', isEn?'Payment Voucher':'سند الصرف');
   ss('topbar-pin-rv-lbl', isEn?'Receipt Voucher':'سند القبض');
+  { const rb=document.getElementById('topbar-pin-reports'); if(rb){ const lbl=isEn?'Vouchers Reports':'تقارير السندات'; rb.title=lbl; rb.setAttribute('aria-label',lbl); } }
   // ── Sidebar nav labels
   ss('sb-sec-op-lbl',  isEn?'Operational':'التشغيلية');
   ss('sb-nav-op',      t('opForms'));
