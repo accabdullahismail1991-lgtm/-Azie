@@ -779,6 +779,14 @@ body.lang-en .bottom-nav-bar{left:0;right:280px}
           </select>
           <input class="fi" type="date" id="rpt-cf-from" style="width:150px" onchange="buildCashflowReport()" placeholder="من تاريخ">
           <input class="fi" type="date" id="rpt-cf-to"   style="width:150px" onchange="buildCashflowReport()" placeholder="إلى تاريخ">
+          <select class="fi" id="rpt-cf-sort" style="width:180px" onchange="buildCashflowReport()">
+            <option value="date-asc">الأقدم أولاً</option>
+            <option value="date-desc">الأحدث أولاً</option>
+            <option value="amount-desc">المبلغ: الأعلى أولاً</option>
+            <option value="amount-asc">المبلغ: الأقل أولاً</option>
+            <option value="method-asc">طريقة الدفع</option>
+            <option value="beneficiary-asc">المستفيد / الدافع (أبجدي)</option>
+          </select>
           <button class="btn btn-primary btn-sm" onclick="printReport('rpt-cf-content')">🖨️ طباعة</button>
           <button class="btn btn-outline btn-sm" onclick="buildCashflowReport()">🔄 تحديث</button>
         </div>
@@ -4244,6 +4252,9 @@ function updateStaticText(){
     <option value="receipt-voucher">${isEn?'Receipt Vouchers Only':'سندات القبض فقط'}</option>
     <option value="payment-order">${isEn?'Payment Orders':'أوامر الصرف'}</option>
     <option value="petty-cash">${isEn?'Advances & Custody':'السلف والعهد'}</option>`; }
+  const cfSort = document.getElementById('rpt-cf-sort');
+  if(cfSort){ const cur=cfSort.value; cfSort.innerHTML=sortOptionsHtml(isEn); if(cur) cfSort.value=cur; }
+  document.querySelectorAll('select[id^="flr-sort-"]').forEach(el=>{ const cur=el.value; el.innerHTML=sortOptionsHtml(isEn); if(cur) el.value=cur; });
   const cbMethod = document.getElementById('rpt-cb-method');
   if(cbMethod){ cbMethod.innerHTML=`
     <option value="">${isEn?'All Methods':'كل طرق الدفع'}</option>
@@ -4327,6 +4338,52 @@ function getFormDate(rec){
 function isPayment(formId){ return PAYMENT_IDS.includes(formId); }
 function isReceipt(formId){ return RECEIPT_IDS.includes(formId); }
 
+// Form Icon — small consistent line-style SVGs (replace mismatched emoji glyphs across forms/vouchers/reports)
+const FI_PATHS = {
+  eye:      '<path d="M1 9s3.5-6 8-6 8 6 8 6-3.5 6-8 6-8-6-8-6Z"/><circle cx="9" cy="9" r="2.5"/>',
+  edit:     '<path d="M12.5 2.5 15.5 5.5 6 15H3v-3Z"/>',
+  print:    '<path d="M5 7V2h8v5"/><rect x="2" y="7" width="14" height="6.5" rx="1.2"/><rect x="5" y="11" width="8" height="5" rx=".5"/>',
+  list:     '<path d="M6.5 5h9M6.5 9h9M6.5 13h9"/><circle cx="2.7" cy="5" r=".9" fill="currentColor" stroke="none"/><circle cx="2.7" cy="9" r=".9" fill="currentColor" stroke="none"/><circle cx="2.7" cy="13" r=".9" fill="currentColor" stroke="none"/>',
+  copy:     '<rect x="6.5" y="6.5" width="9" height="9" rx="1.2"/><path d="M4 11.5H3A1.5 1.5 0 0 1 1.5 10V3A1.5 1.5 0 0 1 3 1.5h7A1.5 1.5 0 0 1 11.5 3v1"/>',
+  plus:     '<path d="M9 3v12M3 9h12"/>',
+  trash:    '<path d="M3 5h12M7 5V3.5A1.5 1.5 0 0 1 8.5 2h1A1.5 1.5 0 0 1 11 3.5V5M5 5v9.5A1.5 1.5 0 0 0 6.5 16h5a1.5 1.5 0 0 0 1.5-1.5V5"/>',
+  save:     '<path d="M3 2.5h10l2.5 2.5V15a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V3a.5.5 0 0 1 .5-.5Z"/><path d="M5.5 2.5V7h6V2.5"/>',
+  check:    '<path d="M3.5 9.5 7 13l8-8"/>',
+  home:     '<path d="M3 8.5 9 3l6 5.5V15a1 1 0 0 1-1 1h-3v-5H7v5H4a1 1 0 0 1-1-1Z"/>',
+  back:     '<path d="M11 14 5.5 9 11 4"/>',
+  chevLeft: '<path d="M11.5 14.5 6 9l5.5-5.5"/>',
+  chevRight:'<path d="M6.5 3.5 12 9l-5.5 5.5"/>',
+};
+function FI(name, size){
+  size = size||15;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px" aria-hidden="true" focusable="false">${FI_PATHS[name]||''}</svg>`;
+}
+
+// Sort a list of saved-form records by a chosen key — shared by all reports
+function sortFormsBy(forms, sortKey){
+  const cmps = {
+    'date-desc':       (a,b)=>getFormDate(b).localeCompare(getFormDate(a)),
+    'date-asc':        (a,b)=>getFormDate(a).localeCompare(getFormDate(b)),
+    'amount-desc':     (a,b)=>getFormAmount(b)-getFormAmount(a),
+    'amount-asc':      (a,b)=>getFormAmount(a)-getFormAmount(b),
+    'method-asc':      (a,b)=>getFormMethod(a).localeCompare(getFormMethod(b),'ar'),
+    'beneficiary-asc': (a,b)=>getFormBeneficiary(a).localeCompare(getFormBeneficiary(b),'ar'),
+  };
+  const cmp = cmps[sortKey] || cmps['date-desc'];
+  return forms.slice().sort(cmp);
+}
+
+// Shared <option> list for the report "sort by" dropdowns (kept in one place so Arabic/English stay in sync)
+function sortOptionsHtml(isEn){
+  return `
+    <option value="date-desc">${isEn?'Newest first':'الأحدث أولاً'}</option>
+    <option value="date-asc">${isEn?'Oldest first':'الأقدم أولاً'}</option>
+    <option value="amount-desc">${isEn?'Amount: High to Low':'المبلغ: الأعلى أولاً'}</option>
+    <option value="amount-asc">${isEn?'Amount: Low to High':'المبلغ: الأقل أولاً'}</option>
+    <option value="method-asc">${isEn?'Payment method':'طريقة الدفع'}</option>
+    <option value="beneficiary-asc">${isEn?'Beneficiary (A–Z)':'المستفيد / الدافع (أبجدي)'}</option>`;
+}
+
 // ── CASHFLOW REPORT ──
 function buildCashflowReport(){
   const typeFilter   = document.getElementById('rpt-cf-type')?.value||'';
@@ -4334,11 +4391,20 @@ function buildCashflowReport(){
   const toDate       = document.getElementById('rpt-cf-to')?.value||'';
   const isEn         = currentLang==='en';
 
+  const sortBy       = document.getElementById('rpt-cf-sort')?.value||'date-asc';
   let forms = getSavedForms().filter(f=>CASHFLOW_FORM_IDS.includes(f.formId));
   if(typeFilter) forms = forms.filter(f=>f.formId===typeFilter);
   if(fromDate)   forms = forms.filter(f=>getFormDate(f)>=fromDate);
   if(toDate)     forms = forms.filter(f=>getFormDate(f)<=toDate);
-  forms.sort((a,b)=>getFormDate(a).localeCompare(getFormDate(b)));
+  // The running balance only means anything in chronological order, so it's computed on a
+  // date-ascending copy first regardless of the chosen display sort, then looked up by id below.
+  const balanceById = new Map();
+  { let running=0; sortFormsBy(forms,'date-asc').forEach(f=>{
+      const amt=getFormAmount(f);
+      running += (isReceipt(f.formId)?amt:0) - (isPayment(f.formId)?amt:0);
+      balanceById.set(f.id, running);
+  }); }
+  forms = sortFormsBy(forms, sortBy);
 
   const c = getHFSettings().color||printColor;
   const totalPay = forms.filter(f=>isPayment(f.formId)).reduce((s,f)=>s+getFormAmount(f),0);
@@ -4371,14 +4437,13 @@ function buildCashflowReport(){
     : ['التاريخ','رقم السند','النوع','المستفيد / الدافع','المشروع','طريقة الدفع','مدين (صرف)','دائن (قبض)','الرصيد'];
   document.getElementById('rpt-cf-thead').innerHTML = hCols.map(h=>`<th style="background:${c};color:white;padding:11px 14px;font-size:13px">${h}</th>`).join('');
 
-  // Table rows with running balance
-  let balance = 0;
+  // Table rows (balance pre-computed chronologically above; looked up per row regardless of display sort)
   const users = getUsers();
   const rows = forms.map(f=>{
     const amt = getFormAmount(f);
     const pay = isPayment(f.formId) ? amt : 0;
     const rec = isReceipt(f.formId) ? amt : 0;
-    balance += rec - pay;
+    const balance = balanceById.get(f.id)||0;
     const def = getFormDef(f.formId)||{title:f.formId,titleEn:f.formId};
     const typeLabel = isEn ? (def.titleEn||def.title) : def.title;
     const balColor = balance>=0?'#059669':'#dc2626';
@@ -5843,42 +5908,73 @@ function applyCopy(recordId){
 // ══════════════════════════════════════════════
 //  FORM ACTION BAR (inside each form)
 // ══════════════════════════════════════════════
+// Previous/Next navigation between saved records of the same form type (e.g. flipping through receipt/payment vouchers)
+function buildPrevNextHtml(formId, isEn, compact){
+  if(!editingFormRecord) return '';
+  const siblings = sortFormsBy(getSavedForms().filter(f=>f.formId===formId), 'date-asc');
+  const idx = siblings.findIndex(f=>f.id===editingFormRecord.id);
+  const hasPrev = idx>0, hasNext = idx>=0 && idx<siblings.length-1;
+  const prevLbl = isEn?'Previous':'السابق', nextLbl = isEn?'Next':'اللاحق';
+  return `
+    <button class="fab-btn" onclick="goToSiblingForm(-1)" ${!hasPrev?'disabled style="opacity:.35;cursor:not-allowed"':''} aria-label="${isEn?'Previous record':'السند السابق'}" title="Alt+←">
+      ${FI('chevRight')}${compact?'':' '+prevLbl}
+    </button>
+    <button class="fab-btn" onclick="goToSiblingForm(1)" ${!hasNext?'disabled style="opacity:.35;cursor:not-allowed"':''} aria-label="${isEn?'Next record':'السند اللاحق'}" title="Alt+→">
+      ${compact?'':nextLbl+' '}${FI('chevLeft')}
+    </button>
+    <div class="fab-sep"></div>`;
+}
+function goToSiblingForm(direction){
+  if(!editingFormRecord || !currentFormId) return;
+  const isEn=currentLang==='en';
+  const siblings = sortFormsBy(getSavedForms().filter(f=>f.formId===currentFormId), 'date-asc');
+  const idx = siblings.findIndex(f=>f.id===editingFormRecord.id);
+  const target = idx===-1 ? null : siblings[idx+direction];
+  if(!target){
+    showToast(direction<0?(isEn?'⏮️ This is the oldest record':'⏮️ هذا أقدم سجل'):(isEn?'⏭️ This is the latest record':'⏭️ هذا أحدث سجل'),'warning');
+    return;
+  }
+  if(target.status==='locked') loadSavedForm(target.id);
+  else editSavedForm(target.id);
+}
+
 function buildFormActionBar(formId){
   const isEn=currentLang==='en';
   const del = editingFormRecord ?
-    `<button class="fab-btn del-rec" onclick="confirmDeleteCurrentForm()" title="Alt+D">
-       🗑️ ${isEn?'Delete':'حذف'} <kbd>Alt+D</kbd></button>` : '';
+    `<button class="fab-btn del-rec" onclick="confirmDeleteCurrentForm()" title="Alt+D" aria-label="${isEn?'Delete':'حذف'}">
+       ${FI('trash')} ${isEn?'Delete':'حذف'} <kbd>Alt+D</kbd></button>` : '';
   return `<div class="form-action-bar" id="fab-top-bar">
     <span class="fab-title">${isEn?'Actions:':'إجراءات:'}</span>
-    <button class="fab-btn copy" onclick="copyFromPrevious('${formId}')" title="Alt+C">
-      📋 ${isEn?'Copy from Previous':'نسخ من سابق'} <kbd>Alt+C</kbd>
+    ${buildPrevNextHtml(formId, isEn, false)}
+    <button class="fab-btn copy" onclick="copyFromPrevious('${formId}')" title="Alt+C" aria-label="${isEn?'Copy from Previous':'نسخ من سابق'}">
+      ${FI('copy')} ${isEn?'Copy from Previous':'نسخ من سابق'} <kbd>Alt+C</kbd>
     </button>
-    <button class="fab-btn ledger" onclick="showFormLedgerCurrent()" title="Alt+L">
-      📊 ${isEn?'Form Ledger':'حركات النموذج'} <kbd>Alt+L</kbd>
+    <button class="fab-btn ledger" onclick="showFormLedgerCurrent()" title="Alt+L" aria-label="${isEn?'Form Ledger':'حركات النموذج'}">
+      ${FI('list')} ${isEn?'Form Ledger':'حركات النموذج'} <kbd>Alt+L</kbd>
     </button>
-    <button class="fab-btn new-rec" onclick="addNewRecord()" title="Alt+N">
-      ➕ ${isEn?'New Record':'سجل جديد'} <kbd>Alt+N</kbd>
+    <button class="fab-btn new-rec" onclick="addNewRecord()" title="Alt+N" aria-label="${isEn?'New Record':'سجل جديد'}">
+      ${FI('plus')} ${isEn?'New Record':'سجل جديد'} <kbd>Alt+N</kbd>
     </button>
     ${del}
     <div class="fab-sep"></div>
-    <button class="fab-btn save-d" id="fab-save-draft" onclick="saveForm('draft')" title="Ctrl+S" ${!window._canSaveForm?'disabled style="opacity:.4;cursor:not-allowed"':''}>
-      💾 ${isEn?'Draft':'مسودة'} <kbd>Ctrl+S</kbd>
+    <button class="fab-btn save-d" id="fab-save-draft" onclick="saveForm('draft')" title="Ctrl+S" aria-label="${isEn?'Draft':'مسودة'}" ${!window._canSaveForm?'disabled style="opacity:.4;cursor:not-allowed"':''}>
+      ${FI('save')} ${isEn?'Draft':'مسودة'} <kbd>Ctrl+S</kbd>
     </button>
-    <button class="fab-btn save-f" id="fab-save-final" onclick="saveForm('final')" title="Ctrl+Enter">
-      ✅ ${isEn?'Save Final':'حفظ نهائي'} <kbd>Ctrl+↵</kbd>
+    <button class="fab-btn save-f" id="fab-save-final" onclick="saveForm('final')" title="Ctrl+Enter" aria-label="${isEn?'Save Final':'حفظ نهائي'}">
+      ${FI('check')} ${isEn?'Save Final':'حفظ نهائي'} <kbd>Ctrl+↵</kbd>
     </button>
-    <button class="fab-btn preview-b" onclick="switchFTab('preview')" title="Ctrl+P">
-      👁️ ${isEn?'Preview':'معاينة'} <kbd>Ctrl+P</kbd>
+    <button class="fab-btn preview-b" onclick="switchFTab('preview')" title="Ctrl+P" aria-label="${isEn?'Preview':'معاينة'}">
+      ${FI('eye')} ${isEn?'Preview':'معاينة'} <kbd>Ctrl+P</kbd>
     </button>
-    <button class="fab-btn print-b" onclick="switchFTab('preview');setTimeout(printForm,300)" title="Ctrl+Shift+P">
-      🖨️ ${isEn?'Print':'طباعة'} <kbd>Ctrl+⇧P</kbd>
+    <button class="fab-btn print-b" onclick="switchFTab('preview');setTimeout(printForm,300)" title="Ctrl+Shift+P" aria-label="${isEn?'Print':'طباعة'}">
+      ${FI('print')} ${isEn?'Print':'طباعة'} <kbd>Ctrl+⇧P</kbd>
     </button>
     <div class="fab-sep"></div>
-    <button class="fab-btn" style="border-color:var(--muted);color:var(--muted)" onclick="goBack()" title="Escape">
-      ← ${isEn?'Back':'رجوع'} <kbd>Esc</kbd>
+    <button class="fab-btn" style="border-color:var(--muted);color:var(--muted)" onclick="goBack()" title="Escape" aria-label="${isEn?'Back':'رجوع'}">
+      ${FI('back')} ${isEn?'Back':'رجوع'} <kbd>Esc</kbd>
     </button>
-    <button class="fab-btn" style="border-color:var(--primary);color:var(--primary)" onclick="showPage('dashboard')">
-      🏠 ${isEn?'Home':'الرئيسية'}
+    <button class="fab-btn" style="border-color:var(--primary);color:var(--primary)" onclick="showPage('dashboard')" aria-label="${isEn?'Home':'الرئيسية'}">
+      ${FI('home')} ${isEn?'Home':'الرئيسية'}
     </button>
   </div>`;
 }
@@ -5889,27 +5985,35 @@ function injectStickyBottomBar(formId){
   document.getElementById('fab-bottom-bar')?.remove();
   const isEn=currentLang==='en';
   const del = editingFormRecord ?
-    `<button class="fab-btn del-rec" onclick="confirmDeleteCurrentForm()">🗑️ ${isEn?'Delete':'حذف'}</button>` : '';
+    `<button class="fab-btn del-rec" onclick="confirmDeleteCurrentForm()" aria-label="${isEn?'Delete':'حذف'}">${FI('trash')} ${isEn?'Delete':'حذف'}</button>` : '';
   const bar = document.createElement('div');
   bar.className='form-sticky-bottom';
   bar.id='fab-bottom-bar';
   bar.innerHTML=`
-    <button class="fab-btn copy" onclick="copyFromPrevious('${formId}')">📋 ${isEn?'Copy':'نسخ'}</button>
-    <button class="fab-btn ledger" onclick="showFormLedgerCurrent()">📊 ${isEn?'Ledger':'الحركات'}</button>
-    <button class="fab-btn new-rec" onclick="addNewRecord()">➕ ${isEn?'New':'جديد'}</button>
+    ${buildPrevNextHtml(formId, isEn, true)}
+    <button class="fab-btn copy" onclick="copyFromPrevious('${formId}')" aria-label="${isEn?'Copy':'نسخ'}">${FI('copy')} ${isEn?'Copy':'نسخ'}</button>
+    <button class="fab-btn ledger" onclick="showFormLedgerCurrent()" aria-label="${isEn?'Ledger':'الحركات'}">${FI('list')} ${isEn?'Ledger':'الحركات'}</button>
+    <button class="fab-btn new-rec" onclick="addNewRecord()" aria-label="${isEn?'New':'جديد'}">${FI('plus')} ${isEn?'New':'جديد'}</button>
     ${del}
     <div class="fab-sep"></div>
-    <button class="fab-btn save-d" onclick="saveForm('draft')">💾 ${isEn?'Draft':'مسودة'}</button>
-    <button class="fab-btn save-f" onclick="saveForm('final')">✅ ${isEn?'Final':'نهائي'}</button>
-    <button class="fab-btn preview-b" onclick="switchFTab('preview')">👁️ ${isEn?'Preview':'معاينة'}</button>
-    <button class="fab-btn print-b" onclick="switchFTab('preview');setTimeout(printForm,300)">🖨️ ${isEn?'Print':'طباعة'}</button>
+    <button class="fab-btn save-d" onclick="saveForm('draft')" aria-label="${isEn?'Draft':'مسودة'}">${FI('save')} ${isEn?'Draft':'مسودة'}</button>
+    <button class="fab-btn save-f" onclick="saveForm('final')" aria-label="${isEn?'Final':'نهائي'}">${FI('check')} ${isEn?'Final':'نهائي'}</button>
+    <button class="fab-btn preview-b" onclick="switchFTab('preview')" aria-label="${isEn?'Preview':'معاينة'}">${FI('eye')} ${isEn?'Preview':'معاينة'}</button>
+    <button class="fab-btn print-b" onclick="switchFTab('preview');setTimeout(printForm,300)" aria-label="${isEn?'Print':'طباعة'}">${FI('print')} ${isEn?'Print':'طباعة'}</button>
     <div class="fab-sep"></div>
-    <button class="fab-btn" style="border-color:var(--muted);color:var(--muted)" onclick="goBack()">← ${isEn?'Back':'رجوع'}</button>
-    <button class="fab-btn" style="border-color:var(--primary);color:var(--primary)" onclick="showPage('dashboard')">🏠</button>
+    <button class="fab-btn" style="border-color:var(--muted);color:var(--muted)" onclick="goBack()" aria-label="${isEn?'Back':'رجوع'}">${FI('back')} ${isEn?'Back':'رجوع'}</button>
+    <button class="fab-btn" style="border-color:var(--primary);color:var(--primary)" onclick="showPage('dashboard')" aria-label="${isEn?'Home':'الرئيسية'}">${FI('home')}</button>
   `;
   const body = document.getElementById('form-fill-body');
   if(body) body.appendChild(bar);
 }
+
+// Alt+Left / Alt+Right flip between sibling records while a saved voucher/form is open
+document.addEventListener('keydown', e=>{
+  if(!e.altKey || !editingFormRecord) return;
+  if(e.key==='ArrowLeft'){ e.preventDefault(); goToSiblingForm(1); }
+  else if(e.key==='ArrowRight'){ e.preventDefault(); goToSiblingForm(-1); }
+});
 
 // Keyboard shortcuts for form actions
 function initFormShortcuts(){
@@ -6190,6 +6294,7 @@ function buildFormLedgerReport(formTypeId, targetEl){
   const toDate   = document.getElementById(`flr-to-${formTypeId}`)?.value||'';
   const status   = document.getElementById(`flr-status-${formTypeId}`)?.value||'';
   const search   = (document.getElementById(`flr-search-${formTypeId}`)?.value||'').toLowerCase();
+  const sortBy   = document.getElementById(`flr-sort-${formTypeId}`)?.value||'date-desc';
 
   let forms = getSavedForms().filter(f=>f.formId===formTypeId);
   if(fromDate) forms = forms.filter(f=>getFormDate(f)>=fromDate);
@@ -6199,7 +6304,7 @@ function buildFormLedgerReport(formTypeId, targetEl){
     (f.data?.['f-project']||'').toLowerCase().includes(search)||
     (f.data?.['f-client-name']||'').toLowerCase().includes(search)||
     (getFormBeneficiary(f)||'').toLowerCase().includes(search));
-  forms.sort((a,b)=>getFormDate(a).localeCompare(getFormDate(b)));
+  forms = sortFormsBy(forms, sortBy);
 
   const totalAmt  = forms.reduce((s,f)=>s+getFormAmount(f),0);
   const totalVat  = forms.reduce((s,f)=>s+parseFloat(f.data?.['f-vat-amount']||f.data?.['f-po-vat']||0),0);
@@ -6237,8 +6342,10 @@ function buildFormLedgerReport(formTypeId, targetEl){
   </div>`;
 
   // Table headers
-  const hasAmt = ['invoice','quotation','purchase-order','payment-voucher','receipt-voucher','payment-order','petty-cash','variation-order','subcontract','budget'].includes(formTypeId);
+  const hasAmt    = ['invoice','quotation','purchase-order','payment-voucher','receipt-voucher','payment-order','petty-cash','variation-order','subcontract','budget'].includes(formTypeId);
+  const hasMethod = ['payment-voucher','receipt-voucher','payment-order','petty-cash'].includes(formTypeId);
   const headers = [t('formNumber'),t('project'),isEn?'Date':'التاريخ',isEn?'Beneficiary':'المستفيد',
+    ...(hasMethod?[isEn?'Method':'طريقة الدفع']:[]),
     ...(hasAmt?[t('subtotal'),t('vatAmt'),t('grandTotal')]:[]),
     t('formStatus'),t('actions')];
   const thead = headers.map(h=>`<th style="background:${c};color:white;padding:10px 12px;white-space:nowrap">${h}</th>`).join('');
@@ -6256,24 +6363,26 @@ function buildFormLedgerReport(formTypeId, targetEl){
       <td style="padding:9px 12px;border-bottom:1px solid var(--border)">${f.data?.['f-project']||f.data?.['f-client-name']||'—'}</td>
       <td style="padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap">${getFormDate(f)}</td>
       <td style="padding:9px 12px;border-bottom:1px solid var(--border)">${getFormBeneficiary(f)||'—'}</td>
+      ${hasMethod?`<td style="padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap">${getFormMethod(f)}</td>`:''}
       ${hasAmt?`<td style="padding:9px 12px;border-bottom:1px solid var(--border);text-align:center;font-weight:600">${sub>0?fmtAmt(sub):'—'}</td>
       <td style="padding:9px 12px;border-bottom:1px solid var(--border);text-align:center;color:#d97706;font-weight:600">${vat>0?fmtAmt(vat):'—'}</td>
       <td style="padding:9px 12px;border-bottom:1px solid var(--border);text-align:center;font-weight:900;color:${c}">${amt>0?fmtAmt(amt):'—'}</td>`:''}
       <td style="padding:9px 12px;border-bottom:1px solid var(--border);text-align:center">
         <span style="background:${sc}20;color:${sc};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700">${statusLabels[st]||st}</span>
       </td>
-      <td style="padding:9px 12px;border-bottom:1px solid var(--border);text-align:center">
-        <button class="btn btn-xs btn-primary" onclick="loadSavedForm('${f.id}')">👁️</button>
-        <button class="btn btn-xs btn-warning" onclick="editSavedForm('${f.id}')">✏️</button>
-        <button class="btn btn-xs btn-info"    onclick="printSavedForm('${f.id}')">🖨️</button>
-        <button class="btn btn-xs" style="background:#7c3aed15;color:#7c3aed;border:1px solid #7c3aed" onclick="showFormLedger('${f.id}')">📋</button>
+      <td style="padding:9px 12px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap">
+        <button class="btn btn-xs btn-primary" onclick="loadSavedForm('${f.id}')" aria-label="${isEn?'View':'عرض'}" title="${isEn?'View':'عرض'}">${FI('eye')}</button>
+        <button class="btn btn-xs btn-warning" onclick="editSavedForm('${f.id}')" aria-label="${isEn?'Edit':'تعديل'}" title="${isEn?'Edit':'تعديل'}">${FI('edit')}</button>
+        <button class="btn btn-xs btn-info"    onclick="printSavedForm('${f.id}')" aria-label="${isEn?'Print':'طباعة'}" title="${isEn?'Print':'طباعة'}">${FI('print')}</button>
+        <button class="btn btn-xs" style="background:#7c3aed15;color:#7c3aed;border:1px solid #7c3aed" onclick="showFormLedger('${f.id}')" aria-label="${isEn?'Ledger':'سجل الحركات'}" title="${isEn?'Ledger':'سجل الحركات'}">${FI('list')}</button>
       </td>
     </tr>`;
   }).join('');
 
   // Footer totals
+  const labelColspan = 4 + (hasMethod?1:0);
   const foot = hasAmt ? `<tr style="background:${c};color:white">
-    <td colspan="4" style="padding:9px 12px;font-weight:700">${isEn?'Total':'الإجمالي'} (${totalForms})</td>
+    <td colspan="${labelColspan}" style="padding:9px 12px;font-weight:700">${isEn?'Total':'الإجمالي'} (${totalForms})</td>
     <td style="padding:9px 12px;text-align:center;font-weight:900">${fmtAmt(totalAmt-totalVat)}</td>
     <td style="padding:9px 12px;text-align:center;font-weight:900">${fmtAmt(totalVat)}</td>
     <td style="padding:9px 12px;text-align:center;font-weight:900">${fmtAmt(totalAmt)}</td>
@@ -6388,6 +6497,7 @@ function showFormReport(formId){
       <option value="printed">${isEn?'Printed':'مطبوع'}</option>
     </select>
     <input class="fi" id="flr-search-${formId}" placeholder="🔍 ${isEn?'Search...':'بحث...'}" style="width:180px" oninput="buildFormLedgerReport('${formId}',document.getElementById('form-report-body'))">
+    <select class="fi" id="flr-sort-${formId}" style="width:180px" onchange="buildFormLedgerReport('${formId}',document.getElementById('form-report-body'))">${sortOptionsHtml(isEn)}</select>
     <button class="btn btn-primary btn-sm" onclick="printReport('form-report-body')">🖨️ ${isEn?'Print':'طباعة'}</button>
     <button class="btn btn-outline btn-sm" onclick="buildFormLedgerReport('${formId}',document.getElementById('form-report-body'))">🔄</button>`;
 
