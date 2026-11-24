@@ -143,6 +143,13 @@ body.lang-en .lang-switcher-btn.active{background:var(--accent);color:var(--dark
 .topbar-left{display:flex;align-items:center;gap:12px}
 .topbar-title{font-size:20px;font-weight:700;color:var(--primary)}
 .topbar-actions{display:flex;gap:8px;align-items:center}
+.topbar-pinned{display:flex;gap:8px;align-items:center;padding:0 14px;border-right:1px solid var(--border);border-left:1px solid var(--border)}
+.topbar-pinned-lbl{font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap}
+.topbar-pinned-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--rs);border:1.5px solid var(--accent);background:var(--accent);color:var(--dark);font-family:'Cairo',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s}
+.topbar-pinned-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.topbar-pinned-btn .tp-ico{font-size:13px}
+@media(max-width:1180px){.topbar-pinned-lbl{display:none}}
+@media(max-width:980px){.topbar-pinned{display:none}}
 
 /* ── BUTTONS ── */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--rs);font-family:'Cairo',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;border:none;transition:.2s;text-decoration:none;white-space:nowrap}
@@ -273,6 +280,15 @@ body.lang-en .lang-switcher-btn.active{background:var(--accent);color:var(--dark
 .modal-close:hover{background:rgba(255,255,255,.35)}
 .modal-body{padding:22px}
 .modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;background:var(--surface)}
+
+/* ── FORM MODAL (open a new/saved voucher as a popup over the current screen) ── */
+.form-modal-overlay{position:fixed;inset:0;background:rgba(13,20,33,.6);z-index:600;display:none;align-items:flex-start;justify-content:center;padding:28px 20px;overflow-y:auto}
+.form-modal-overlay.open{display:flex}
+.form-modal-card{position:relative;background:white;border-radius:16px;width:min(980px,96vw);max-height:none;box-shadow:0 30px 80px rgba(0,0,0,.4);animation:fadeUp .25s ease;padding:24px 24px 12px}
+.form-modal-card .page{padding:0}
+.form-modal-close{position:absolute;top:14px;left:14px;width:34px;height:34px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;transition:.2s}
+.form-modal-close:hover{background:var(--border)}
+@media(max-width:720px){.form-modal-card{padding:18px 14px 10px}}
 
 /* ── TOGGLE ── */
 .tgl-wrap{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -436,7 +452,7 @@ body.lang-en .bottom-nav-bar{left:0;right:280px}
 @media print{
   /* Hide everything except the print area */
   #login-screen, #app .sidebar, #app .topbar,
-  .ptabs, .topbar-actions, .lang-switcher,
+  .ptabs, .topbar-actions, .topbar-pinned, .lang-switcher,
   .form-panel, .fab-btn, .form-action-bar, .form-sticky-top, .form-sticky-bottom,
   .prev-wrap > .sec-header, .btn,
   .bottom-nav-bar,
@@ -542,8 +558,8 @@ body.lang-en .bottom-nav-bar{left:0;right:280px}
       <div class="sb-dropdown" id="dd-fin">
         <div class="nav-item" onclick="openForm('invoice')"><span class="nav-icon">🧾</span> <span class="dd-form-lbl" data-form="invoice">فاتورة / مستخلص</span></div>
         <div class="nav-item" onclick="openForm('payment-order')"><span class="nav-icon">💳</span> <span class="dd-form-lbl" data-form="payment-order">أمر الصرف</span></div>
-        <div class="nav-item" onclick="openForm('payment-voucher')"><span class="nav-icon">📤</span> <span class="dd-form-lbl" data-form="payment-voucher">سند الصرف</span></div>
-        <div class="nav-item" onclick="openForm('receipt-voucher')"><span class="nav-icon">📥</span> <span class="dd-form-lbl" data-form="receipt-voucher">سند القبض</span></div>
+        <div class="nav-item" onclick="openFormInModal('payment-voucher')"><span class="nav-icon">📤</span> <span class="dd-form-lbl" data-form="payment-voucher">سند الصرف</span></div>
+        <div class="nav-item" onclick="openFormInModal('receipt-voucher')"><span class="nav-icon">📥</span> <span class="dd-form-lbl" data-form="receipt-voucher">سند القبض</span></div>
         <div class="nav-item" onclick="openForm('purchase-order')"><span class="nav-icon">🛒</span> <span class="dd-form-lbl" data-form="purchase-order">أمر الشراء</span></div>
         <div class="nav-item" onclick="openForm('quotation')"><span class="nav-icon">📝</span> <span class="dd-form-lbl" data-form="quotation">عرض السعر</span></div>
         <div class="nav-item" onclick="openForm('petty-cash')"><span class="nav-icon">💵</span> <span class="dd-form-lbl" data-form="petty-cash">سلفة / عهدة / مصروف</span></div>
@@ -653,6 +669,15 @@ body.lang-en .bottom-nav-bar{left:0;right:280px}
     <div class="topbar-left">
       <div class="topbar-title" id="topbar-title">لوحة التحكم</div>
       <div id="breadcrumb" style="font-size:11px;color:var(--muted)"></div>
+    </div>
+    <div class="topbar-pinned" id="topbar-pinned">
+      <span class="topbar-pinned-lbl" id="topbar-pinned-lbl">اختصارات سريعة</span>
+      <button class="topbar-pinned-btn" onclick="openFormInModal('payment-voucher')" id="topbar-pin-pv">
+        <span class="tp-ico">📤</span> <span id="topbar-pin-pv-lbl">سند الصرف</span>
+      </button>
+      <button class="topbar-pinned-btn" onclick="openFormInModal('receipt-voucher')" id="topbar-pin-rv">
+        <span class="tp-ico">📥</span> <span id="topbar-pin-rv-lbl">سند القبض</span>
+      </button>
     </div>
     <div style="display:flex;align-items:center;gap:12px">
       <div class="lang-switcher">
@@ -1782,6 +1807,67 @@ function updateArchiveBadge(){
 }
 
 // ══════════════════════════════════════════════
+//  OPEN A FORM AS A POPUP (quick-create without leaving the current screen)
+// ══════════════════════════════════════════════
+let _formModalActive = false;
+let _formModalOrigParent = null;
+let _formModalOrigNext = null;
+let _formModalPrevPageId = null;
+
+function openFormInModal(formId, savedData=null, savedRecord=null){
+  const pageEl = document.getElementById('page-form-view');
+  if(!pageEl) return;
+
+  // Remember the page's normal spot in the DOM, and which page was showing, so
+  // closeFormModal() can restore both and the user lands back where they were.
+  _formModalOrigParent = pageEl.parentNode;
+  _formModalOrigNext = pageEl.nextSibling;
+  _formModalPrevPageId = document.querySelector('.page.active')?.id || null;
+
+  let overlay = document.getElementById('form-modal-overlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'form-modal-overlay';
+    overlay.className = 'form-modal-overlay';
+    overlay.innerHTML = `<div class="form-modal-card" id="form-modal-card">
+      <button type="button" class="form-modal-close" onclick="closeFormModal()" aria-label="${currentLang==='en'?'Close':'إغلاق'}" title="Esc">${FI('back')}</button>
+    </div>`;
+    overlay.addEventListener('mousedown', e=>{ if(e.target===overlay) closeFormModal(); });
+    document.body.appendChild(overlay);
+  }
+  document.getElementById('form-modal-card').appendChild(pageEl);
+  overlay.classList.add('open');
+  _formModalActive = true;
+
+  openForm(formId, savedData, savedRecord);
+}
+
+function closeFormModal(){
+  if(!_formModalActive) return;
+  const pageEl = document.getElementById('page-form-view');
+  const overlay = document.getElementById('form-modal-overlay');
+  if(overlay) overlay.classList.remove('open');
+  if(pageEl){
+    pageEl.classList.remove('active');
+    if(_formModalOrigParent) _formModalOrigParent.insertBefore(pageEl, _formModalOrigNext);
+  }
+  // Restore whichever page was showing before the popup opened (reports, dashboard, etc.)
+  if(_formModalPrevPageId){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById(_formModalPrevPageId)?.classList.add('active');
+  }
+  _formModalActive = false;
+  currentFormId = null;
+  editingFormRecord = null;
+}
+
+// Shared handler for the action bar's Back/Home buttons — closes the popup instead of navigating when the form was opened as a modal
+function handleFormExit(kind){
+  if(_formModalActive){ closeFormModal(); return; }
+  if(kind==='back') goBack(); else showPage('dashboard');
+}
+
+// ══════════════════════════════════════════════
 //  OPEN / EDIT FORM
 // ══════════════════════════════════════════════
 function openForm(formId, savedData=null, savedRecord=null){
@@ -2043,10 +2129,10 @@ function switchFTab(tab){
 function switchFTabBack(){
   const fillPanel = document.getElementById('form-fill-panel');
   if(!fillPanel) return;
-  fillPanel.style.position='';
-  fillPanel.style.left='';
-  fillPanel.style.visibility='';
-  fillPanel.style.display='block';
+  // Must fully replace cssText (not touch properties one by one) — switchFTab('preview') also
+  // sets width:1px/overflow:hidden/pointer-events:none/top:-9999px, and leaving any of those behind
+  // makes the form unusably tiny and unclickable after coming back from the preview tab.
+  fillPanel.style.cssText='display:block;position:static;left:auto;visibility:visible;pointer-events:auto;';
   const prevPanel = document.getElementById('form-prev-panel');
   if(prevPanel) prevPanel.style.display='none';
   document.querySelectorAll('.ptab').forEach((tab,i)=>tab.classList.toggle('active',i===0));
@@ -4197,6 +4283,10 @@ function updateStaticText(){
   ss('sb-sys-title', t('systemTitle')); ss('sb-sys-sub', t('systemSub'));
   ss('login-title', t('loginTitle'));   ss('login-subtitle', t('loginSub'));
   document.title = t('systemTitle')+' — '+t('systemSub');
+  // ── Pinned topbar shortcuts (most-used data-entry screens)
+  ss('topbar-pinned-lbl', isEn?'Quick shortcuts':'اختصارات سريعة');
+  ss('topbar-pin-pv-lbl', isEn?'Payment Voucher':'سند الصرف');
+  ss('topbar-pin-rv-lbl', isEn?'Receipt Voucher':'سند القبض');
   // ── Sidebar nav labels
   ss('sb-sec-op-lbl',  isEn?'Operational':'التشغيلية');
   ss('sb-nav-op',      t('opForms'));
@@ -5525,7 +5615,7 @@ function updateBNB(pageId, formId=null){
 
 function closeCurrentForm(){
   // Confirm if unsaved
-  goBack();
+  handleFormExit('back');
 }
 
 // ══════════════════════════════════════════════
@@ -5970,12 +6060,12 @@ function buildFormActionBar(formId){
       ${FI('print')} ${isEn?'Print':'طباعة'} <kbd>Ctrl+⇧P</kbd>
     </button>
     <div class="fab-sep"></div>
-    <button class="fab-btn" style="border-color:var(--muted);color:var(--muted)" onclick="goBack()" title="Escape" aria-label="${isEn?'Back':'رجوع'}">
-      ${FI('back')} ${isEn?'Back':'رجوع'} <kbd>Esc</kbd>
+    <button class="fab-btn" style="border-color:var(--muted);color:var(--muted)" onclick="handleFormExit('back')" title="Escape" aria-label="${isEn?'Back':'رجوع'}">
+      ${FI('back')} ${_formModalActive?(isEn?'Close':'إغلاق'):(isEn?'Back':'رجوع')} <kbd>Esc</kbd>
     </button>
-    <button class="fab-btn" style="border-color:var(--primary);color:var(--primary)" onclick="showPage('dashboard')" aria-label="${isEn?'Home':'الرئيسية'}">
+    ${_formModalActive?'':`<button class="fab-btn" style="border-color:var(--primary);color:var(--primary)" onclick="handleFormExit('home')" aria-label="${isEn?'Home':'الرئيسية'}">
       ${FI('home')} ${isEn?'Home':'الرئيسية'}
-    </button>
+    </button>`}
   </div>`;
 }
 
@@ -6001,8 +6091,8 @@ function injectStickyBottomBar(formId){
     <button class="fab-btn preview-b" onclick="switchFTab('preview')" aria-label="${isEn?'Preview':'معاينة'}">${FI('eye')} ${isEn?'Preview':'معاينة'}</button>
     <button class="fab-btn print-b" onclick="switchFTab('preview');setTimeout(printForm,300)" aria-label="${isEn?'Print':'طباعة'}">${FI('print')} ${isEn?'Print':'طباعة'}</button>
     <div class="fab-sep"></div>
-    <button class="fab-btn" style="border-color:var(--muted);color:var(--muted)" onclick="goBack()" aria-label="${isEn?'Back':'رجوع'}">${FI('back')} ${isEn?'Back':'رجوع'}</button>
-    <button class="fab-btn" style="border-color:var(--primary);color:var(--primary)" onclick="showPage('dashboard')" aria-label="${isEn?'Home':'الرئيسية'}">${FI('home')}</button>
+    <button class="fab-btn" style="border-color:var(--muted);color:var(--muted)" onclick="handleFormExit('back')" aria-label="${isEn?'Back':'رجوع'}">${FI('back')} ${_formModalActive?(isEn?'Close':'إغلاق'):(isEn?'Back':'رجوع')}</button>
+    ${_formModalActive?'':`<button class="fab-btn" style="border-color:var(--primary);color:var(--primary)" onclick="handleFormExit('home')" aria-label="${isEn?'Home':'الرئيسية'}">${FI('home')}</button>`}
   `;
   const body = document.getElementById('form-fill-body');
   if(body) body.appendChild(bar);
@@ -6043,7 +6133,7 @@ function _formKeyHandler(e){
   // Alt+D → delete
   if(e.altKey && e.key==='d'){ e.preventDefault(); if(editingFormRecord) confirmDeleteCurrentForm(); return; }
   // Alt+Home → go home
-  if(e.altKey && e.key==='Home'){ e.preventDefault(); showPage('dashboard'); return; }
+  if(e.altKey && e.key==='Home'){ e.preventDefault(); handleFormExit('home'); return; }
 }
 
 function showFormLedgerCurrent(){
@@ -6488,6 +6578,7 @@ function showFormReport(formId){
   // Render filter controls
   const filters = document.getElementById('form-report-filters');
   if(filters) filters.innerHTML = `
+    <button class="btn btn-sm" style="background:var(--accent);color:var(--dark);border-color:var(--accent)" onclick="openFormInModal('${formId}')" aria-label="${isEn?'New record':'سجل جديد'}">${FI('plus')} ${isEn?'New':'جديد'}</button>
     <input class="fi" type="date" id="flr-from-${formId}" style="width:150px" onchange="buildFormLedgerReport('${formId}',document.getElementById('form-report-body'))">
     <input class="fi" type="date" id="flr-to-${formId}" style="width:150px" onchange="buildFormLedgerReport('${formId}',document.getElementById('form-report-body'))">
     <select class="fi" id="flr-status-${formId}" style="width:130px" onchange="buildFormLedgerReport('${formId}',document.getElementById('form-report-body'))">
