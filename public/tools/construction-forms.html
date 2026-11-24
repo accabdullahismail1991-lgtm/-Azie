@@ -477,7 +477,7 @@ body.lang-en .bottom-nav-bar{left:0;right:280px}
   #login-screen, #app .sidebar, #app .topbar,
   .ptabs, .topbar-actions, .topbar-pinned, .lang-switcher,
   .form-panel, .fab-btn, .form-action-bar, .form-sticky-top, .form-sticky-bottom,
-  .prev-wrap > .sec-header, .btn,
+  #form-prev-panel > .sec-header, .btn,
   .bottom-nav-bar,
   .content > .page > .stats-row,
   .content > .page > .sec-header,
@@ -510,6 +510,15 @@ body.lang-en .bottom-nav-bar{left:0;right:280px}
   .prev-wrap { background:white!important; padding:0!important; box-shadow:none!important }
   .prev-page { box-shadow:none!important; max-width:100%!important; min-height:auto!important; border:none!important }
   #printable-area { width:100%!important }
+
+  /* Printing/exporting (via "Save as PDF" in the print dialog) from inside the popup: the modal's
+     fixed position, fixed size, resize handle and internal scrollbar must not clip or scale the
+     printable area — without this it prints only whatever portion happened to be visible on
+     screen, at the modal's current (possibly resized) box, instead of a clean A4 page. */
+  .form-modal-overlay { position:static!important; inset:auto!important; padding:0!important; background:none!important; display:block!important }
+  .form-modal-card { position:static!important; width:auto!important; height:auto!important; max-width:none!important; max-height:none!important; min-width:0!important; min-height:0!important; overflow:visible!important; resize:none!important; box-shadow:none!important; border-radius:0!important }
+  .form-modal-head { display:none!important }
+  .form-modal-body { overflow:visible!important; padding:0!important; height:auto!important }
 
   /* Color accuracy */
   * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; color-adjust:exact!important }
